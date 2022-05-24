@@ -15,15 +15,3 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: profile-pictures
-# functions:
-#   webhook:
-#     handler: handler.webhook
-#     events:
-#       - http:
-#         method: GET
-#         path: /
-#   s3hook:
-#     handler: handler.s3hook
-#     events:
-#       - s3: local-bucket
-#         event: s3:*

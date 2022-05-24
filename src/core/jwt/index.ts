@@ -6,7 +6,7 @@ export const jwtModuleOptions: JwtModuleAsyncOptions = {
   imports: [ConfigModule.forFeature(jwtConfig)],
   inject: [ConfigService],
   useFactory: async (config: ConfigService) => ({
-    secretOrPrivateKey: config.get('jwt.accessToken.secret'),
+    secret: config.get('jwt.accessToken.secret'),
   }),
 };
 

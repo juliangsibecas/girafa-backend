@@ -27,20 +27,45 @@ scalar Date
 
 type Mutation {
   generateRecoveryCode(email: String!): Boolean!
+  partyCreate(data: PartyCreateInput!): Party!
   signIn(data: AuthSignInInput!): Boolean!
   signInFromRefreshToken: Boolean!
   signUp(data: AuthSignUpInput!): User!
+  userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
+}
+
+type Party {
+  address: String!
+  attenders: [User!]!
+  date: Date!
+  description: String!
+  id: String!
+  minAge: String
+  name: String!
+  openBar: Boolean!
+  organizer: User!
+}
+
+input PartyCreateInput {
+  address: String!
+  date: Date!
+  description: String!
+  name: String!
+  openBar: Boolean!
 }
 
 type Query {
   checkRecoveryCode(data: AuthCheckRecoveryCodeInput!): Boolean!
+  partyGetById(id: String!): Party!
+  partySearch(q: String!): [Party!]!
   userGetById(id: String!): User!
   userSearch(q: String!): [User!]!
 }
 
 type User {
   age: Float!
+  attendedParties: [Party!]!
   bio: String
   email: String!
   followers: [User!]!
@@ -48,9 +73,15 @@ type User {
   fullName: String!
   id: String!
   nickname: String!
+  organizedParties: [Party!]!
   password: String
   recoveryCode: String
   refreshToken: String
+}
+
+input UserChangeAttendingStateInput {
+  partyId: String!
+  state: Boolean!
 }
 
 input UserChangeFollowingStateInput {

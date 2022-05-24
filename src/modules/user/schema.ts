@@ -5,8 +5,10 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Party } from '../party';
 
 @Entity()
 @ObjectType()
@@ -49,6 +51,15 @@ export class User {
   @ManyToMany(() => User, (user) => user.followers)
   @Field(() => [User])
   following: Array<User>;
+
+  @OneToMany(() => Party, (party) => party.organizer)
+  @Field(() => [Party])
+  organizedParties: Array<Party>;
+
+  @ManyToMany(() => Party, (party) => party.attenders)
+  @JoinTable()
+  @Field(() => [Party])
+  attendedParties: Array<Party>;
 
   //
   // meta

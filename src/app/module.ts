@@ -13,6 +13,8 @@ import { mailerModuleOptions } from '../core/mailer';
 import { UserModule } from '../modules/user';
 import { AuthModule } from '../modules/auth';
 import { GqlAuthGuard } from '../modules/auth';
+import { PartyModule } from '../modules/party';
+import { ImageModule } from '../modules/image';
 
 @Module({
   imports: [
@@ -20,8 +22,10 @@ import { GqlAuthGuard } from '../modules/auth';
     MailerModule.forRootAsync(mailerModuleOptions),
     TypeOrmModule.forRootAsync(typeormModuleOptions),
     GraphQLModule.forRoot(gqlModuleOptions),
-    UserModule,
     AuthModule,
+    ImageModule,
+    UserModule,
+    PartyModule,
   ],
   providers: [
     {

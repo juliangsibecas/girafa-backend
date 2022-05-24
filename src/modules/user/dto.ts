@@ -1,3 +1,4 @@
+import { Party } from '../party';
 import { User } from './schema';
 
 export class UserCreateDto {
@@ -27,6 +28,11 @@ export class UserCheckAvailabilityDto {
 export class UserChangeFollowingStateDto {
   user: User;
   following: User;
+}
+
+export class UserChangeAttendingStateDto {
+  user: User;
+  party: Party;
 }
 
 export class UserSetRecoveryCodeDto {

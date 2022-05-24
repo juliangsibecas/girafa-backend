@@ -11,8 +11,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../../core/s3';
 import { JwtAuthGuard } from '../auth/jwt/guard';
 
-@Controller('users')
-export class UserController {
+@Controller('images')
+export class ImageController {
   constructor(private s3: S3Service) {}
 
   @Post('profile-picture')

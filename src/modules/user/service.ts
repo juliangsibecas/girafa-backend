@@ -6,6 +6,7 @@ import { ILike, Repository } from 'typeorm';
 import { Maybe } from '../../common/types';
 
 import {
+  UserChangeAttendingStateDto,
   UserChangeFollowingStateDto,
   UserCheckAvailabilityDto,
   UserCreateDto,
@@ -61,6 +62,21 @@ export class UserService {
       ...user,
       following: user.following.filter((followingUser) => {
         return followingUser.id !== following.id;
+      }),
+    });
+  }
+
+  async addAttending({ user, party }: UserChangeAttendingStateDto) {
+    user.attendedParties.push(party);
+
+    await this.db.save(user);
+  }
+
+  async removeAttending({ user, party }: UserChangeAttendingStateDto) {
+    await this.db.save({
+      ...user,
+      attendedParties: user.attendedParties.filter((attendedParty) => {
+        return attendedParty.id !== party.id;
       }),
     });
   }
