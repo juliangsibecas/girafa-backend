@@ -1,0 +1,59 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AuthCheckRecoveryCodeInput {
+  code: String!
+  email: String!
+}
+
+input AuthSignInInput {
+  email: String!
+  password: String!
+}
+
+input AuthSignUpInput {
+  birthdate: Date!
+  email: String!
+  fullName: String!
+  nickname: String!
+  password: String!
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
+type Mutation {
+  generateRecoveryCode(email: String!): Boolean!
+  signIn(data: AuthSignInInput!): Boolean!
+  signInFromRefreshToken: Boolean!
+  signUp(data: AuthSignUpInput!): User!
+  userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
+}
+
+type Query {
+  checkRecoveryCode(data: AuthCheckRecoveryCodeInput!): Boolean!
+  userGetById(id: String!): User!
+  userSearch(q: String!): [User!]!
+}
+
+type User {
+  age: Float!
+  bio: String
+  email: String!
+  followers: [User!]!
+  following: [User!]!
+  fullName: String!
+  id: String!
+  nickname: String!
+  password: String
+  recoveryCode: String
+  refreshToken: String
+}
+
+input UserChangeFollowingStateInput {
+  followingId: String!
+  state: Boolean!
+}

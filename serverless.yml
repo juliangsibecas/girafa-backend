@@ -1,0 +1,29 @@
+service: s3
+provider:
+  name: aws
+  runtime: nodejs12.x
+plugins:
+  - serverless-s3-local
+  - serverless-offline
+custom:
+  s3:
+    host: localhost
+    directory: /tmp
+resources:
+  Resources:
+    NewResource:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: profile-pictures
+# functions:
+#   webhook:
+#     handler: handler.webhook
+#     events:
+#       - http:
+#         method: GET
+#         path: /
+#   s3hook:
+#     handler: handler.s3hook
+#     events:
+#       - s3: local-bucket
+#         event: s3:*
