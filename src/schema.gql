@@ -37,14 +37,24 @@ type Mutation {
 
 type Party {
   address: String!
+  allowInivites: Boolean!
   attenders: [User!]!
+  availability: PartyAvailability!
   date: Date!
   description: String!
   id: String!
+  invited: [User!]!
   minAge: String
   name: String!
   openBar: Boolean!
   organizer: User!
+}
+
+enum PartyAvailability {
+  FOLLOWERS
+  FOLLOWING
+  PRIVATE
+  PUBLIC
 }
 
 input PartyCreateInput {
@@ -72,6 +82,7 @@ type User {
   following: [User!]!
   fullName: String!
   id: String!
+  invites: [Party!]!
   nickname: String!
   organizedParties: [Party!]!
   password: String

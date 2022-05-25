@@ -61,6 +61,11 @@ export class User {
   @Field(() => [Party])
   attendedParties: Array<Party>;
 
+  @ManyToMany(() => Party, (party) => party.invited)
+  @JoinTable()
+  @Field(() => [Party])
+  invites: Array<Party>;
+
   //
   // meta
   //
@@ -71,7 +76,7 @@ export class User {
 
   @Column({ nullable: true, select: false })
   @Field({ nullable: true })
-  refreshToken: string;
+  refreshToken?: string;
 
   //
   // listeners

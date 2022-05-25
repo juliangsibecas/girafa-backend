@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { DateResolver } from 'graphql-scalars';
 import {
   AfterLoad,
@@ -10,6 +10,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../user';
+import { PartyAvailability } from './types';
+
+registerEnumType(PartyAvailability, {
+  name: 'PartyAvailability',
+});
 
 @Entity('parties')
 @ObjectType()
@@ -21,6 +26,14 @@ export class Party {
   @Column()
   @Field()
   name: string;
+
+  @Column('text')
+  @Field(() => PartyAvailability)
+  availability: PartyAvailability;
+
+  @Column()
+  @Field()
+  allowInivites: boolean;
 
   @Column()
   @Field()
@@ -50,6 +63,11 @@ export class Party {
   @ManyToOne(() => User, (user) => user.organizedParties)
   @Field(() => User)
   organizer: User;
+
+  @ManyToMany(() => User, (user) => user.invites)
+  @JoinTable()
+  @Field(() => [User])
+  invited: Array<User>;
 
   //
   // listeners
