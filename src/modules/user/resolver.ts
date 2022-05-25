@@ -1,3 +1,4 @@
+import { forwardRef, Inject } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../auth/graphql/decorators';
 import { PartyService } from '../party/service';
@@ -11,7 +12,10 @@ import { UserService } from './service';
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private users: UserService, private parties: PartyService) {}
+  constructor(
+    private users: UserService,
+    @Inject(forwardRef(() => PartyService)) private parties: PartyService,
+  ) {}
 
   @Query(() => [User])
   userSearch(@Args('q') q: string): Promise<Array<User>> {

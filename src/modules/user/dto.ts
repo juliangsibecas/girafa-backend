@@ -1,7 +1,7 @@
 import { Party } from '../party';
 import { User } from './schema';
 
-export class UserCreateDto {
+export interface UserCreateDto {
   email: string;
   nickname: string;
   password: string;
@@ -9,38 +9,38 @@ export class UserCreateDto {
   birthdate: Date;
 }
 
-export class UserGetByIdDto {
+export interface UserGetByIdDto {
   id: string;
   select?: Array<keyof User>;
   relations?: Array<keyof User>;
 }
 
-export class UserGetByEmailDto {
+export interface UserGetByEmailDto {
   email: string;
   select?: Array<keyof User>;
 }
 
-export class UserCheckAvailabilityDto {
+export interface UserCheckAvailabilityDto {
   email: string;
   nickname: string;
 }
 
-export class UserChangeFollowingStateDto {
+export interface UserChangeFollowingStateDto {
   user: User;
   following: User;
 }
 
-export class UserChangeAttendingStateDto {
+export interface UserChangeAttendingStateDto {
   user: User;
   party: Party;
 }
 
-export class UserSetRecoveryCodeDto {
+export interface UserSetRecoveryCodeDto {
   id: string;
   code: string;
 }
 
-export class UserSetRefreshTokenDto {
+export interface UserSetRefreshTokenDto {
   id: string;
   token: string;
 }
