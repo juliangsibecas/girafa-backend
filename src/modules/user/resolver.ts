@@ -1,6 +1,8 @@
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../auth/graphql/decorators';
+import { NotificationService } from '../notification/service';
+import { NotificationType } from '../notification/type';
 import { PartyService } from '../party/service';
 import { PartyAvailability } from '../party/types';
 
@@ -16,6 +18,8 @@ export class UserResolver {
   constructor(
     private users: UserService,
     @Inject(forwardRef(() => PartyService)) private parties: PartyService,
+    @Inject(forwardRef(() => NotificationService))
+    private notifications: NotificationService,
   ) {}
 
   @Query(() => [User])
@@ -33,21 +37,30 @@ export class UserResolver {
     @CurrentUser() userId: string,
     @Args('data') { followingId, state }: UserChangeFollowingStateInput,
   ): Promise<boolean> {
-    if (userId === followingId) throw new Error();
+    if (userId === followingId) throw new Error('Same user');
 
     const user = await this.users.getById({
       id: userId,
+      select: ['fullName'],
       relations: ['following', 'followers'],
     });
 
     const following = await this.users.getById({
       id: followingId,
+      select: ['fullName'],
     });
 
-    if (!user || !following) throw new Error();
+    if (!user || !following) throw new Error('User not found');
 
-    if (state) this.users.addFollowing({ user, following });
-    else this.users.removeFollowing({ user, following });
+    if (state) {
+      await this.users.addFollowing({ user, following });
+
+      await this.notifications.create({
+        type: NotificationType.FOLLOW,
+        user: following,
+        from: user,
+      });
+    } else await this.users.removeFollowing({ user, following });
 
     return true;
   }

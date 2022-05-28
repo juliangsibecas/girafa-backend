@@ -35,6 +35,19 @@ type Mutation {
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
 }
 
+type Notification {
+  from: User!
+  id: String!
+  party: Party
+  type: NotificationType!
+  user: User!
+}
+
+enum NotificationType {
+  FOLLOW
+  INVITE
+}
+
 type Party {
   address: String!
   allowInivites: Boolean!
@@ -73,6 +86,10 @@ type Query {
   userSearch(q: String!): [User!]!
 }
 
+type Subscription {
+  notifications(userId: String!): Notification!
+}
+
 type User {
   age: Float!
   attendedParties: [Party!]!
@@ -84,6 +101,7 @@ type User {
   id: String!
   invites: [Party!]!
   nickname: String!
+  notifications: [Notification!]!
   organizedParties: [Party!]!
   password: String
   recoveryCode: String

@@ -75,8 +75,7 @@ export class Party {
 
   @AfterLoad()
   async nullChecks() {
-    if (!this.attenders) {
-      this.attenders = [];
-    }
+    this.attenders ??= [];
+    this.invited ??= [];
   }
 }

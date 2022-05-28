@@ -15,6 +15,7 @@ import { AuthModule } from '../modules/auth';
 import { GqlAuthGuard } from '../modules/auth';
 import { PartyModule } from '../modules/party';
 import { ImageModule } from '../modules/image';
+import { NotificationModule } from 'src/modules/notification';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ImageModule } from '../modules/image';
     GraphQLModule.forRoot(gqlModuleOptions),
     AuthModule,
     ImageModule,
+    NotificationModule,
     UserModule,
     PartyModule,
   ],

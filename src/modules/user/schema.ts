@@ -8,6 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Notification } from '../notification/schema';
 import { Party } from '../party';
 
 @Entity()
@@ -66,6 +67,11 @@ export class User {
   @Field(() => [Party])
   invites: Array<Party>;
 
+  @OneToMany(() => Notification, (notification) => notification.user)
+  @JoinTable()
+  @Field(() => [Notification])
+  notifications: Array<Notification>;
+
   //
   // meta
   //
@@ -84,13 +90,12 @@ export class User {
 
   @AfterLoad()
   async nullChecks() {
-    if (!this.followers) {
-      this.followers = [];
-    }
-
-    if (!this.following) {
-      this.following = [];
-    }
+    this.followers ??= [];
+    this.following ??= [];
+    this.organizedParties ??= [];
+    this.attendedParties ??= [];
+    this.invites ??= [];
+    this.notifications ??= [];
   }
 
   @AfterLoad()
