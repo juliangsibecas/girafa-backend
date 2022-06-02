@@ -7,13 +7,18 @@ input AuthCheckRecoveryCodeInput {
   email: String!
 }
 
+type AuthSignIn {
+  accessToken: String!
+  refreshToken: String!
+  userId: String!
+}
+
 input AuthSignInInput {
   email: String!
   password: String!
 }
 
 input AuthSignUpInput {
-  birthdate: Date!
   email: String!
   fullName: String!
   nickname: String!
@@ -28,9 +33,9 @@ scalar Date
 type Mutation {
   generateRecoveryCode(email: String!): Boolean!
   partyCreate(data: PartyCreateInput!): Party!
-  signIn(data: AuthSignInInput!): Boolean!
-  signInFromRefreshToken: Boolean!
-  signUp(data: AuthSignUpInput!): User!
+  signIn(data: AuthSignInInput!): AuthSignIn!
+  signInFromRefreshToken: AuthSignIn!
+  signUp(data: AuthSignUpInput!): AuthSignIn!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
 }
@@ -91,7 +96,6 @@ type Subscription {
 }
 
 type User {
-  age: Float!
   attendedParties: [Party!]!
   bio: String
   email: String!

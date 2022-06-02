@@ -1,6 +1,5 @@
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { MailerService } from '@nestjs-modules/mailer';
-import { ValidationError } from 'apollo-server-express';
 
 import { UserService } from '../user/service';
 
@@ -11,9 +10,10 @@ import {
 } from './input';
 import { CustomContext } from '../../common/types';
 import { AuthService } from './service';
-import { User } from '../user';
 import { UnauthorizedException } from '@nestjs/common';
 import { AllowAny } from './graphql';
+import { AuthSignIn } from './response';
+import { ValidationError } from 'src/core/graphql';
 
 @Resolver()
 export class AuthResolver {
@@ -23,12 +23,12 @@ export class AuthResolver {
     private mailer: MailerService,
   ) {}
 
-  @Mutation(() => User)
+  @Mutation(() => AuthSignIn)
   @AllowAny()
   async signUp(
     @Context() ctx: CustomContext,
     @Args('data') input: AuthSignUpInput,
-  ): Promise<User> {
+  ): Promise<AuthSignIn> {
     await this.users.checkAvailability({
       email: input.email,
       nickname: input.nickname,
@@ -37,43 +37,55 @@ export class AuthResolver {
     const password = await this.auth.encryptPassword(input.password);
     const user = await this.users.create({ ...input, password });
 
-    this.auth.setAccessToken({ ctx, userId: user.id });
-    await this.auth.setRefreshToken({ ctx, userId: user.id });
+    const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
+    const refreshToken = await this.auth.setRefreshToken({
+      ctx,
+      userId: user.id,
+    });
 
-    return user;
+    return { userId: user.id, accessToken, refreshToken };
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => AuthSignIn)
   @AllowAny()
   async signIn(
     @Context() ctx: CustomContext,
     @Args('data') { email, password }: AuthSignInInput,
-  ): Promise<boolean> {
+  ): Promise<AuthSignIn> {
+    const throwError = () => {
+      throw new ValidationError({
+        password: 'El usuario y/o contraseña son incorrectos.',
+      });
+    };
+
     const user = await this.users.getByEmail({
       email,
       select: ['id', 'password'],
     });
 
-    if (!user) throw new ValidationError('email');
+    if (!user) throwError();
 
     const isCorrectPassword = await this.auth.comparePasswords(
       password,
       user.password,
     );
 
-    if (!isCorrectPassword) throw new ValidationError('password');
+    if (!isCorrectPassword) throwError();
 
-    this.auth.setAccessToken({ ctx, userId: user.id });
-    await this.auth.setRefreshToken({ ctx, userId: user.id });
+    const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
+    const refreshToken = await this.auth.setRefreshToken({
+      ctx,
+      userId: user.id,
+    });
 
-    return true;
+    return { userId: user.id, accessToken, refreshToken };
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => AuthSignIn)
   @AllowAny()
   async signInFromRefreshToken(
     @Context() ctx: CustomContext,
-  ): Promise<boolean> {
+  ): Promise<AuthSignIn> {
     const token = this.auth.getRefreshToken(ctx);
 
     const payload = await this.auth.decodeToken(token);
@@ -85,10 +97,13 @@ export class AuthResolver {
 
     if (!user || user.refreshToken !== token) throw new UnauthorizedException();
 
-    this.auth.setAccessToken({ ctx, userId: user.id });
-    await this.auth.setRefreshToken({ ctx, userId: user.id });
+    const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
+    const refreshToken = await this.auth.setRefreshToken({
+      ctx,
+      userId: user.id,
+    });
 
-    return true;
+    return { userId: user.id, accessToken, refreshToken };
   }
 
   @Mutation(() => Boolean)
@@ -96,7 +111,8 @@ export class AuthResolver {
   async generateRecoveryCode(@Args('email') email: string): Promise<boolean> {
     const user = await this.users.getByEmail({ email });
 
-    if (!user) throw new ValidationError('email');
+    if (!user)
+      throw new ValidationError({ email: 'Correo electrónico no encontrado.' });
 
     const code = Math.floor(Math.random() * (9999 - 1000) + 1000).toString();
 

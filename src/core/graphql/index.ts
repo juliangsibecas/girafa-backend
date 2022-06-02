@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
-import { handleError } from '../../common/utils/error';
+import { handleError } from './utils';
 
 export const gqlModuleOptions: GraphQLModule['options'] = {
   driver: ApolloDriver,
@@ -16,3 +16,5 @@ export const gqlModuleOptions: GraphQLModule['options'] = {
     'subscriptions-transport-ws': true,
   },
 };
+
+export * from './errors';

@@ -2,11 +2,10 @@ import { Party } from '../party';
 import { User } from './schema';
 
 export interface UserCreateDto {
-  email: string;
-  nickname: string;
-  password: string;
   fullName: string;
-  birthdate: Date;
+  nickname: string;
+  email: string;
+  password: string;
 }
 
 export interface UserGetByIdDto {

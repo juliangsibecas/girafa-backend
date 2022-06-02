@@ -34,12 +34,6 @@ export class User {
   @Field({ nullable: true })
   password?: string;
 
-  @Column('date')
-  birthdate: Date;
-
-  @Field()
-  age: number;
-
   @Column({ nullable: true })
   @Field({ nullable: true })
   bio?: string;
@@ -96,12 +90,5 @@ export class User {
     this.attendedParties ??= [];
     this.invites ??= [];
     this.notifications ??= [];
-  }
-
-  @AfterLoad()
-  setAge() {
-    this.age = Math.floor(
-      (new Date().getTime() - new Date(this.birthdate).getTime()) / 3.15576e10,
-    );
   }
 }

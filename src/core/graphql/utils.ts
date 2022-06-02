@@ -1,8 +1,4 @@
-import {
-  AuthenticationError,
-  UserInputError,
-  ValidationError,
-} from 'apollo-server-express';
+import { AuthenticationError } from 'apollo-server-express';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 
 export enum ErrorCodes {
@@ -17,8 +13,12 @@ export const handleError = (err: GraphQLError): GraphQLFormattedError => {
   if (err instanceof AuthenticationError) {
     return { message: ErrorCodes.AUTH_ERROR };
   }
-  if (err instanceof ValidationError || err instanceof UserInputError) {
-    return { message: ErrorCodes.VALIDATION_ERROR };
+
+  if (err instanceof GraphQLError) {
+    return {
+      message: err.message,
+      extensions: err.extensions.errors as Record<string, string>,
+    };
   }
 
   return { message: ErrorCodes.UNKNOWN_ERROR };

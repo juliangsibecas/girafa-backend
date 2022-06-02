@@ -1,22 +1,18 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { DateResolver } from 'graphql-scalars';
 
 @InputType()
 export class AuthSignUpInput {
   @Field()
-  email: string;
+  fullName: string;
 
   @Field()
   nickname: string;
 
   @Field()
-  password: string;
+  email: string;
 
   @Field()
-  fullName: string;
-
-  @Field(() => DateResolver)
-  birthdate: Date;
+  password: string;
 }
 
 @InputType()

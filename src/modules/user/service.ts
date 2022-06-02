@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ValidationError } from 'apollo-server-express';
+import { insertObjectIf } from 'src/common/utils';
+import { ValidationError } from 'src/core/graphql';
 import { ILike, Repository } from 'typeorm';
 
 import { Maybe } from '../../common/types';
@@ -85,11 +86,21 @@ export class UserService {
     email,
     nickname,
   }: UserCheckAvailabilityDto): Promise<boolean> {
-    const user = await this.db.findOne({ where: [{ email }, { nickname }] });
+    const sameEmail = Boolean(await this.db.findOne({ where: { email } }));
+    const sameNickname = Boolean(
+      await this.db.findOne({ where: { nickname } }),
+    );
 
-    if (!user) return true;
+    if (!sameEmail && !sameNickname) return true;
 
-    throw new ValidationError(user.email === email ? 'email' : 'nickname');
+    throw new ValidationError({
+      ...insertObjectIf(sameEmail, {
+        email: 'El correo electrónico ya esta en uso.',
+      }),
+      ...insertObjectIf(sameNickname, {
+        nickname: 'El nombre de usuario ya esta en uso.',
+      }),
+    });
   }
 
   async setRecoveryCode({ id, code }: UserSetRecoveryCodeDto): Promise<void> {
