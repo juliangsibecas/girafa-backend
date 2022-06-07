@@ -1,6 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { Args, Resolver, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
+import { Id } from 'src/common/types';
 import { AllowAny } from '../auth/graphql';
 
 import { Notification } from './schema';
@@ -13,8 +14,8 @@ export class NotificationResolver {
   ) {}
 
   @Subscription(() => Notification, {
-    filter: (notification: Notification, { userId }: { userId: string }) => {
-      return notification.user.id === userId;
+    filter: (notification: Notification, { userId }: { userId: Id }) => {
+      return notification.user._id === userId;
     },
   })
   @AllowAny()

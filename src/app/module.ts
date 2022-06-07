@@ -2,11 +2,9 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
 
 import { configModuleOptions } from '../core/config';
-import { typeormModuleOptions } from '../core/typeorm';
 import { gqlModuleOptions } from '../core/graphql';
 import { mailerModuleOptions } from '../core/mailer';
 
@@ -16,12 +14,14 @@ import { GqlAuthGuard } from '../modules/auth';
 import { PartyModule } from '../modules/party';
 import { ImageModule } from '../modules/image';
 import { NotificationModule } from 'src/modules/notification';
+import { MongooseModule } from '@nestjs/mongoose';
+import { mongooseModuleOptions } from 'src/core/mongoose';
 
 @Module({
   imports: [
     ConfigModule.forRoot(configModuleOptions),
     MailerModule.forRootAsync(mailerModuleOptions),
-    TypeOrmModule.forRootAsync(typeormModuleOptions),
+    MongooseModule.forRootAsync(mongooseModuleOptions),
     GraphQLModule.forRoot(gqlModuleOptions),
     AuthModule,
     ImageModule,

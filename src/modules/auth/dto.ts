@@ -1,6 +1,6 @@
-import { CustomContext } from 'src/common/types';
+import { CustomContext, Id } from 'src/common/types';
 
 export type AuthGetTokenDto = {
-  userId: string;
+  userId: Id;
   ctx?: CustomContext;
 };

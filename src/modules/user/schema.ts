@@ -1,68 +1,96 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import {
-  AfterLoad,
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
+import { BaseSchema } from 'src/common/types';
 import { Notification } from '../notification/schema';
-import { Party } from '../party';
+import { Party } from '../party/schema';
 
-@Entity()
+@Schema({ timestamps: true })
 @ObjectType()
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  @Field()
-  id: string;
-
-  @Column({ unique: true })
+export class User extends BaseSchema {
+  @Prop()
   @Field()
   email: string;
 
-  @Column({ unique: true })
+  @Prop()
   @Field()
   nickname: string;
 
-  @Column()
+  @Prop()
   @Field()
   fullName: string;
 
-  @Column({ select: false })
+  @Prop({ select: false })
   @Field({ nullable: true })
   password?: string;
 
-  @Column({ nullable: true })
+  @Prop()
   @Field({ nullable: true })
   bio?: string;
 
-  @ManyToMany(() => User, (user) => user.following)
-  @JoinTable()
+  @Prop({
+    type: [
+      {
+        ref: User.name,
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [User])
   followers: Array<User>;
 
-  @ManyToMany(() => User, (user) => user.followers)
+  @Prop({
+    type: [
+      {
+        ref: User.name,
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [User])
   following: Array<User>;
 
-  @OneToMany(() => Party, (party) => party.organizer)
+  @Prop({
+    type: [
+      {
+        ref: 'Party',
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [Party])
   organizedParties: Array<Party>;
 
-  @ManyToMany(() => Party, (party) => party.attenders)
-  @JoinTable()
+  @Prop({
+    type: [
+      {
+        ref: 'Party',
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [Party])
   attendedParties: Array<Party>;
 
-  @ManyToMany(() => Party, (party) => party.invited)
-  @JoinTable()
+  @Prop({
+    type: [
+      {
+        ref: 'Party',
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [Party])
   invites: Array<Party>;
 
-  @OneToMany(() => Notification, (notification) => notification.user)
-  @JoinTable()
+  @Prop({
+    type: [
+      {
+        ref: 'Notification',
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [Notification])
   notifications: Array<Notification>;
 
@@ -70,25 +98,14 @@ export class User {
   // meta
   //
 
-  @Column({ nullable: true, select: false })
+  @Prop({ select: false })
   @Field({ nullable: true })
   recoveryCode?: string;
 
-  @Column({ nullable: true, select: false })
+  @Prop({ select: false })
   @Field({ nullable: true })
   refreshToken?: string;
-
-  //
-  // listeners
-  //
-
-  @AfterLoad()
-  async nullChecks() {
-    this.followers ??= [];
-    this.following ??= [];
-    this.organizedParties ??= [];
-    this.attendedParties ??= [];
-    this.invites ??= [];
-    this.notifications ??= [];
-  }
 }
+
+export type UserDocument = User & mongoose.Document;
+export const UserSchema = SchemaFactory.createForClass(User);

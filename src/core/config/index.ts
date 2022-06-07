@@ -6,9 +6,8 @@ import { appConfig } from '../../app';
 import { authConfig } from '../../modules/auth';
 import { jwtConfig } from '../jwt';
 import { mailerConfig } from '../mailer';
+import { dbConfig } from '../mongoose';
 import { s3Config } from '../s3';
-
-import { dbConfig } from '../typeorm';
 
 import { EnvironmentVariables } from './types';
 

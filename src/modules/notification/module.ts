@@ -1,19 +1,21 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import { PubSub } from 'graphql-subscriptions';
 
 import { UserModule } from '../user/module';
 import { NotificationResolver } from './resolver';
 
-import { Notification } from './schema';
+import { Notification, NotificationSchema } from './schema';
 import { NotificationService } from './service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notification]),
+    MongooseModule.forFeature([
+      { name: Notification.name, schema: NotificationSchema },
+    ]),
     forwardRef(() => UserModule),
   ],
-  exports: [TypeOrmModule, NotificationService],
+  exports: [NotificationService],
   providers: [
     {
       provide: 'PUB_SUB',

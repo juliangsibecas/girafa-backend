@@ -1,5 +1,6 @@
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Id } from 'src/common/types';
 import { CurrentUser } from '../auth/graphql/decorators';
 import { NotificationService } from '../notification/service';
 import { NotificationType } from '../notification/type';
@@ -9,6 +10,7 @@ import { PartyAvailability } from '../party/types';
 import {
   UserChangeAttendingStateInput,
   UserChangeFollowingStateInput,
+  UserSendPartyInviteInput,
 } from './input';
 import { User } from './schema';
 import { UserService } from './service';
@@ -23,18 +25,21 @@ export class UserResolver {
   ) {}
 
   @Query(() => [User])
-  userSearch(@Args('q') q: string): Promise<Array<User>> {
-    return this.users.search(q);
+  async userSearch(@Args('q') q: string): Promise<Array<User>> {
+    const search = await this.users.search(q);
+    console.log(search);
+
+    return search;
   }
 
   @Query(() => User)
-  userGetById(@Args('id') id: string): Promise<User> {
+  userGetById(@Args('id', { type: () => String }) id: Id): Promise<User> {
     return this.users.getById({ id, relations: ['following'] });
   }
 
   @Mutation(() => Boolean)
   async userChangeFollowingState(
-    @CurrentUser() userId: string,
+    @CurrentUser() userId: Id,
     @Args('data') { followingId, state }: UserChangeFollowingStateInput,
   ): Promise<boolean> {
     if (userId === followingId) throw new Error('Same user');
@@ -53,26 +58,27 @@ export class UserResolver {
     if (!user || !following) throw new Error('User not found');
 
     if (state) {
-      await this.users.addFollowing({ user, following });
+      await this.users.follow({ user, following });
 
       await this.notifications.create({
         type: NotificationType.FOLLOW,
         user: following,
         from: user,
       });
-    } else await this.users.removeFollowing({ user, following });
+    } else {
+      await this.users.unfollow({ user, following });
+    }
 
     return true;
   }
 
   @Mutation(() => Boolean)
   async userChangeAttendingState(
-    @CurrentUser() userId: string,
+    @CurrentUser() userId: Id,
     @Args('data') { partyId, state }: UserChangeAttendingStateInput,
   ): Promise<boolean> {
     const user = await this.users.getById({
       id: userId,
-      relations: ['followers', 'following', 'attendedParties'],
     });
 
     const party = await this.parties.getById({
@@ -82,26 +88,59 @@ export class UserResolver {
 
     if (!user || !party) throw new Error();
 
-    if (party.availability === PartyAvailability.PRIVATE) {
-      if (!user.invites.find(({ id }) => id === party.id)) {
-        throw new UnauthorizedException();
-      }
+    if (!(await this.parties.userCanAttend({ user, party }))) {
+      throw new UnauthorizedException();
     }
 
-    if (party.availability === PartyAvailability.FOLLOWERS) {
-      if (!user.following.find(({ id }) => id === party.organizer.id)) {
-        throw new UnauthorizedException();
-      }
+    if (state) {
+      await this.users.attend({ user, party });
+      await this.parties.addAttender({ user, party });
+    } else {
+      await this.users.unattend({ user, party });
+      await this.parties.removeAttender({ user, party });
     }
 
-    if (party.availability === PartyAvailability.FOLLOWING) {
-      if (!user.followers.find(({ id }) => id === party.organizer.id)) {
-        throw new UnauthorizedException();
-      }
-    }
+    return true;
+  }
 
-    if (state) this.users.addAttending({ user, party });
-    else this.users.removeAttending({ user, party });
+  @Mutation(() => Boolean)
+  async userSendPartyInvite(
+    @CurrentUser() userId: Id,
+    @Args('data') { partyId, invitedId }: UserSendPartyInviteInput,
+  ): Promise<Boolean> {
+    // avoid being re-invited by the same user
+
+    if (userId === invitedId) throw new Error('Same user');
+
+    const party = await this.parties.getById({
+      id: partyId,
+      select: ['allowInivites'],
+      relations: ['organizer', 'invited'],
+    });
+
+    if (!party.allowInivites && !party.organizer._id.equals(userId))
+      throw new UnauthorizedException();
+
+    const user = await this.users.getById({
+      id: userId,
+      select: ['fullName'],
+    });
+
+    const invited = await this.users.getById({
+      id: invitedId,
+      select: ['fullName'],
+    });
+
+    if (!user || !invited) throw new Error('User not found');
+
+    await this.parties.addInvited({ party, user: invited });
+
+    await this.notifications.create({
+      type: NotificationType.INVITE,
+      user: invited,
+      from: user,
+      party,
+    });
 
     return true;
   }

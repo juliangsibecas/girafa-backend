@@ -1,9 +1,10 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { Id } from 'src/common/types';
 
 @InputType()
 export class UserChangeFollowingStateInput {
-  @Field()
-  followingId: string;
+  @Field(() => String)
+  followingId: Id;
 
   @Field()
   state: boolean;
@@ -11,9 +12,18 @@ export class UserChangeFollowingStateInput {
 
 @InputType()
 export class UserChangeAttendingStateInput {
-  @Field()
-  partyId: string;
+  @Field(() => String)
+  partyId: Id;
 
   @Field()
   state: boolean;
+}
+
+@InputType()
+export class UserSendPartyInviteInput {
+  @Field(() => String)
+  partyId: Id;
+
+  @Field(() => String)
+  invitedId: Id;
 }

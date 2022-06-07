@@ -37,13 +37,13 @@ export class AuthResolver {
     const password = await this.auth.encryptPassword(input.password);
     const user = await this.users.create({ ...input, password });
 
-    const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
+    const accessToken = this.auth.setAccessToken({ ctx, userId: user._id });
     const refreshToken = await this.auth.setRefreshToken({
       ctx,
-      userId: user.id,
+      userId: user._id,
     });
 
-    return { userId: user.id, accessToken, refreshToken };
+    return { userId: user._id, accessToken, refreshToken };
   }
 
   @Mutation(() => AuthSignIn)
@@ -60,7 +60,7 @@ export class AuthResolver {
 
     const user = await this.users.getByEmail({
       email,
-      select: ['id', 'password'],
+      select: ['_id', 'password'],
     });
 
     if (!user) throwError();
@@ -97,13 +97,13 @@ export class AuthResolver {
 
     if (!user || user.refreshToken !== token) throw new UnauthorizedException();
 
-    const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
+    const accessToken = this.auth.setAccessToken({ ctx, userId: user._id });
     const refreshToken = await this.auth.setRefreshToken({
       ctx,
-      userId: user.id,
+      userId: user._id,
     });
 
-    return { userId: user.id, accessToken, refreshToken };
+    return { userId: user._id, accessToken, refreshToken };
   }
 
   @Mutation(() => Boolean)

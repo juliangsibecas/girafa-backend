@@ -1,18 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
 
 import { NotificationCreateDto, NotificationDebounceDto } from './dto';
-import { Notification } from './schema';
+import { Notification, NotificationDocument } from './schema';
 import { NotificationType } from './type';
 import { insertObjectIf } from 'src/common/utils';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class NotificationService {
   constructor(
-    @InjectRepository(Notification)
-    private notifications: Repository<Notification>,
+    @InjectModel(Notification.name)
+    private notifications: Model<NotificationDocument>,
     @Inject('PUB_SUB')
     private pubSub: PubSub,
   ) {}
@@ -22,11 +22,10 @@ export class NotificationService {
 
     if (!alreadyNotified) {
       const { type, user, from, party } = dto;
-      // weird issue when saving entiry user/from
-      const notification = await this.notifications.save({
+      const notification = await this.notifications.create({
         type: type,
-        user: <any>user.id,
-        from: <any>from.id,
+        user: user._id,
+        from: from._id,
         ...insertObjectIf(type === NotificationType.INVITE, {
           party: party,
         }),
@@ -45,13 +44,11 @@ export class NotificationService {
     debounceDate.setHours(debounceDate.getHours() - 6);
 
     const notification = await this.notifications.findOne({
-      where: {
-        type,
-        user: { id: user.id },
-        from: { id: from.id },
-        createdAt: MoreThan(debounceDate),
-        ...insertObjectIf(type === NotificationType.INVITE, { party }),
-      },
+      type,
+      user: user._id,
+      from: from._id,
+      createdAt: { $gt: debounceDate },
+      ...insertObjectIf(type === NotificationType.INVITE, { party }),
     });
 
     return Boolean(notification);

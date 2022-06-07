@@ -38,13 +38,16 @@ type Mutation {
   signUp(data: AuthSignUpInput!): AuthSignIn!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
+  userSendPartyInvite(data: UserSendPartyInviteInput!): Boolean!
 }
 
 type Notification {
+  _id: String!
+  createdAt: Date!
   from: User!
-  id: String!
   party: Party
   type: NotificationType!
+  updatedAt: Date!
   user: User!
 }
 
@@ -54,18 +57,20 @@ enum NotificationType {
 }
 
 type Party {
+  _id: String!
   address: String!
   allowInivites: Boolean!
   attenders: [User!]!
   availability: PartyAvailability!
+  createdAt: Date!
   date: Date!
   description: String!
-  id: String!
   invited: [User!]!
   minAge: String
   name: String!
   openBar: Boolean!
   organizer: User!
+  updatedAt: Date!
 }
 
 enum PartyAvailability {
@@ -77,6 +82,7 @@ enum PartyAvailability {
 
 input PartyCreateInput {
   address: String!
+  availability: PartyAvailability!
   date: Date!
   description: String!
   name: String!
@@ -86,7 +92,7 @@ input PartyCreateInput {
 type Query {
   checkRecoveryCode(data: AuthCheckRecoveryCodeInput!): Boolean!
   partyGetById(id: String!): Party!
-  partySearch(q: String!): [Party!]!
+  partySearch(q: String): [Party!]!
   userGetById(id: String!): User!
   userSearch(q: String!): [User!]!
 }
@@ -96,13 +102,14 @@ type Subscription {
 }
 
 type User {
+  _id: String!
   attendedParties: [Party!]!
   bio: String
+  createdAt: Date!
   email: String!
   followers: [User!]!
   following: [User!]!
   fullName: String!
-  id: String!
   invites: [Party!]!
   nickname: String!
   notifications: [Notification!]!
@@ -110,6 +117,7 @@ type User {
   password: String
   recoveryCode: String
   refreshToken: String
+  updatedAt: Date!
 }
 
 input UserChangeAttendingStateInput {
@@ -120,4 +128,9 @@ input UserChangeAttendingStateInput {
 input UserChangeFollowingStateInput {
   followingId: String!
   state: Boolean!
+}
+
+input UserSendPartyInviteInput {
+  invitedId: String!
+  partyId: String!
 }

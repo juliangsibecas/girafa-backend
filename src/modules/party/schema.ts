@@ -1,81 +1,79 @@
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { DateResolver } from 'graphql-scalars';
-import {
-  AfterLoad,
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { User } from '../user';
+import * as mongoose from 'mongoose';
+import { BaseSchema } from 'src/common/types';
+import { User } from '../user/schema';
 import { PartyAvailability } from './types';
 
 registerEnumType(PartyAvailability, {
   name: 'PartyAvailability',
 });
 
-@Entity('parties')
+@Schema()
 @ObjectType()
-export class Party {
-  @PrimaryGeneratedColumn('uuid')
-  @Field()
-  id: string;
-
-  @Column()
+export class Party extends BaseSchema {
+  @Prop()
   @Field()
   name: string;
 
-  @Column('text')
+  @Prop()
   @Field(() => PartyAvailability)
   availability: PartyAvailability;
 
-  @Column()
+  @Prop()
   @Field()
   allowInivites: boolean;
 
-  @Column()
+  @Prop()
   @Field()
   address: string;
 
-  @Column('date')
+  @Prop()
   @Field(() => DateResolver)
   date: Date;
 
-  @Column({ nullable: true })
+  @Prop()
   @Field({ nullable: true })
   minAge?: string;
 
-  @Column()
+  @Prop()
   @Field()
   openBar: boolean;
 
-  @Column()
+  @Prop()
   @Field()
   description: string;
 
-  @ManyToMany(() => User, (user) => user.attendedParties)
-  @JoinTable()
+  @Prop({
+    type: [
+      {
+        ref: User.name,
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [User])
   attenders: Array<User>;
 
-  @ManyToOne(() => User, (user) => user.organizedParties)
+  @Prop({
+    ref: User.name,
+    type: mongoose.Schema.Types.ObjectId,
+  })
   @Field(() => User)
   organizer: User;
 
-  @ManyToMany(() => User, (user) => user.invites)
-  @JoinTable()
+  @Prop({
+    type: [
+      {
+        ref: User.name,
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
   @Field(() => [User])
   invited: Array<User>;
-
-  //
-  // listeners
-  //
-
-  @AfterLoad()
-  async nullChecks() {
-    this.attenders ??= [];
-    this.invited ??= [];
-  }
 }
+
+export type PartyDocument = Party & mongoose.Document;
+export const PartySchema = SchemaFactory.createForClass(Party);

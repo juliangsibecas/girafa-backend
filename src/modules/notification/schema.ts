@@ -1,45 +1,43 @@
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
+import { BaseSchema } from 'src/common/types';
 import { Party } from '../party';
-import { User } from '../user';
+import { User } from '../user/schema';
 import { NotificationType } from './type';
 
 registerEnumType(NotificationType, {
   name: 'NotificationType',
 });
 
-@Entity('notifications')
+@Schema()
 @ObjectType()
-export class Notification {
-  @PrimaryGeneratedColumn('uuid')
-  @Field()
-  id: string;
-
-  @Column('text')
+export class Notification extends BaseSchema {
+  @Prop()
   @Field(() => NotificationType)
   type: NotificationType;
 
-  @ManyToOne(() => User, (user) => user.notifications)
+  @Prop({
+    ref: User.name,
+    type: [mongoose.Schema.Types.ObjectId],
+  })
   @Field(() => User)
   user: User;
 
-  @ManyToOne(() => User)
+  @Prop({
+    ref: User.name,
+    type: [mongoose.Schema.Types.ObjectId],
+  })
   @Field(() => User)
   from: User;
 
-  @ManyToOne(() => Party, { nullable: true })
+  @Prop({
+    ref: Party.name,
+    type: [mongoose.Schema.Types.ObjectId],
+  })
   @Field(() => Party, { nullable: true })
   party?: Party;
-
-  @CreateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-  })
-  createdAt: Date;
 }
+
+export type NotificationDocument = Notification & mongoose.Document;
+export const NotificationSchema = SchemaFactory.createForClass(Notification);

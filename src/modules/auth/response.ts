@@ -1,9 +1,10 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Id } from 'src/common/types';
 
 @ObjectType()
 export class AuthSignIn {
-  @Field()
-  userId: string;
+  @Field(() => String)
+  userId: Id;
 
   @Field()
   accessToken: string;

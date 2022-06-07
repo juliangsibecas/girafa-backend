@@ -1,5 +1,7 @@
+import { Id } from 'src/common/types';
 import { User } from '../user';
-import { Party } from './schema';
+import { UserDocument } from '../user/schema';
+import { Party, PartyDocument } from './schema';
 
 export class PartyCreateDto {
   organizer: User;
@@ -10,8 +12,23 @@ export class PartyCreateDto {
   description: string;
 }
 
+export class PartySearchDto {
+  userId: Id;
+  q?: string;
+}
+
 export class PartyGetByIdDto {
-  id: string;
+  id: Id;
   select?: Array<keyof Party>;
   relations?: Array<keyof Party>;
+}
+
+export class PartyChangeAttendingStateDto {
+  party: PartyDocument;
+  user: UserDocument;
+}
+
+export class PartyAddinvitedDto {
+  party: PartyDocument;
+  user: UserDocument;
 }

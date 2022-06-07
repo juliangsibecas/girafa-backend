@@ -1,5 +1,6 @@
-import { Party } from '../party';
-import { User } from './schema';
+import { Id } from 'src/common/types';
+import { PartyDocument } from '../party';
+import { User, UserDocument } from './schema';
 
 export interface UserCreateDto {
   fullName: string;
@@ -9,7 +10,7 @@ export interface UserCreateDto {
 }
 
 export interface UserGetByIdDto {
-  id: string;
+  id: Id;
   select?: Array<keyof User>;
   relations?: Array<keyof User>;
 }
@@ -25,21 +26,21 @@ export interface UserCheckAvailabilityDto {
 }
 
 export interface UserChangeFollowingStateDto {
-  user: User;
-  following: User;
+  user: UserDocument;
+  following: UserDocument;
 }
 
 export interface UserChangeAttendingStateDto {
-  user: User;
-  party: Party;
+  user: UserDocument;
+  party: PartyDocument;
 }
 
 export interface UserSetRecoveryCodeDto {
-  id: string;
+  id: Id;
   code: string;
 }
 
 export interface UserSetRefreshTokenDto {
-  id: string;
+  id: Id;
   token: string;
 }
