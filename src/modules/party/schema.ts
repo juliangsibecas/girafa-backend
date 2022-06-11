@@ -4,6 +4,7 @@ import { DateResolver } from 'graphql-scalars';
 import * as mongoose from 'mongoose';
 import { BaseSchema } from 'src/common/types';
 import { User } from '../user/schema';
+import { Coordinates } from './coordinates';
 import { PartyAvailability } from './types';
 
 registerEnumType(PartyAvailability, {
@@ -44,6 +45,10 @@ export class Party extends BaseSchema {
   @Prop()
   @Field()
   description: string;
+
+  @Prop()
+  @Field()
+  coordinates: Coordinates;
 
   @Prop({
     type: [

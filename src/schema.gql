@@ -25,6 +25,16 @@ input AuthSignUpInput {
   password: String!
 }
 
+type Coordinates {
+  latitude: Float!
+  longitude: Float!
+}
+
+input CoordinatesCreateInput {
+  latitude: Float!
+  longitude: Float!
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -62,6 +72,7 @@ type Party {
   allowInivites: Boolean!
   attenders: [User!]!
   availability: PartyAvailability!
+  coordinates: Coordinates!
   createdAt: Date!
   date: Date!
   description: String!
@@ -83,6 +94,7 @@ enum PartyAvailability {
 input PartyCreateInput {
   address: String!
   availability: PartyAvailability!
+  coordinate: CoordinatesCreateInput!
   date: Date!
   description: String!
   name: String!

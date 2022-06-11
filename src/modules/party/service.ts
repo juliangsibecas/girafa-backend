@@ -54,10 +54,12 @@ export class PartyService {
         select: '_id',
       });
 
-    const privates = await this.model.find({
-      availability: PartyAvailability.PRIVATE,
-      invited: userId,
-    });
+    const privates = await this.model
+      .find({
+        availability: PartyAvailability.PRIVATE,
+        invited: userId,
+      })
+      .populate('organizer');
 
     return [
       ...privates,
