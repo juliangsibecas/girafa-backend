@@ -1,3 +1,4 @@
+import { PopulateOptions } from 'mongoose';
 import { Id } from 'src/common/types';
 import { PartyDocument } from '../party';
 import { User, UserDocument } from './schema';
@@ -12,7 +13,7 @@ export interface UserCreateDto {
 export interface UserGetByIdDto {
   id: Id;
   select?: Array<keyof User>;
-  relations?: Array<keyof User>;
+  relations?: Array<keyof User | PopulateOptions>;
 }
 
 export interface UserGetByEmailDto {

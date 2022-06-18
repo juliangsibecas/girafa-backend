@@ -1,3 +1,4 @@
+import { PopulateOptions } from 'mongoose';
 import { Id } from 'src/common/types';
 import { User } from '../user';
 import { UserDocument } from '../user/schema';
@@ -20,7 +21,7 @@ export class PartySearchDto {
 export class PartyGetByIdDto {
   id: Id;
   select?: Array<keyof Party>;
-  relations?: Array<keyof Party>;
+  relations?: Array<keyof Party | PopulateOptions>;
 }
 
 export class PartyChangeAttendingStateDto {

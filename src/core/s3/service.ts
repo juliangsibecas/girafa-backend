@@ -26,6 +26,17 @@ export class S3Service {
     });
   }
 
+  async uploadPartyPicture(
+    partyId: string,
+    file: Express.Multer.File,
+  ): Promise<boolean> {
+    const buffer = await sharp(file.buffer).jpeg().toBuffer();
+
+    return await this.upload('party-pictures', `${partyId}.jpeg`, {
+      ...file,
+      buffer,
+    });
+  }
   async upload(
     bucketName: string,
     fileName: string,

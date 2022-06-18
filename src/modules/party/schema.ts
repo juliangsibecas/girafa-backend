@@ -61,6 +61,10 @@ export class Party extends BaseSchema {
   @Field(() => [User])
   attenders: Array<User>;
 
+  @Prop({ default: 0 })
+  @Field()
+  attendersCount: number;
+
   @Prop({
     ref: User.name,
     type: mongoose.Schema.Types.ObjectId,

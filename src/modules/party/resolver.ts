@@ -1,9 +1,10 @@
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
 import { CurrentUser } from '../auth/graphql';
-import { UserService } from '../user';
-import { PartyCreateInput } from './input';
+import { User, UserService } from '../user';
+import { PartyCreateInput, PartySearchAttendersInput } from './input';
+import { PartyGetByIdResponse } from './response';
 
 import { Party } from './schema';
 import { PartyService } from './service';
@@ -29,16 +30,76 @@ export class PartyResolver {
     return this.parties.create({ ...input, organizer: user._id });
   }
 
+  @Query(() => PartyGetByIdResponse)
+  async partyGetById(
+    @CurrentUser() userId: Id,
+    @Args('id', { type: () => String }) partyId: Id,
+  ): Promise<PartyGetByIdResponse> {
+    const user = await this.users.getById({
+      id: userId,
+    });
+
+    const party = await this.parties.getById({
+      id: partyId,
+      relations: [
+        'organizer',
+        {
+          path: 'attenders',
+          options: {
+            limit: 10,
+          },
+        },
+      ],
+    });
+
+    if (!this.parties.userCanAttend({ party, user }))
+      throw new UnauthorizedException();
+
+    return {
+      ...party.toObject(),
+      isAttender: Boolean(
+        user.attendedParties.find(({ _id }) => _id.equals(partyId)),
+      ),
+    };
+  }
+
+  @Query(() => [User])
+  async partySearchAttenders(
+    @CurrentUser() userId: Id,
+    @Args('data') { id: partyId, q = '' }: PartySearchAttendersInput,
+  ): Promise<Array<User>> {
+    const user = await this.users.getById({
+      id: userId,
+    });
+
+    const like = { $regex: q, $options: 'i' };
+
+    const party = await this.parties.getById({
+      id: partyId,
+      select: ['_id'],
+      relations: [
+        {
+          path: 'attenders',
+          select: ['_id', 'nickname', 'fullName'],
+          match: {
+            $or: [{ nickname: like }, { fullName: like }],
+          },
+        },
+      ],
+    });
+
+    if (!this.parties.userCanAttend({ party, user }))
+      throw new UnauthorizedException();
+
+    console.log(party);
+    return party.attenders;
+  }
+
   @Query(() => [Party])
   partySearch(
     @CurrentUser() userId: Id,
-    @Args('q', { nullable: true }) q: string,
+    @Args('q', { nullable: true }) q: string = '',
   ): Promise<Array<Party>> {
     return this.parties.search({ userId, q });
-  }
-
-  @Query(() => Party)
-  partyGetById(@Args('id', { type: () => String }) id: Id): Promise<Party> {
-    return this.parties.getById({ id, relations: ['organizer', 'attenders'] });
   }
 }

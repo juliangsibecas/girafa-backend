@@ -88,12 +88,14 @@ export class PartyService {
   async addAttender({ user, party }: PartyChangeAttendingStateDto) {
     await party.updateOne({
       $addToSet: { attenders: user._id },
+      $inc: { attendersCount: 1 },
     });
   }
 
   async removeAttender({ user, party }: PartyChangeAttendingStateDto) {
     await party.updateOne({
       $pull: { attenders: user._id },
+      $inc: { attendersCount: -1 },
     });
   }
 

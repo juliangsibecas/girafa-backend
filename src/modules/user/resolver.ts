@@ -5,7 +5,6 @@ import { CurrentUser } from '../auth/graphql/decorators';
 import { NotificationService } from '../notification/service';
 import { NotificationType } from '../notification/type';
 import { PartyService } from '../party/service';
-import { PartyAvailability } from '../party/types';
 
 import {
   UserChangeAttendingStateInput,
@@ -27,7 +26,6 @@ export class UserResolver {
   @Query(() => [User])
   async userSearch(@Args('q') q: string): Promise<Array<User>> {
     const search = await this.users.search(q);
-    console.log(search);
 
     return search;
   }

@@ -71,6 +71,7 @@ type Party {
   address: String!
   allowInivites: Boolean!
   attenders: [User!]!
+  attendersCount: Float!
   availability: PartyAvailability!
   coordinates: Coordinates!
   createdAt: Date!
@@ -101,10 +102,29 @@ input PartyCreateInput {
   openBar: Boolean!
 }
 
+type PartyGetByIdResponse {
+  _id: String!
+  address: String!
+  attenders: [User!]!
+  attendersCount: Float!
+  date: Date!
+  description: String!
+  isAttender: Boolean!
+  name: String!
+  openBar: Boolean!
+  organizer: User!
+}
+
+input PartySearchAttendersInput {
+  id: String!
+  q: String
+}
+
 type Query {
   checkRecoveryCode(data: AuthCheckRecoveryCodeInput!): Boolean!
-  partyGetById(id: String!): Party!
+  partyGetById(id: String!): PartyGetByIdResponse!
   partySearch(q: String): [Party!]!
+  partySearchAttenders(data: PartySearchAttendersInput!): [User!]!
   userGetById(id: String!): User!
   userSearch(q: String!): [User!]!
 }
