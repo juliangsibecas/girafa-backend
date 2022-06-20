@@ -9,6 +9,7 @@ import { PartyService } from '../party/service';
 import {
   UserChangeAttendingStateInput,
   UserChangeFollowingStateInput,
+  UserSearchFollowersToInviteInput,
   UserSendPartyInviteInput,
 } from './input';
 import { User } from './schema';
@@ -24,15 +25,40 @@ export class UserResolver {
   ) {}
 
   @Query(() => [User])
-  async userSearch(@Args('q') q: string): Promise<Array<User>> {
-    const search = await this.users.search(q);
-
-    return search;
+  userSearch(
+    @Args('q', { nullable: true }) q: string = '',
+  ): Promise<Array<User>> {
+    return this.users.search(q);
   }
 
   @Query(() => User)
   userGetById(@Args('id', { type: () => String }) id: Id): Promise<User> {
     return this.users.getById({ id, relations: ['following'] });
+  }
+
+  @Query(() => [User])
+  async userSearchFollowersToInvite(
+    @CurrentUser() userId: Id,
+    @Args('data') { partyId, q }: UserSearchFollowersToInviteInput,
+  ): Promise<Array<User>> {
+    const like = { $regex: q, $options: 'i' };
+
+    const user = await this.users.getById({
+      id: userId,
+      relations: [
+        {
+          path: 'followers',
+          select: ['_id', 'nickname', 'fullName'],
+          match: {
+            nickname: like,
+            fullName: like,
+            attendedParties: { $ne: partyId },
+          },
+        },
+      ],
+    });
+
+    return user.followers;
   }
 
   @Mutation(() => Boolean)

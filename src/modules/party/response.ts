@@ -1,12 +1,15 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { DateResolver } from 'graphql-scalars';
 import { User } from '../user';
+import { PartyAvailability } from './types';
 
 @ObjectType()
 export class PartyGetByIdResponse {
   @Field()
   _id: string;
 
+  @Field(() => PartyAvailability)
+  availability: PartyAvailability;
   @Field()
   name: string;
 
@@ -30,6 +33,9 @@ export class PartyGetByIdResponse {
 
   @Field()
   attendersCount: number;
+
+  @Field()
+  allowInvites: boolean;
 
   @Field()
   isAttender: boolean;

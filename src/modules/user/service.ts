@@ -27,7 +27,7 @@ export class UserService {
   }
 
   async search(q: string): Promise<Array<User>> {
-    const like = { $regex: q };
+    const like = { $regex: q, $options: 'i' };
 
     return this.model
       .find({
@@ -42,7 +42,7 @@ export class UserService {
     select = [],
     relations = [],
   }: UserGetByIdDto): Promise<Maybe<UserDocument>> {
-    return this.model.findOne({ _id: id }, select);
+    return this.model.findOne({ _id: id }, select).populate(relations);
   }
 
   async getByEmail({

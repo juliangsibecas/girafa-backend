@@ -105,8 +105,10 @@ input PartyCreateInput {
 type PartyGetByIdResponse {
   _id: String!
   address: String!
+  allowInvites: Boolean!
   attenders: [User!]!
   attendersCount: Float!
+  availability: PartyAvailability!
   date: Date!
   description: String!
   isAttender: Boolean!
@@ -126,7 +128,8 @@ type Query {
   partySearch(q: String): [Party!]!
   partySearchAttenders(data: PartySearchAttendersInput!): [User!]!
   userGetById(id: String!): User!
-  userSearch(q: String!): [User!]!
+  userSearch(q: String): [User!]!
+  userSearchFollowersToInvite(data: UserSearchFollowersToInviteInput!): [User!]!
 }
 
 type Subscription {
@@ -160,6 +163,11 @@ input UserChangeAttendingStateInput {
 input UserChangeFollowingStateInput {
   followingId: String!
   state: Boolean!
+}
+
+input UserSearchFollowersToInviteInput {
+  partyId: String!
+  q: String
 }
 
 input UserSendPartyInviteInput {
