@@ -160,8 +160,6 @@ export class UserResolver {
           select: ['_id', 'nickname'],
         });
 
-        console.log(invited);
-
         return this.notifications.create({
           type: NotificationType.INVITE,
           user: invited,

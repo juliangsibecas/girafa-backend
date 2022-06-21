@@ -91,7 +91,6 @@ export class PartyResolver {
     if (!this.parties.userCanAttend({ party, user }))
       throw new UnauthorizedException();
 
-    console.log(party);
     return party.attenders;
   }
 
