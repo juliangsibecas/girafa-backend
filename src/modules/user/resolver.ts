@@ -132,39 +132,44 @@ export class UserResolver {
     @CurrentUser() userId: Id,
     @Args('data') { partyId, invitedId }: UserSendPartyInviteInput,
   ): Promise<Boolean> {
-    // avoid being re-invited by the same user
-
-    if (userId === invitedId) throw new Error('Same user');
+    // TODO: avoid being re-invited by the same user
 
     const party = await this.parties.getById({
       id: partyId,
-      select: ['allowInivites'],
+      select: ['allowInvites'],
       relations: ['organizer', 'invited'],
     });
 
-    if (!party.allowInivites && !party.organizer._id.equals(userId))
+    if (!party.allowInvites && !party.organizer._id.equals(userId))
       throw new UnauthorizedException();
 
     const user = await this.users.getById({
       id: userId,
-      select: ['fullName'],
+      select: ['_id', 'nickname'],
     });
 
-    const invited = await this.users.getById({
-      id: invitedId,
-      select: ['fullName'],
-    });
+    // avaid auto-inviting
+    const filteredInivitedId = invitedId.filter((id) => id !== userId);
 
-    if (!user || !invited) throw new Error('User not found');
+    await this.parties.addInvited({ party, invitedId: filteredInivitedId });
 
-    await this.parties.addInvited({ party, user: invited });
+    await Promise.all(
+      filteredInivitedId.map(async (id) => {
+        const invited = await this.users.getById({
+          id: id,
+          select: ['_id', 'nickname'],
+        });
 
-    await this.notifications.create({
-      type: NotificationType.INVITE,
-      user: invited,
-      from: user,
-      party,
-    });
+        console.log(invited);
+
+        return this.notifications.create({
+          type: NotificationType.INVITE,
+          user: invited,
+          from: user,
+          party,
+        });
+      }),
+    );
 
     return true;
   }

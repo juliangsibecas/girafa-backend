@@ -99,9 +99,9 @@ export class PartyService {
     });
   }
 
-  async addInvited({ user, party }: PartyAddinvitedDto) {
+  async addInvited({ invitedId, party }: PartyAddinvitedDto) {
     await party.updateOne({
-      $addToSet: { invited: user._id },
+      $addToSet: { invited: { $each: invitedId } },
     });
   }
 

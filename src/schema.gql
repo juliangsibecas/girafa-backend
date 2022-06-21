@@ -69,7 +69,7 @@ enum NotificationType {
 type Party {
   _id: String!
   address: String!
-  allowInivites: Boolean!
+  allowInvites: Boolean!
   attenders: [User!]!
   attendersCount: Float!
   availability: PartyAvailability!
@@ -171,6 +171,6 @@ input UserSearchFollowersToInviteInput {
 }
 
 input UserSendPartyInviteInput {
-  invitedId: String!
+  invitedId: [String!]!
   partyId: String!
 }

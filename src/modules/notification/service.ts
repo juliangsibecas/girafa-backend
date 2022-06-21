@@ -18,7 +18,9 @@ export class NotificationService {
   ) {}
 
   async create(dto: NotificationCreateDto): Promise<void> {
-    const alreadyNotified = this.debounce(dto);
+    const alreadyNotified = await this.debounce(dto);
+
+    console.log(alreadyNotified);
 
     if (!alreadyNotified) {
       const { type, user, from, party } = dto;

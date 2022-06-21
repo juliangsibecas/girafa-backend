@@ -31,5 +31,5 @@ export class PartyChangeAttendingStateDto {
 
 export class PartyAddinvitedDto {
   party: PartyDocument;
-  user: UserDocument;
+  invitedId: Array<Id>;
 }

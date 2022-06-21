@@ -10,7 +10,7 @@ registerEnumType(NotificationType, {
   name: 'NotificationType',
 });
 
-@Schema()
+@Schema({ timestamps: true })
 @ObjectType()
 export class Notification extends BaseSchema {
   @Prop()

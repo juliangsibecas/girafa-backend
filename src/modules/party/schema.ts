@@ -11,7 +11,7 @@ registerEnumType(PartyAvailability, {
   name: 'PartyAvailability',
 });
 
-@Schema()
+@Schema({ timestamps: true })
 @ObjectType()
 export class Party extends BaseSchema {
   @Prop()
@@ -24,7 +24,7 @@ export class Party extends BaseSchema {
 
   @Prop()
   @Field()
-  allowInivites: boolean;
+  allowInvites: boolean;
 
   @Prop()
   @Field()

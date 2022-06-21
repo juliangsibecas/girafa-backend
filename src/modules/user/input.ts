@@ -33,6 +33,6 @@ export class UserSendPartyInviteInput {
   @Field(() => String)
   partyId: Id;
 
-  @Field(() => String)
-  invitedId: Id;
+  @Field(() => [String])
+  invitedId: Array<Id>;
 }
