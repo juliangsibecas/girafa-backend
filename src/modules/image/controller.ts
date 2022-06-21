@@ -24,4 +24,14 @@ export class ImageController {
   ) {
     this.s3.uploadProfilePicture(req.user, file);
   }
+
+  @Post('party-picture')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  uploadPartyPicture(
+    @Request() req: Request & { user: string },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    this.s3.uploadProfilePicture(req.user, file);
+  }
 }
