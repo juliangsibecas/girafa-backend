@@ -4,6 +4,7 @@ import { Id } from 'src/common/types';
 import { CurrentUser } from '../auth/graphql/decorators';
 import { NotificationService } from '../notification/service';
 import { NotificationType } from '../notification/type';
+import { PartyDocument, PartyPreview } from '../party';
 import { PartyService } from '../party/service';
 
 import {
@@ -12,6 +13,7 @@ import {
   UserSearchFollowersToInviteInput,
   UserSendPartyInviteInput,
 } from './input';
+import { UserGetByIdResponse, UserPreview } from './response';
 import { User } from './schema';
 import { UserService } from './service';
 
@@ -31,9 +33,91 @@ export class UserResolver {
     return this.users.search(q);
   }
 
-  @Query(() => User)
-  userGetById(@Args('id', { type: () => String }) id: Id): Promise<User> {
-    return this.users.getById({ id, relations: ['following'] });
+  @Query(() => UserGetByIdResponse)
+  async userGetById(
+    @CurrentUser() myId: Id,
+    @Args('id', { type: () => String }) id: Id,
+  ): Promise<UserGetByIdResponse> {
+    const user = await this.users.getById({
+      id,
+      select: [
+        '_id',
+        'nickname',
+        'fullName',
+        'followers',
+        'followingCount',
+        'followersCount',
+        'attendedPartiesCount',
+      ],
+    });
+
+    return {
+      ...user.toObject(),
+      isFollowing: Boolean(
+        (user.followers as unknown as Array<Id>).find((id) => id.equals(myId)),
+      ),
+    };
+  }
+
+  @Query(() => [UserPreview])
+  async userGetFollowersById(
+    @Args('id', { type: () => String }) id: Id,
+  ): Promise<Array<UserPreview>> {
+    const user = await this.users.getById({
+      id,
+      select: ['_id'],
+      relations: [
+        {
+          path: 'followers',
+          select: ['_id', 'nickname', 'fullName'],
+        },
+      ],
+    });
+
+    return user.followers;
+  }
+
+  @Query(() => [UserPreview])
+  async userGetFollowingById(
+    @Args('id', { type: () => String }) id: Id,
+  ): Promise<Array<UserPreview>> {
+    const user = await this.users.getById({
+      id,
+      select: ['_id'],
+      relations: [
+        {
+          path: 'following',
+          select: ['_id', 'nickname', 'fullName'],
+        },
+      ],
+    });
+
+    return user.following;
+  }
+
+  @Query(() => [PartyPreview])
+  async userGetAttendedPartiesById(
+    @Args('id', { type: () => String }) id: Id,
+  ): Promise<Array<PartyPreview>> {
+    const user = await this.users.getById({
+      id,
+      select: ['_id'],
+      relations: [
+        {
+          path: 'attendedParties',
+          select: ['_id', 'name'],
+          populate: {
+            path: 'organizer',
+            select: ['nickname'],
+          },
+        },
+      ],
+    });
+
+    return user.attendedParties.map((party: PartyDocument) => ({
+      ...party.toObject(),
+      organizerNickname: party.organizer.nickname,
+    }));
   }
 
   @Query(() => [User])
@@ -70,13 +154,12 @@ export class UserResolver {
 
     const user = await this.users.getById({
       id: userId,
-      select: ['fullName'],
-      relations: ['following', 'followers'],
+      select: ['nickname'],
     });
 
     const following = await this.users.getById({
       id: followingId,
-      select: ['fullName'],
+      select: ['nickname'],
     });
 
     if (!user || !following) throw new Error('User not found');

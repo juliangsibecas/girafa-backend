@@ -39,6 +39,10 @@ export class User extends BaseSchema {
   @Field(() => [User])
   followers: Array<User>;
 
+  @Prop({ default: 0 })
+  @Field()
+  followersCount: number;
+
   @Prop({
     type: [
       {
@@ -49,6 +53,10 @@ export class User extends BaseSchema {
   })
   @Field(() => [User])
   following: Array<User>;
+
+  @Prop({ default: 0 })
+  @Field()
+  followingCount: number;
 
   @Prop({
     type: [
@@ -71,6 +79,10 @@ export class User extends BaseSchema {
   })
   @Field(() => [Party])
   attendedParties: Array<Party>;
+
+  @Prop({ default: 0 })
+  @Field()
+  attendedPartiesCount: number;
 
   @Prop({
     type: [

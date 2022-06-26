@@ -1,7 +1,20 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { DateResolver } from 'graphql-scalars';
+import { Id } from 'src/common/types';
 import { User } from '../user';
 import { PartyAvailability } from './types';
+
+@ObjectType()
+export class PartyPreview {
+  @Field(() => String)
+  _id: Id;
+
+  @Field()
+  name: string;
+
+  @Field()
+  organizerNickname: string;
+}
 
 @ObjectType()
 export class PartyGetByIdResponse {
@@ -10,6 +23,7 @@ export class PartyGetByIdResponse {
 
   @Field(() => PartyAvailability)
   availability: PartyAvailability;
+
   @Field()
   name: string;
 

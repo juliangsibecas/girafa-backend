@@ -117,6 +117,12 @@ type PartyGetByIdResponse {
   organizer: User!
 }
 
+type PartyPreview {
+  _id: String!
+  name: String!
+  organizerNickname: String!
+}
+
 input PartySearchAttendersInput {
   id: String!
   q: String
@@ -127,7 +133,10 @@ type Query {
   partyGetById(id: String!): PartyGetByIdResponse!
   partySearch(q: String): [Party!]!
   partySearchAttenders(data: PartySearchAttendersInput!): [User!]!
-  userGetById(id: String!): User!
+  userGetAttendedPartiesById(id: String!): [PartyPreview!]!
+  userGetById(id: String!): UserGetByIdResponse!
+  userGetFollowersById(id: String!): [UserPreview!]!
+  userGetFollowingById(id: String!): [UserPreview!]!
   userSearch(q: String): [User!]!
   userSearchFollowersToInvite(data: UserSearchFollowersToInviteInput!): [User!]!
 }
@@ -139,11 +148,14 @@ type Subscription {
 type User {
   _id: String!
   attendedParties: [Party!]!
+  attendedPartiesCount: Float!
   bio: String
   createdAt: Date!
   email: String!
   followers: [User!]!
+  followersCount: Float!
   following: [User!]!
+  followingCount: Float!
   fullName: String!
   invites: [Party!]!
   nickname: String!
@@ -163,6 +175,22 @@ input UserChangeAttendingStateInput {
 input UserChangeFollowingStateInput {
   followingId: String!
   state: Boolean!
+}
+
+type UserGetByIdResponse {
+  _id: String!
+  attendedPartiesCount: Float!
+  followersCount: Float!
+  followingCount: Float!
+  fullName: String!
+  isFollowing: Boolean!
+  nickname: String!
+}
+
+type UserPreview {
+  _id: String!
+  fullName: String!
+  nickname: String!
 }
 
 input UserSearchFollowersToInviteInput {
