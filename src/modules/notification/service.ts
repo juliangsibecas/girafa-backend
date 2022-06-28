@@ -1,3 +1,4 @@
+import * as OneSignal from '@onesignal/node-onesignal';
 import { Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 
@@ -10,12 +11,26 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class NotificationService {
+  onesignal: OneSignal.DefaultApi;
+
   constructor(
     @InjectModel(Notification.name)
     private notifications: Model<NotificationDocument>,
     @Inject('PUB_SUB')
     private pubSub: PubSub,
-  ) {}
+  ) {
+    const config = OneSignal.createConfiguration({
+      authMethods: {
+        app_key: {
+          tokenProvider: {
+            getToken: () => 'ZWQzYzYzZTEtNDFkNC00NDQzLThkNTMtZmQ2OTc2NzgyNDgx',
+          },
+        },
+      },
+    });
+
+    this.onesignal = new OneSignal.DefaultApi(config);
+  }
 
   async create(dto: NotificationCreateDto): Promise<void> {
     const alreadyNotified = await this.debounce(dto);
@@ -55,6 +70,13 @@ export class NotificationService {
   }
 
   async push(notification: Notification) {
-    this.pubSub.publish('aoeu', notification);
+    await this.onesignal.createNotification({
+      app_id: '1f129d21-afb8-4933-9863-e1ff0ce80f2f',
+      included_segments: [],
+      contents: { en: 'Hola' },
+      data: { hola: 'hola' },
+      include_external_user_ids: [notification.user._id.toString()],
+    });
+    // this.pubSub.publish('aoeu', notification);
   }
 }
