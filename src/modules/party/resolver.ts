@@ -58,7 +58,7 @@ export class PartyResolver {
     return {
       ...party.toObject(),
       isAttender: Boolean(
-        user.attendedParties.find(({ _id }) => _id.equals(partyId)),
+        user.attendedParties.find(({ _id }) => _id === partyId),
       ),
     };
   }

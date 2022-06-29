@@ -94,8 +94,9 @@ enum PartyAvailability {
 
 input PartyCreateInput {
   address: String!
+  allowInvites: Boolean!
   availability: PartyAvailability!
-  coordinate: CoordinatesCreateInput!
+  coordinates: CoordinatesCreateInput!
   date: Date!
   description: String!
   name: String!

@@ -1,13 +1,17 @@
+import { v4 } from 'uuid';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { BaseSchema } from 'src/common/types';
+import { BaseSchema, Id } from 'src/common/types';
 import { Notification } from '../notification/schema';
 import { Party } from '../party/schema';
 
 @Schema({ timestamps: true })
 @ObjectType()
 export class User extends BaseSchema {
+  @Prop({ type: String, default: v4 })
+  _id: Id;
+
   @Prop()
   @Field()
   email: string;
@@ -32,7 +36,7 @@ export class User extends BaseSchema {
     type: [
       {
         ref: User.name,
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })
@@ -47,7 +51,7 @@ export class User extends BaseSchema {
     type: [
       {
         ref: User.name,
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })
@@ -62,7 +66,7 @@ export class User extends BaseSchema {
     type: [
       {
         ref: 'Party',
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })
@@ -73,7 +77,7 @@ export class User extends BaseSchema {
     type: [
       {
         ref: 'Party',
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })
@@ -88,7 +92,7 @@ export class User extends BaseSchema {
     type: [
       {
         ref: 'Party',
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })
@@ -99,7 +103,7 @@ export class User extends BaseSchema {
     type: [
       {
         ref: 'Notification',
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })

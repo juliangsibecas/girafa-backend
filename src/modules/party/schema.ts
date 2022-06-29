@@ -2,7 +2,8 @@ import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { DateResolver } from 'graphql-scalars';
 import * as mongoose from 'mongoose';
-import { BaseSchema } from 'src/common/types';
+import { BaseSchema, Id } from 'src/common/types';
+import { v4 } from 'uuid';
 import { User } from '../user/schema';
 import { Coordinates } from './coordinates';
 import { PartyAvailability } from './types';
@@ -14,6 +15,9 @@ registerEnumType(PartyAvailability, {
 @Schema({ timestamps: true })
 @ObjectType()
 export class Party extends BaseSchema {
+  @Prop({ type: String, default: v4 })
+  _id: Id;
+
   @Prop()
   @Field()
   name: string;
@@ -54,7 +58,7 @@ export class Party extends BaseSchema {
     type: [
       {
         ref: User.name,
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })
@@ -67,7 +71,7 @@ export class Party extends BaseSchema {
 
   @Prop({
     ref: User.name,
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
   })
   @Field(() => User)
   organizer: User;
@@ -76,7 +80,7 @@ export class Party extends BaseSchema {
     type: [
       {
         ref: User.name,
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
       },
     ],
   })

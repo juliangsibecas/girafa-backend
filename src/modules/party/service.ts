@@ -109,19 +109,17 @@ export class PartyService {
     const isPublic = party.availability === PartyAvailability.PUBLIC;
     const isFollower =
       party.availability === PartyAvailability.FOLLOWERS &&
-      (party.organizer.followers as unknown as Array<Id>).find((id: Id) =>
-        id.equals(user._id),
+      (party.organizer.followers as unknown as Array<Id>).find(
+        (id: Id) => id === user._id,
       );
     const isFollowing =
       party.availability === PartyAvailability.FOLLOWING &&
-      (party.organizer.following as unknown as Array<Id>).find((id: Id) =>
-        id.equals(user._id),
+      (party.organizer.following as unknown as Array<Id>).find(
+        (id: Id) => id === user._id,
       );
     const isPrivate =
       party.availability === PartyAvailability.PRIVATE &&
-      (party.invited as unknown as Array<Id>).find((id: Id) =>
-        id.equals(user._id),
-      );
+      (party.invited as unknown as Array<Id>).find((id: Id) => id === user._id);
 
     return isPublic || isFollower || isFollowing || isPrivate;
   }

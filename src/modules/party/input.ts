@@ -16,17 +16,19 @@ export class PartyCreateInput {
   date: Date;
 
   @Field(() => CoordinatesCreateInput)
-  coordinate: Coordinates;
+  coordinates: Coordinates;
 
   @Field()
   address: string;
 
   @Field()
-  @Field()
   openBar: boolean;
 
   @Field()
   description: string;
+
+  @Field()
+  allowInvites: boolean;
 }
 
 @InputType()

@@ -54,7 +54,7 @@ export class UserResolver {
     return {
       ...user.toObject(),
       isFollowing: Boolean(
-        (user.followers as unknown as Array<Id>).find((id) => id.equals(myId)),
+        (user.followers as unknown as Array<Id>).find((id) => id === myId),
       ),
     };
   }
@@ -223,7 +223,7 @@ export class UserResolver {
       relations: ['organizer', 'invited'],
     });
 
-    if (!party.allowInvites && !party.organizer._id.equals(userId))
+    if (!party.allowInvites && party.organizer._id !== userId)
       throw new UnauthorizedException();
 
     const user = await this.users.getById({
