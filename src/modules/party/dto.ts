@@ -16,6 +16,10 @@ export class PartyCreateDto {
   allowInvites: boolean;
 }
 
+export class PartyFindDto {
+  userId: Id;
+}
+
 export class PartySearchDto {
   userId: Id;
   q?: string;

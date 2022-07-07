@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PubSub } from 'graphql-subscriptions';
 
 import { UserModule } from '../user/module';
 import { NotificationResolver } from './resolver';
@@ -16,13 +15,6 @@ import { NotificationService } from './service';
     forwardRef(() => UserModule),
   ],
   exports: [NotificationService],
-  providers: [
-    {
-      provide: 'PUB_SUB',
-      useValue: new PubSub(),
-    },
-    NotificationService,
-    NotificationResolver,
-  ],
+  providers: [NotificationService, NotificationResolver],
 })
 export class NotificationModule {}

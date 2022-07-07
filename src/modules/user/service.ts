@@ -29,12 +29,12 @@ export class UserService {
   async search(q: string): Promise<Array<User>> {
     const like = { $regex: q, $options: 'i' };
 
-    return this.model
-      .find({
+    return this.model.find(
+      {
         $or: [{ nickname: like }, { fullName: like }],
-      })
-      .populate('following')
-      .populate('followers');
+      },
+      ['_id', 'nickname', 'fullName'],
+    );
   }
 
   async getById({
@@ -53,41 +53,49 @@ export class UserService {
   }
 
   async follow({ user, following }: UserChangeFollowingStateDto) {
-    await user.updateOne({
-      $addToSet: { following: following._id },
-      $inc: { followingCount: 1 },
-    });
+    if (!user.following.includes(following._id)) {
+      await user.updateOne({
+        $addToSet: { following: following._id },
+        $inc: { followingCount: 1 },
+      });
 
-    await following.updateOne({
-      $addToSet: { followers: user._id },
-      $inc: { followersCount: 1 },
-    });
+      await following.updateOne({
+        $addToSet: { followers: user._id },
+        $inc: { followersCount: 1 },
+      });
+    }
   }
 
   async unfollow({ user, following }: UserChangeFollowingStateDto) {
-    await user.updateOne({
-      $pull: { following: following._id },
-      $inc: { followingCount: -1 },
-    });
+    if (user.following.includes(following._id)) {
+      await user.updateOne({
+        $pull: { following: following._id },
+        $inc: { followingCount: -1 },
+      });
 
-    await following.updateOne({
-      $pull: { followers: user._id },
-      $inc: { followersCount: -1 },
-    });
+      await following.updateOne({
+        $pull: { followers: user._id },
+        $inc: { followersCount: -1 },
+      });
+    }
   }
 
   async attend({ user, party }: UserChangeAttendingStateDto) {
-    await user.updateOne({
-      $addToSet: { attendedParties: party._id },
-      $inc: { attendedPartiesCount: 1 },
-    });
+    if (!user.attendedParties.includes(party._id)) {
+      await user.updateOne({
+        $addToSet: { attendedParties: party._id },
+        $inc: { attendedPartiesCount: 1 },
+      });
+    }
   }
 
   async unattend({ user, party }: UserChangeAttendingStateDto) {
-    await user.updateOne({
-      $pull: { attendedParties: party._id },
-      $inc: { attendedPartiesCount: -1 },
-    });
+    if (user.attendedParties.includes(party._id)) {
+      await user.updateOne({
+        $pull: { attendedParties: party._id },
+        $inc: { attendedPartiesCount: -1 },
+      });
+    }
   }
 
   async checkAvailability({

@@ -40,6 +40,11 @@ A date string, such as 2007-12-03, compliant with the `full-date` format outline
 """
 scalar Date
 
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
 type Mutation {
   generateRecoveryCode(email: String!): Boolean!
   partyCreate(data: PartyCreateInput!): Party!
@@ -53,11 +58,11 @@ type Mutation {
 
 type Notification {
   _id: String!
-  createdAt: Date!
+  createdAt: DateTime!
   from: User!
   party: Party
   type: NotificationType!
-  updatedAt: Date!
+  updatedAt: DateTime
   user: User!
 }
 
@@ -74,7 +79,7 @@ type Party {
   attendersCount: Float!
   availability: PartyAvailability!
   coordinates: Coordinates!
-  createdAt: Date!
+  createdAt: DateTime!
   date: Date!
   description: String!
   invited: [User!]!
@@ -82,7 +87,7 @@ type Party {
   name: String!
   openBar: Boolean!
   organizer: User!
-  updatedAt: Date!
+  updatedAt: DateTime
 }
 
 enum PartyAvailability {
@@ -118,10 +123,18 @@ type PartyGetByIdResponse {
   organizer: User!
 }
 
+type PartyMapPreview {
+  _id: String!
+  coordinates: Coordinates!
+  date: Date!
+  name: String!
+  organizerNickname: String
+}
+
 type PartyPreview {
   _id: String!
   name: String!
-  organizerNickname: String!
+  organizerNickname: String
 }
 
 input PartySearchAttendersInput {
@@ -131,19 +144,17 @@ input PartySearchAttendersInput {
 
 type Query {
   checkRecoveryCode(data: AuthCheckRecoveryCodeInput!): Boolean!
+  getNotifications: [UserNotification!]!
+  partyFind: [PartyMapPreview!]!
   partyGetById(id: String!): PartyGetByIdResponse!
-  partySearch(q: String): [Party!]!
-  partySearchAttenders(data: PartySearchAttendersInput!): [User!]!
+  partySearch(q: String): [PartyPreview!]!
+  partySearchAttenders(data: PartySearchAttendersInput!): [UserPreview!]!
   userGetAttendedPartiesById(id: String!): [PartyPreview!]!
   userGetById(id: String!): UserGetByIdResponse!
   userGetFollowersById(id: String!): [UserPreview!]!
   userGetFollowingById(id: String!): [UserPreview!]!
-  userSearch(q: String): [User!]!
+  userSearch(q: String): [UserPreview!]!
   userSearchFollowersToInvite(data: UserSearchFollowersToInviteInput!): [User!]!
-}
-
-type Subscription {
-  notifications(userId: String!): Notification!
 }
 
 type User {
@@ -151,7 +162,7 @@ type User {
   attendedParties: [Party!]!
   attendedPartiesCount: Float!
   bio: String
-  createdAt: Date!
+  createdAt: DateTime!
   email: String!
   followers: [User!]!
   followersCount: Float!
@@ -165,7 +176,7 @@ type User {
   password: String
   recoveryCode: String
   refreshToken: String
-  updatedAt: Date!
+  updatedAt: DateTime
 }
 
 input UserChangeAttendingStateInput {
@@ -188,9 +199,17 @@ type UserGetByIdResponse {
   nickname: String!
 }
 
+type UserNotification {
+  _id: String!
+  createdAt: DateTime!
+  from: UserPreview!
+  party: PartyPreview
+  type: NotificationType!
+}
+
 type UserPreview {
   _id: String!
-  fullName: String!
+  fullName: String
   nickname: String!
 }
 

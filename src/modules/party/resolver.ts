@@ -2,9 +2,13 @@ import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
 import { CurrentUser } from '../auth/graphql';
-import { User, UserService } from '../user';
+import { User, UserPreview, UserService } from '../user';
 import { PartyCreateInput, PartySearchAttendersInput } from './input';
-import { PartyGetByIdResponse } from './response';
+import {
+  PartyGetByIdResponse,
+  PartyMapPreview,
+  PartyPreview,
+} from './response';
 
 import { Party } from './schema';
 import { PartyService } from './service';
@@ -30,6 +34,18 @@ export class PartyResolver {
     return this.parties.create({ ...input, organizer: user._id });
   }
 
+  @Query(() => [PartyMapPreview])
+  partyFind(@CurrentUser() userId: Id): Promise<Array<PartyMapPreview>> {
+    return this.parties.find({ userId });
+  }
+  @Query(() => [PartyPreview])
+  partySearch(
+    @CurrentUser() userId: Id,
+    @Args('q', { nullable: true }) q: string = '',
+  ): Promise<Array<PartyPreview>> {
+    return this.parties.search({ userId, q });
+  }
+
   @Query(() => PartyGetByIdResponse)
   async partyGetById(
     @CurrentUser() userId: Id,
@@ -37,6 +53,7 @@ export class PartyResolver {
   ): Promise<PartyGetByIdResponse> {
     const user = await this.users.getById({
       id: userId,
+      relations: ['attendedParties'],
     });
 
     const party = await this.parties.getById({
@@ -63,7 +80,7 @@ export class PartyResolver {
     };
   }
 
-  @Query(() => [User])
+  @Query(() => [UserPreview])
   async partySearchAttenders(
     @CurrentUser() userId: Id,
     @Args('data') { id: partyId, q = '' }: PartySearchAttendersInput,
@@ -92,13 +109,5 @@ export class PartyResolver {
       throw new UnauthorizedException();
 
     return party.attenders;
-  }
-
-  @Query(() => [Party])
-  partySearch(
-    @CurrentUser() userId: Id,
-    @Args('q', { nullable: true }) q: string = '',
-  ): Promise<Array<Party>> {
-    return this.parties.search({ userId, q });
   }
 }

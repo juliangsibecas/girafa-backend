@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { DateResolver } from 'graphql-scalars';
+import { DateTimeResolver } from 'graphql-scalars';
 import { Id } from './Id';
 
 @ObjectType()
@@ -7,9 +7,9 @@ export class BaseSchema {
   @Field(() => String)
   _id: Id;
 
-  @Field(() => DateResolver)
+  @Field(() => DateTimeResolver)
   createdAt: Date;
 
-  @Field(() => DateResolver)
-  updatedAt: Date;
+  @Field(() => DateTimeResolver, { nullable: true })
+  updatedAt?: Date;
 }

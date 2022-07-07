@@ -26,10 +26,10 @@ export class UserResolver {
     private notifications: NotificationService,
   ) {}
 
-  @Query(() => [User])
+  @Query(() => [UserPreview])
   userSearch(
     @Args('q', { nullable: true }) q: string = '',
-  ): Promise<Array<User>> {
+  ): Promise<Array<UserPreview>> {
     return this.users.search(q);
   }
 
@@ -154,7 +154,7 @@ export class UserResolver {
 
     const user = await this.users.getById({
       id: userId,
-      select: ['nickname'],
+      select: ['nickname', 'following'],
     });
 
     const following = await this.users.getById({
@@ -219,7 +219,7 @@ export class UserResolver {
 
     const party = await this.parties.getById({
       id: partyId,
-      select: ['allowInvites'],
+      select: ['name', 'allowInvites'],
       relations: ['organizer', 'invited'],
     });
 

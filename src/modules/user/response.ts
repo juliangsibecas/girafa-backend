@@ -1,38 +1,21 @@
-import { Field, ObjectType } from '@nestjs/graphql';
-import { Id } from 'src/common/types';
+import { Field, ObjectType, PickType } from '@nestjs/graphql';
+import { User } from './schema';
 
 @ObjectType()
-export class UserPreview {
-  @Field(() => String)
-  _id: Id;
-
-  @Field()
-  nickname: string;
-
-  @Field()
-  fullName: string;
+export class UserPreview extends PickType(User, ['_id', 'nickname']) {
+  @Field({ nullable: true })
+  fullName?: string;
 }
 
 @ObjectType()
-export class UserGetByIdResponse {
-  @Field()
-  _id: string;
-
-  @Field()
-  nickname: string;
-
-  @Field()
-  fullName: string;
-
-  @Field()
-  followersCount: number;
-
-  @Field()
-  followingCount: number;
-
-  @Field()
-  attendedPartiesCount: number;
-
+export class UserGetByIdResponse extends PickType(User, [
+  '_id',
+  'nickname',
+  'fullName',
+  'followersCount',
+  'followingCount',
+  'attendedPartiesCount',
+]) {
   @Field()
   isFollowing: boolean;
 }

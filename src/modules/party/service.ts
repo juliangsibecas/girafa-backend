@@ -12,6 +12,7 @@ import {
   PartyGetByIdDto,
   PartySearchDto,
 } from './dto';
+import { PartyMapPreview, PartyPreview } from './response';
 import { Party, PartyDocument } from './schema';
 import { PartyAvailability } from './types';
 
@@ -23,50 +24,139 @@ export class PartyService {
     return this.model.create(dto);
   }
 
-  async search({ userId, q }: PartySearchDto): Promise<Array<Party>> {
+  async find({ userId }: PartySearchDto): Promise<Array<PartyMapPreview>> {
+    const select = ['_id', 'name', 'coordinates', 'date'];
+    const organizerPopulate = {
+      path: 'organizer',
+      select: 'nickname',
+    };
+
     const publics = await this.model
-      .find({
-        availability: PartyAvailability.PUBLIC,
-      })
-      .populate('organizer');
+      .find(
+        {
+          availability: PartyAvailability.PUBLIC,
+        },
+        select,
+      )
+      .populate(organizerPopulate);
 
     const followersOnly = await this.model
-      .find({
-        availability: PartyAvailability.FOLLOWERS,
-      })
+      .find(
+        {
+          availability: PartyAvailability.FOLLOWERS,
+        },
+        select,
+      )
       .populate({
-        path: 'organizer',
+        ...organizerPopulate,
         match: {
           followers: userId,
         },
-        select: '_id',
       });
 
     const followingOnly = await this.model
-      .find({
-        availability: PartyAvailability.FOLLOWING,
-      })
+      .find(
+        {
+          availability: PartyAvailability.FOLLOWING,
+        },
+        select,
+      )
       .populate({
-        path: 'organizer',
+        ...organizerPopulate,
         match: {
           following: userId,
         },
-        select: '_id',
       });
 
     const privates = await this.model
-      .find({
-        availability: PartyAvailability.PRIVATE,
-        invited: userId,
-      })
-      .populate('organizer');
+      .find(
+        {
+          availability: PartyAvailability.PRIVATE,
+          invited: userId,
+        },
+        select,
+      )
+      .populate(organizerPopulate);
 
     return [
       ...privates,
       ...followingOnly.filter((party) => party.organizer),
       ...followersOnly.filter((party) => party.organizer),
       ...publics,
-    ];
+    ].map((party) => ({
+      ...party.toJSON(),
+      organizerNickname: party.organizer.nickname,
+    }));
+  }
+
+  async search({ userId, q }: PartySearchDto): Promise<Array<PartyPreview>> {
+    const select = ['_id', 'name'];
+    const organizerPopulate = {
+      path: 'organizer',
+      select: 'nickname',
+    };
+    const nameLike = { name: { $regex: q, $options: 'i' } };
+
+    const publics = await this.model
+      .find(
+        {
+          ...nameLike,
+          availability: PartyAvailability.PUBLIC,
+        },
+        select,
+      )
+      .populate(organizerPopulate);
+
+    const followersOnly = await this.model
+      .find(
+        {
+          ...nameLike,
+          availability: PartyAvailability.FOLLOWERS,
+        },
+        select,
+      )
+      .populate({
+        ...organizerPopulate,
+        match: {
+          followers: userId,
+        },
+      });
+
+    const followingOnly = await this.model
+      .find(
+        {
+          ...nameLike,
+          availability: PartyAvailability.FOLLOWING,
+        },
+        select,
+      )
+      .populate({
+        ...organizerPopulate,
+        match: {
+          following: userId,
+        },
+      });
+
+    const privates = await this.model
+      .find(
+        {
+          ...nameLike,
+          availability: PartyAvailability.PRIVATE,
+          invited: userId,
+        },
+        select,
+      )
+      .populate(organizerPopulate);
+
+    return [
+      ...privates,
+      ...followingOnly.filter((party) => party.organizer),
+      ...followersOnly.filter((party) => party.organizer),
+      ...publics,
+    ].map((party) => ({
+      ...party.toJSON(),
+      organizerNickname: party.organizer.nickname,
+    }));
   }
 
   async getById({

@@ -1,56 +1,37 @@
-import { Field, ObjectType } from '@nestjs/graphql';
-import { DateResolver } from 'graphql-scalars';
-import { Id } from 'src/common/types';
-import { User } from '../user';
-import { PartyAvailability } from './types';
+import { Field, ObjectType, PickType } from '@nestjs/graphql';
+import { Party } from './schema';
 
 @ObjectType()
-export class PartyPreview {
-  @Field(() => String)
-  _id: Id;
-
-  @Field()
-  name: string;
-
-  @Field()
-  organizerNickname: string;
+export class PartyPreview extends PickType(Party, ['_id', 'name']) {
+  @Field({ nullable: true })
+  organizerNickname?: string;
 }
 
 @ObjectType()
-export class PartyGetByIdResponse {
-  @Field()
-  _id: string;
+export class PartyMapPreview extends PickType(Party, [
+  '_id',
+  'name',
+  'coordinates',
+  'date',
+]) {
+  @Field({ nullable: true })
+  organizerNickname?: string;
+}
 
-  @Field(() => PartyAvailability)
-  availability: PartyAvailability;
-
-  @Field()
-  name: string;
-
-  @Field(() => User)
-  organizer: User;
-
-  @Field()
-  address: string;
-
-  @Field(() => DateResolver)
-  date: Date;
-
-  @Field()
-  openBar: boolean;
-
-  @Field()
-  description: string;
-
-  @Field(() => [User])
-  attenders: Array<User>;
-
-  @Field()
-  attendersCount: number;
-
-  @Field()
-  allowInvites: boolean;
-
+@ObjectType()
+export class PartyGetByIdResponse extends PickType(Party, [
+  '_id',
+  'availability',
+  'name',
+  'organizer',
+  'address',
+  'date',
+  'openBar',
+  'description',
+  'attenders',
+  'attendersCount',
+  'allowInvites',
+]) {
   @Field()
   isAttender: boolean;
 }

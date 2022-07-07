@@ -11,7 +11,7 @@ registerEnumType(NotificationType, {
   name: 'NotificationType',
 });
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: { createdAt: true } })
 @ObjectType()
 export class Notification extends BaseSchema {
   @Prop({ type: String, default: v4 })
@@ -23,21 +23,21 @@ export class Notification extends BaseSchema {
 
   @Prop({
     ref: User.name,
-    type: [String],
+    type: String,
   })
   @Field(() => User)
   user: User;
 
   @Prop({
     ref: User.name,
-    type: [String],
+    type: String,
   })
   @Field(() => User)
   from: User;
 
   @Prop({
     ref: Party.name,
-    type: [String],
+    type: String,
   })
   @Field(() => Party, { nullable: true })
   party?: Party;
