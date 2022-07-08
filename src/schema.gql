@@ -83,6 +83,7 @@ type Party {
   date: Date!
   description: String!
   invited: [User!]!
+  isExpired: Boolean!
   minAge: String
   name: String!
   openBar: Boolean!
@@ -118,6 +119,7 @@ type PartyGetByIdResponse {
   date: Date!
   description: String!
   isAttender: Boolean!
+  isExpired: Boolean!
   name: String!
   openBar: Boolean!
   organizer: User!

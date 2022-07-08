@@ -190,12 +190,16 @@ export class UserResolver {
 
     const party = await this.parties.getById({
       id: partyId,
+      select: ['_id', 'isExpired', 'attenders'],
       relations: ['organizer'],
     });
 
     if (!user || !party) throw new Error();
 
-    if (!(await this.parties.userCanAttend({ user, party }))) {
+    if (
+      party.isExpired ||
+      !(await this.parties.userCanAttend({ user, party }))
+    ) {
       throw new UnauthorizedException();
     }
 
@@ -219,11 +223,14 @@ export class UserResolver {
 
     const party = await this.parties.getById({
       id: partyId,
-      select: ['name', 'allowInvites'],
+      select: ['name', 'allowInvites', 'isExpired'],
       relations: ['organizer', 'invited'],
     });
 
-    if (!party.allowInvites && party.organizer._id !== userId)
+    if (
+      party.isExpired ||
+      (!party.allowInvites && party.organizer._id !== userId)
+    )
       throw new UnauthorizedException();
 
     const user = await this.users.getById({

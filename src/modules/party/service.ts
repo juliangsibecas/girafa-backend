@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { ValidationError } from 'apollo-server-express';
+import console from 'console';
 import { Model } from 'mongoose';
 
 import { Id, Maybe } from '../../common/types';
@@ -19,21 +21,27 @@ import { PartyAvailability } from './types';
 @Injectable()
 export class PartyService {
   constructor(@InjectModel(Party.name) private model: Model<PartyDocument>) {}
-
+  private readonly logger = new Logger(PartyService.name);
   async create(dto: PartyCreateDto): Promise<PartyDocument> {
     return this.model.create(dto);
   }
 
   async find({ userId }: PartySearchDto): Promise<Array<PartyMapPreview>> {
+    const now = new Date();
+    now.setHours(now.getHours() - 36);
     const select = ['_id', 'name', 'coordinates', 'date'];
     const organizerPopulate = {
       path: 'organizer',
       select: 'nickname',
     };
+    const isNotExpired = {
+      isExpired: false,
+    };
 
     const publics = await this.model
       .find(
         {
+          ...isNotExpired,
           availability: PartyAvailability.PUBLIC,
         },
         select,
@@ -43,6 +51,7 @@ export class PartyService {
     const followersOnly = await this.model
       .find(
         {
+          ...isNotExpired,
           availability: PartyAvailability.FOLLOWERS,
         },
         select,
@@ -57,6 +66,7 @@ export class PartyService {
     const followingOnly = await this.model
       .find(
         {
+          ...isNotExpired,
           availability: PartyAvailability.FOLLOWING,
         },
         select,
@@ -71,6 +81,7 @@ export class PartyService {
     const privates = await this.model
       .find(
         {
+          ...isNotExpired,
           availability: PartyAvailability.PRIVATE,
           invited: userId,
         },
@@ -176,17 +187,21 @@ export class PartyService {
   }
 
   async addAttender({ user, party }: PartyChangeAttendingStateDto) {
-    await party.updateOne({
-      $addToSet: { attenders: user._id },
-      $inc: { attendersCount: 1 },
-    });
+    if (!party.attenders.includes(user._id)) {
+      await party.updateOne({
+        $addToSet: { attenders: user._id },
+        $inc: { attendersCount: 1 },
+      });
+    }
   }
 
   async removeAttender({ user, party }: PartyChangeAttendingStateDto) {
-    await party.updateOne({
-      $pull: { attenders: user._id },
-      $inc: { attendersCount: -1 },
-    });
+    if (party.attenders.includes(user._id)) {
+      await party.updateOne({
+        $pull: { attenders: user._id },
+        $inc: { attendersCount: -1 },
+      });
+    }
   }
 
   async addInvited({ invitedId, party }: PartyAddinvitedDto) {
@@ -212,5 +227,24 @@ export class PartyService {
       (party.invited as unknown as Array<Id>).find((id: Id) => id === user._id);
 
     return isPublic || isFollower || isFollowing || isPrivate;
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_NOON)
+  async _handleExpires() {
+    const date = new Date();
+    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+    date.setDate(7);
+    date.setHours(0, 0, 0, 0);
+
+    const res = await this.model.updateMany(
+      {
+        date: new Date(date.getTime() - userTimezoneOffset),
+      },
+      {
+        isExpired: true,
+      },
+    );
+
+    this.logger.log(res);
   }
 }

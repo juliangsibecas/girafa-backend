@@ -86,6 +86,10 @@ export class Party extends BaseSchema {
   })
   @Field(() => [User])
   invited: Array<User>;
+
+  @Prop({ default: false })
+  @Field()
+  isExpired: boolean;
 }
 
 export type PartyDocument = Party & mongoose.Document;

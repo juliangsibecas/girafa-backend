@@ -31,6 +31,7 @@ export class PartyGetByIdResponse extends PickType(Party, [
   'attenders',
   'attendersCount',
   'allowInvites',
+  'isExpired',
 ]) {
   @Field()
   isAttender: boolean;
