@@ -190,7 +190,7 @@ export class UserResolver {
 
     const party = await this.parties.getById({
       id: partyId,
-      select: ['_id', 'isExpired', 'attenders'],
+      select: ['_id', 'availability', 'isExpired', 'attenders'],
       relations: ['organizer'],
     });
 
@@ -200,6 +200,7 @@ export class UserResolver {
       party.isExpired ||
       !(await this.parties.userCanAttend({ user, party }))
     ) {
+      console.log(!(await this.parties.userCanAttend({ user, party })));
       throw new UnauthorizedException();
     }
 

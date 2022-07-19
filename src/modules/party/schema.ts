@@ -39,10 +39,6 @@ export class Party extends BaseSchema {
   date: Date;
 
   @Prop()
-  @Field({ nullable: true })
-  minAge?: string;
-
-  @Prop()
   @Field()
   openBar: boolean;
 

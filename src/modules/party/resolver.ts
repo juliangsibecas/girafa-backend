@@ -20,18 +20,20 @@ export class PartyResolver {
     @Inject(forwardRef(() => UserService)) private users: UserService,
   ) {}
 
-  @Mutation(() => Party)
+  @Mutation(() => Boolean)
   async partyCreate(
     @CurrentUser() userId: Id,
     @Args('data') input: PartyCreateInput,
-  ): Promise<Party> {
+  ): Promise<boolean> {
     const user = await this.users.getById({ id: userId });
 
     if (!user) throw new Error();
 
     await this.parties.checkAvailability(input.name);
 
-    return this.parties.create({ ...input, organizer: user._id });
+    await this.parties.create({ ...input, organizer: user._id });
+
+    return true;
   }
 
   @Query(() => [PartyMapPreview])

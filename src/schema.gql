@@ -47,7 +47,7 @@ scalar DateTime
 
 type Mutation {
   generateRecoveryCode(email: String!): Boolean!
-  partyCreate(data: PartyCreateInput!): Party!
+  partyCreate(data: PartyCreateInput!): Boolean!
   signIn(data: AuthSignInInput!): AuthSignIn!
   signInFromRefreshToken: AuthSignIn!
   signUp(data: AuthSignUpInput!): AuthSignIn!
@@ -84,7 +84,6 @@ type Party {
   description: String!
   invited: [User!]!
   isExpired: Boolean!
-  minAge: String
   name: String!
   openBar: Boolean!
   organizer: User!
