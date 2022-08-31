@@ -25,12 +25,12 @@ input AuthSignUpInput {
   password: String!
 }
 
-type Coordinates {
+type Coordinate {
   latitude: Float!
   longitude: Float!
 }
 
-input CoordinatesCreateInput {
+input CoordinateCreateInput {
   latitude: Float!
   longitude: Float!
 }
@@ -47,7 +47,8 @@ scalar DateTime
 
 type Mutation {
   generateRecoveryCode(email: String!): Boolean!
-  partyCreate(data: PartyCreateInput!): Boolean!
+  partyCreate(data: PartyCreateInput!): String!
+  partyEnable(id: String!): Boolean!
   signIn(data: AuthSignInInput!): AuthSignIn!
   signInFromRefreshToken: AuthSignIn!
   signUp(data: AuthSignUpInput!): AuthSignIn!
@@ -78,11 +79,12 @@ type Party {
   attenders: [User!]!
   attendersCount: Float!
   availability: PartyAvailability!
-  coordinates: Coordinates!
+  coordinate: Coordinate!
   createdAt: DateTime!
   date: Date!
   description: String!
   invited: [User!]!
+  isEnabled: Boolean!
   isExpired: Boolean!
   name: String!
   openBar: Boolean!
@@ -101,7 +103,7 @@ input PartyCreateInput {
   address: String!
   allowInvites: Boolean!
   availability: PartyAvailability!
-  coordinates: CoordinatesCreateInput!
+  coordinate: CoordinateCreateInput!
   date: Date!
   description: String!
   name: String!
@@ -119,6 +121,7 @@ type PartyGetByIdResponse {
   description: String!
   isAttender: Boolean!
   isExpired: Boolean!
+  isOrganizer: Boolean!
   name: String!
   openBar: Boolean!
   organizer: User!
@@ -126,7 +129,7 @@ type PartyGetByIdResponse {
 
 type PartyMapPreview {
   _id: String!
-  coordinates: Coordinates!
+  coordinate: Coordinate!
   date: Date!
   name: String!
   organizerNickname: String

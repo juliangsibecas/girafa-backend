@@ -2,7 +2,7 @@ import { PopulateOptions } from 'mongoose';
 import { Id } from 'src/common/types';
 import { User } from '../user';
 import { UserDocument } from '../user/schema';
-import { Coordinates } from './coordinates';
+import { Coordinate } from './coordinate';
 import { Party, PartyDocument } from './schema';
 
 export class PartyCreateDto {
@@ -10,7 +10,7 @@ export class PartyCreateDto {
   name: string;
   date: Date;
   address: string;
-  coordinates: Coordinates;
+  coordinate: Coordinate;
   openBar: boolean;
   description: string;
   allowInvites: boolean;

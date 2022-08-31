@@ -1,7 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { DateResolver } from 'graphql-scalars';
 import { Id } from 'src/common/types';
-import { Coordinates, CoordinatesCreateInput } from './coordinates';
+import { Coordinate, CoordinateCreateInput } from './coordinate';
 import { PartyAvailability } from './types';
 
 @InputType()
@@ -15,8 +15,8 @@ export class PartyCreateInput {
   @Field(() => DateResolver)
   date: Date;
 
-  @Field(() => CoordinatesCreateInput)
-  coordinates: Coordinates;
+  @Field(() => CoordinateCreateInput)
+  coordinate: Coordinate;
 
   @Field()
   address: string;

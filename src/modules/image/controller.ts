@@ -1,5 +1,6 @@
 import {
   Controller,
+  Param,
   Post,
   Request,
   UploadedFile,
@@ -18,20 +19,22 @@ export class ImageController {
   @Post('profile-picture')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  uploadProfilePicture(
+  async uploadProfilePicture(
     @Request() req: Request & { user: string },
     @UploadedFile() file: Express.Multer.File,
   ) {
-    this.s3.uploadProfilePicture(req.user, file);
+    await this.s3.uploadUserPicture(req.user, file);
   }
 
-  @Post('party-picture')
+  @Post('party-picture/:id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  uploadPartyPicture(
-    @Request() req: Request & { user: string },
+  async uploadPartyPicture(
+    @Param() { id }: { id: string },
     @UploadedFile() file: Express.Multer.File,
   ) {
-    this.s3.uploadProfilePicture(req.user, file);
+    // TODO: verify user is organizer
+    console.log(id);
+    await this.s3.uploadPartyPicture(id, file);
   }
 }

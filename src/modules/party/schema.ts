@@ -5,7 +5,7 @@ import * as mongoose from 'mongoose';
 import { BaseSchema, Id } from 'src/common/types';
 import { v4 } from 'uuid';
 import { User } from '../user/schema';
-import { Coordinates } from './coordinates';
+import { Coordinate } from './coordinate';
 import { PartyAvailability } from './types';
 
 registerEnumType(PartyAvailability, {
@@ -48,7 +48,7 @@ export class Party extends BaseSchema {
 
   @Prop()
   @Field()
-  coordinates: Coordinates;
+  coordinate: Coordinate;
 
   @Prop({
     type: [
@@ -86,6 +86,10 @@ export class Party extends BaseSchema {
   @Prop({ default: false })
   @Field()
   isExpired: boolean;
+
+  @Prop({ default: false })
+  @Field()
+  isEnabled: boolean;
 }
 
 export type PartyDocument = Party & mongoose.Document;

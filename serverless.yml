@@ -11,7 +11,11 @@ custom:
     directory: /tmp
 resources:
   Resources:
-    NewResource:
+    UserBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: profile-pictures
+        BucketName: user-pictures
+    PartyBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: party-pictures

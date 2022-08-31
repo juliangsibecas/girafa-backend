@@ -3,7 +3,7 @@ import { Prop, Schema } from '@nestjs/mongoose';
 
 @Schema()
 @ObjectType()
-export class Coordinates {
+export class Coordinate {
   @Field()
   @Prop()
   latitude: number;

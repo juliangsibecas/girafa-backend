@@ -11,6 +11,9 @@ export class EnvironmentVariables {
   PORT: number;
 
   @IsNotEmpty()
+  ADMIN_EMAIL: string;
+
+  @IsNotEmpty()
   DB_HOST: string;
 
   @IsNotEmpty()

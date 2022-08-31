@@ -1,1 +1,11 @@
 not filling organizedparties
+
+check required filds when populating current user
+
+try/catch and error logging
+
+send push notification whene expiring party to all attenders with cool data
+
+unique party name
+
+send email on party enable

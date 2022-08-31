@@ -14,16 +14,21 @@ export class S3Service {
     endpoint: new AWS.Endpoint(this.config.get('s3.endpoint')),
   });
 
-  async uploadProfilePicture(
+  async uploadUserPicture(
     userId: string,
     file: Express.Multer.File,
   ): Promise<boolean> {
     const buffer = await sharp(file.buffer).jpeg().toBuffer();
 
-    return await this.upload('profile-pictures', `${userId}.jpeg`, {
-      ...file,
-      buffer,
-    });
+    try {
+      return await this.upload('user-pictures', `${userId}.jpeg`, {
+        ...file,
+        buffer,
+      });
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 
   async uploadPartyPicture(
@@ -32,11 +37,18 @@ export class S3Service {
   ): Promise<boolean> {
     const buffer = await sharp(file.buffer).jpeg().toBuffer();
 
-    return await this.upload('party-pictures', `${partyId}.jpeg`, {
-      ...file,
-      buffer,
-    });
+    try {
+      console.log('triggered');
+      return await this.upload('party-pictures', `${partyId}.jpeg`, {
+        ...file,
+        buffer,
+      });
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
+
   async upload(
     bucketName: string,
     fileName: string,

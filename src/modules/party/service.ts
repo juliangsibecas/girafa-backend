@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ValidationError } from 'apollo-server-express';
-import console from 'console';
 import { Model } from 'mongoose';
 
+import { ValidationError } from 'src/core/graphql';
 import { Id, Maybe } from '../../common/types';
 
 import {
@@ -22,26 +21,33 @@ import { PartyAvailability } from './types';
 export class PartyService {
   constructor(@InjectModel(Party.name) private model: Model<PartyDocument>) {}
   private readonly logger = new Logger(PartyService.name);
+
   async create(dto: PartyCreateDto): Promise<PartyDocument> {
     return this.model.create(dto);
+  }
+
+  async enable(id: string): Promise<PartyDocument | undefined> {
+    return this.model.findByIdAndUpdate(id, { isEnabled: true });
   }
 
   async find({ userId }: PartySearchDto): Promise<Array<PartyMapPreview>> {
     const now = new Date();
     now.setHours(now.getHours() - 36);
-    const select = ['_id', 'name', 'coordinates', 'date'];
+    const select = ['_id', 'name', 'coordinate', 'date'];
     const organizerPopulate = {
       path: 'organizer',
       select: 'nickname',
     };
-    const isNotExpired = {
+
+    const baseQuery: Partial<Party> = {
       isExpired: false,
+      isEnabled: true,
     };
 
     const publics = await this.model
       .find(
         {
-          ...isNotExpired,
+          ...baseQuery,
           availability: PartyAvailability.PUBLIC,
         },
         select,
@@ -51,39 +57,62 @@ export class PartyService {
     const followersOnly = await this.model
       .find(
         {
-          ...isNotExpired,
+          ...baseQuery,
           availability: PartyAvailability.FOLLOWERS,
         },
         select,
       )
-      .populate({
-        ...organizerPopulate,
-        match: {
-          followers: userId,
+      .populate([
+        {
+          ...organizerPopulate,
+          match: {
+            followers: userId,
+          },
         },
-      });
+        {
+          ...organizerPopulate,
+          match: {
+            _id: userId,
+          },
+        },
+      ]);
 
     const followingOnly = await this.model
       .find(
         {
-          ...isNotExpired,
+          ...baseQuery,
           availability: PartyAvailability.FOLLOWING,
         },
         select,
       )
-      .populate({
-        ...organizerPopulate,
-        match: {
-          following: userId,
+      .populate([
+        {
+          ...organizerPopulate,
+          match: {
+            following: userId,
+          },
         },
-      });
+        {
+          ...organizerPopulate,
+          match: {
+            _id: userId,
+          },
+        },
+      ]);
 
     const privates = await this.model
       .find(
         {
-          ...isNotExpired,
+          ...baseQuery,
           availability: PartyAvailability.PRIVATE,
-          invited: userId,
+          $or: [
+            {
+              invited: userId,
+            },
+            {
+              organizer: userId,
+            },
+          ],
         },
         select,
       )
@@ -108,9 +137,14 @@ export class PartyService {
     };
     const nameLike = { name: { $regex: q, $options: 'i' } };
 
+    const baseQuery: Partial<Party> = {
+      isEnabled: true,
+    };
+
     const publics = await this.model
       .find(
         {
+          ...baseQuery,
           ...nameLike,
           availability: PartyAvailability.PUBLIC,
         },
@@ -121,6 +155,7 @@ export class PartyService {
     const followersOnly = await this.model
       .find(
         {
+          ...baseQuery,
           ...nameLike,
           availability: PartyAvailability.FOLLOWERS,
         },
@@ -136,6 +171,7 @@ export class PartyService {
     const followingOnly = await this.model
       .find(
         {
+          ...baseQuery,
           ...nameLike,
           availability: PartyAvailability.FOLLOWING,
         },
@@ -151,6 +187,7 @@ export class PartyService {
     const privates = await this.model
       .find(
         {
+          ...baseQuery,
           ...nameLike,
           availability: PartyAvailability.PRIVATE,
           invited: userId,
@@ -183,7 +220,7 @@ export class PartyService {
 
     if (!party) return;
 
-    throw new ValidationError('name');
+    throw new ValidationError({ name: 'Ya hay una fiesta con ese nombre' });
   }
 
   async addAttender({ user, party }: PartyChangeAttendingStateDto) {
@@ -212,21 +249,31 @@ export class PartyService {
 
   async userCanAttend({ user, party }: PartyChangeAttendingStateDto) {
     const isPublic = party.availability === PartyAvailability.PUBLIC;
+    if (isPublic) return true;
+
     const isFollower =
       party.availability === PartyAvailability.FOLLOWERS &&
       (party.organizer.followers as unknown as Array<Id>).find(
         (id: Id) => id === user._id,
       );
+    if (isFollower) return true;
+
     const isFollowing =
       party.availability === PartyAvailability.FOLLOWING &&
       (party.organizer.following as unknown as Array<Id>).find(
         (id: Id) => id === user._id,
       );
+    if (isFollowing) return true;
+
     const isPrivate =
       party.availability === PartyAvailability.PRIVATE &&
       (party.invited as unknown as Array<Id>).find((id: Id) => id === user._id);
+    if (isPrivate) return true;
 
-    return isPublic || isFollower || isFollowing || isPrivate;
+    const isOrganizer = party.organizer._id === user._id;
+    if (isOrganizer) return true;
+
+    return false;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_NOON)

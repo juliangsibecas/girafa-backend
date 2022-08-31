@@ -11,7 +11,7 @@ export class PartyPreview extends PickType(Party, ['_id', 'name']) {
 export class PartyMapPreview extends PickType(Party, [
   '_id',
   'name',
-  'coordinates',
+  'coordinate',
   'date',
 ]) {
   @Field({ nullable: true })
@@ -35,4 +35,6 @@ export class PartyGetByIdResponse extends PickType(Party, [
 ]) {
   @Field()
   isAttender: boolean;
+  @Field()
+  isOrganizer: boolean;
 }
