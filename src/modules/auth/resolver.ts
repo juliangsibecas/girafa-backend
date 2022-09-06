@@ -1,5 +1,5 @@
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { MailerService } from '@nestjs-modules/mailer';
 
 import { UserService } from '../user/service';
@@ -7,13 +7,13 @@ import { UserService } from '../user/service';
 import {
   AuthSignInInput,
   AuthSignUpInput,
-  AuthCheckRecoveryCodeInput,
   AuthRecoverPasswordInput,
   AuthGenerateRecoveryCodeInput,
+  AuthChangePasswordInput,
 } from './input';
-import { CustomContext } from '../../common/types';
+import { CustomContext, Id } from '../../common/types';
 import { AuthService } from './service';
-import { AllowAny } from './graphql';
+import { AllowAny, CurrentUser } from './graphql';
 import { AuthSignIn } from './response';
 import { ValidationError } from 'src/core/graphql';
 
@@ -162,6 +162,39 @@ export class AuthResolver {
       });
 
       return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  }
+
+  @Mutation(() => Boolean)
+  async changePassword(
+    @CurrentUser() userId: Id,
+    @Args('data') { currentPassword, newPassword }: AuthChangePasswordInput,
+  ): Promise<Boolean> {
+    try {
+      const user = await this.users.getById({
+        id: userId,
+        select: ['password'],
+      });
+
+      const isCorrectPassword = await this.auth.comparePasswords(
+        currentPassword,
+        user.password,
+      );
+
+      if (isCorrectPassword) {
+        const encryptedPassword = await this.auth.encryptPassword(newPassword);
+        await this.users.setPassword({
+          id: user.id,
+          password: encryptedPassword,
+        });
+
+        return true;
+      }
+
+      return false;
     } catch (e) {
       console.log(e);
       return false;

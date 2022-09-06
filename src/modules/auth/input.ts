@@ -31,15 +31,6 @@ export class AuthGenerateRecoveryCodeInput {
 }
 
 @InputType()
-export class AuthCheckRecoveryCodeInput {
-  @Field()
-  email: string;
-
-  @Field()
-  code: string;
-}
-
-@InputType()
 export class AuthRecoverPasswordInput {
   @Field()
   email: string;
@@ -49,4 +40,13 @@ export class AuthRecoverPasswordInput {
 
   @Field()
   code: string;
+}
+
+@InputType()
+export class AuthChangePasswordInput {
+  @Field()
+  currentPassword: string;
+
+  @Field()
+  newPassword: string;
 }

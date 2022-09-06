@@ -17,6 +17,7 @@ import { PartyModule } from '../modules/party';
 import { ImageModule } from '../modules/image';
 import { NotificationModule } from 'src/modules/notification';
 import { mongooseModuleOptions } from 'src/core/mongoose';
+import { SupportModule } from 'src/modules/support';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { mongooseModuleOptions } from 'src/core/mongoose';
     NotificationModule,
     UserModule,
     PartyModule,
+    SupportModule,
   ],
   providers: [
     {

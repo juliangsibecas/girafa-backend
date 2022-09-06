@@ -5,3 +5,5 @@ try/catch and error logging
 send push notification when expiring party to all attenders with cool data
 
 send email on party enable
+
+unused update_at?

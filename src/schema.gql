@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AuthChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
 input AuthGenerateRecoveryCodeInput {
   email: String!
 }
@@ -51,6 +56,7 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 type Mutation {
+  changePassword(data: AuthChangePasswordInput!): Boolean!
   generateRecoveryCode(data: AuthGenerateRecoveryCodeInput!): Boolean!
   partyCreate(data: PartyCreateInput!): String!
   partyEnable(id: String!): Boolean!
@@ -58,6 +64,7 @@ type Mutation {
   signIn(data: AuthSignInInput!): AuthSignIn!
   signInFromRefreshToken: AuthSignIn!
   signUp(data: AuthSignUpInput!): AuthSignIn!
+  supportSendMessage(data: SupportSendMessageInput!): Boolean!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
   userSendPartyInvite(data: UserSendPartyInviteInput!): Boolean!
@@ -164,6 +171,11 @@ type Query {
   userGetFollowingById(id: String!): [UserPreview!]!
   userSearch(q: String): [UserPreview!]!
   userSearchFollowersToInvite(data: UserSearchFollowersToInviteInput!): [User!]!
+}
+
+input SupportSendMessageInput {
+  body: String!
+  subject: String!
 }
 
 type User {
