@@ -17,7 +17,7 @@ export const jwtConfig = registerAs(
     accessToken: {
       header: 'Authorization',
       secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-      expiry: '30m',
+      expiry: '60d',
     },
     refreshToken: {
       header: 'Refresh',

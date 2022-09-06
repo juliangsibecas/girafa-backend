@@ -71,17 +71,6 @@ export class User extends BaseSchema {
     ],
   })
   @Field(() => [Party])
-  organizedParties: Array<Party>;
-
-  @Prop({
-    type: [
-      {
-        ref: 'Party',
-        type: String,
-      },
-    ],
-  })
-  @Field(() => [Party])
   attendedParties: Array<Party>;
 
   @Prop({ default: 0 })

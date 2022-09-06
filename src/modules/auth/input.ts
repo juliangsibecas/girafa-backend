@@ -25,9 +25,27 @@ export class AuthSignInInput {
 }
 
 @InputType()
+export class AuthGenerateRecoveryCodeInput {
+  @Field()
+  email: string;
+}
+
+@InputType()
 export class AuthCheckRecoveryCodeInput {
   @Field()
   email: string;
+
+  @Field()
+  code: string;
+}
+
+@InputType()
+export class AuthRecoverPasswordInput {
+  @Field()
+  email: string;
+
+  @Field()
+  password: string;
 
   @Field()
   code: string;

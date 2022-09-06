@@ -41,6 +41,11 @@ export interface UserSetRecoveryCodeDto {
   code: string;
 }
 
+export interface UserSetPasswordDto {
+  id: Id;
+  password: string;
+}
+
 export interface UserSetRefreshTokenDto {
   id: Id;
   token: string;

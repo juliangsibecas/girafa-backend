@@ -15,6 +15,7 @@ import {
   UserGetByIdDto,
   UserSetRecoveryCodeDto,
   UserSetRefreshTokenDto,
+  UserSetPasswordDto,
 } from './dto';
 import { User, UserDocument } from './schema';
 
@@ -119,6 +120,13 @@ export class UserService {
 
   async setRecoveryCode({ id, code }: UserSetRecoveryCodeDto): Promise<void> {
     await this.model.findByIdAndUpdate(id, { recoveryCode: code });
+  }
+
+  async setPassword({ id, password }: UserSetPasswordDto): Promise<void> {
+    await this.model.findByIdAndUpdate(id, {
+      password: password,
+      recoveryCode: null,
+    });
   }
 
   async setRefreshToken({ id, token }: UserSetRefreshTokenDto): Promise<void> {

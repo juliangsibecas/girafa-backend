@@ -34,7 +34,6 @@ export class ImageController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     // TODO: verify user is organizer
-    console.log(id);
     await this.s3.uploadPartyPicture(id, file);
   }
 }

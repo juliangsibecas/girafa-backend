@@ -2,9 +2,14 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-input AuthCheckRecoveryCodeInput {
+input AuthGenerateRecoveryCodeInput {
+  email: String!
+}
+
+input AuthRecoverPasswordInput {
   code: String!
   email: String!
+  password: String!
 }
 
 type AuthSignIn {
@@ -46,9 +51,10 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 type Mutation {
-  generateRecoveryCode(email: String!): Boolean!
+  generateRecoveryCode(data: AuthGenerateRecoveryCodeInput!): Boolean!
   partyCreate(data: PartyCreateInput!): String!
   partyEnable(id: String!): Boolean!
+  recoverPassword(data: AuthRecoverPasswordInput!): Boolean!
   signIn(data: AuthSignInInput!): AuthSignIn!
   signInFromRefreshToken: AuthSignIn!
   signUp(data: AuthSignUpInput!): AuthSignIn!
@@ -147,7 +153,6 @@ input PartySearchAttendersInput {
 }
 
 type Query {
-  checkRecoveryCode(data: AuthCheckRecoveryCodeInput!): Boolean!
   getNotifications: [UserNotification!]!
   partyFind: [PartyMapPreview!]!
   partyGetById(id: String!): PartyGetByIdResponse!
@@ -176,7 +181,6 @@ type User {
   invites: [Party!]!
   nickname: String!
   notifications: [Notification!]!
-  organizedParties: [Party!]!
   password: String
   recoveryCode: String
   refreshToken: String

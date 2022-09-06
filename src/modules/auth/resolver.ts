@@ -1,3 +1,4 @@
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { MailerService } from '@nestjs-modules/mailer';
 
@@ -7,10 +8,11 @@ import {
   AuthSignInInput,
   AuthSignUpInput,
   AuthCheckRecoveryCodeInput,
+  AuthRecoverPasswordInput,
+  AuthGenerateRecoveryCodeInput,
 } from './input';
 import { CustomContext } from '../../common/types';
 import { AuthService } from './service';
-import { UnauthorizedException } from '@nestjs/common';
 import { AllowAny } from './graphql';
 import { AuthSignIn } from './response';
 import { ValidationError } from 'src/core/graphql';
@@ -108,37 +110,61 @@ export class AuthResolver {
 
   @Mutation(() => Boolean)
   @AllowAny()
-  async generateRecoveryCode(@Args('email') email: string): Promise<boolean> {
-    const user = await this.users.getByEmail({ email });
+  async generateRecoveryCode(
+    @Args('data') { email }: AuthGenerateRecoveryCodeInput,
+  ): Promise<boolean> {
+    try {
+      const user = await this.users.getByEmail({ email });
 
-    if (!user)
-      throw new ValidationError({ email: 'Correo electrónico no encontrado.' });
+      if (!user)
+        throw new ValidationError({
+          email: 'Correo electrónico no encontrado.',
+        });
 
-    const code = Math.floor(Math.random() * (9999 - 1000) + 1000).toString();
+      const code = Math.floor(Math.random() * (9999 - 1000) + 1000).toString();
 
-    await this.users.setRecoveryCode({ id: user.id, code });
+      await this.users.setRecoveryCode({ id: user.id, code });
 
-    const res = await this.mailer.sendMail({
-      to: email,
-      subject: 'Recuperar contraseña',
-      text: code,
-    });
+      const res = await this.mailer.sendMail({
+        to: email,
+        subject: 'Recuperar contraseña',
+        text: code,
+      });
 
-    if (!res.accepted.length) throw new Error();
+      if (!res.accepted.length) throw new Error();
 
-    return true;
+      return true;
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
   }
 
-  @Query(() => Boolean)
+  @Mutation(() => Boolean)
   @AllowAny()
-  async checkRecoveryCode(
-    @Args('data') { email, code }: AuthCheckRecoveryCodeInput,
+  async recoverPassword(
+    @Args('data') { code, email, password }: AuthRecoverPasswordInput,
   ): Promise<boolean> {
-    const user = await this.users.getByEmail({
-      email,
-      select: ['recoveryCode'],
-    });
+    try {
+      const user = await this.users.getByEmail({
+        email,
+        select: ['recoveryCode'],
+      });
 
-    return user.recoveryCode === code;
+      if (!(user.recoveryCode && user.recoveryCode === code))
+        throw new ForbiddenException('Invalid code');
+
+      const encryptedPassword = await this.auth.encryptPassword(password);
+
+      await this.users.setPassword({
+        id: user.id,
+        password: encryptedPassword,
+      });
+
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 }

@@ -38,7 +38,6 @@ export class S3Service {
     const buffer = await sharp(file.buffer).jpeg().toBuffer();
 
     try {
-      console.log('triggered');
       return await this.upload('party-pictures', `${partyId}.jpeg`, {
         ...file,
         buffer,
