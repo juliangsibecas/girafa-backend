@@ -10,6 +10,7 @@ import { PartyService } from '../party/service';
 import {
   UserChangeAttendingStateInput,
   UserChangeFollowingStateInput,
+  UserEditInput,
   UserSearchFollowersToInviteInput,
   UserSendPartyInviteInput,
 } from './input';
@@ -25,6 +26,19 @@ export class UserResolver {
     @Inject(forwardRef(() => NotificationService))
     private notifications: NotificationService,
   ) {}
+
+  @Mutation(() => Boolean)
+  async userEdit(
+    @CurrentUser() userId: Id,
+    @Args('data') { fullName, nickname }: UserEditInput,
+  ): Promise<Boolean> {
+    try {
+      return Boolean(await this.users.edit({ id: userId, fullName, nickname }));
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  }
 
   @Query(() => [UserPreview])
   userSearch(

@@ -10,6 +10,12 @@ export interface UserCreateDto {
   password: string;
 }
 
+export interface UserEditDto {
+  id: Id;
+  fullName: string;
+  nickname: string;
+}
+
 export interface UserGetByIdDto {
   id: Id;
   select?: Array<keyof User>;

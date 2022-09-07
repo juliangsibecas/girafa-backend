@@ -16,6 +16,7 @@ import {
   UserSetRecoveryCodeDto,
   UserSetRefreshTokenDto,
   UserSetPasswordDto,
+  UserEditDto,
 } from './dto';
 import { User, UserDocument } from './schema';
 
@@ -25,6 +26,10 @@ export class UserService {
 
   async create(dto: UserCreateDto): Promise<User> {
     return this.model.create(dto);
+  }
+
+  async edit(dto: UserEditDto): Promise<User> {
+    return this.model.findByIdAndUpdate(dto.id, dto);
   }
 
   async search(q: string): Promise<Array<User>> {

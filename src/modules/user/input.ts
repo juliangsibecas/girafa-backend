@@ -36,3 +36,12 @@ export class UserSendPartyInviteInput {
   @Field(() => [String])
   invitedId: Array<Id>;
 }
+
+@InputType()
+export class UserEditInput {
+  @Field()
+  fullName: string;
+
+  @Field()
+  nickname: string;
+}

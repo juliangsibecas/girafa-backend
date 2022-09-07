@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '../auth/jwt/guard';
 export class ImageController {
   constructor(private s3: S3Service) {}
 
-  @Post('profile-picture')
+  @Post('user-picture')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadProfilePicture(
