@@ -1,12 +1,12 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 
 import { UserModule } from '../user/module';
 
 import { Party, PartySchema } from './schema';
 import { PartyService } from './service';
 import { PartyResolver } from './resolver';
-import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from '../logger';
 
 @Module({

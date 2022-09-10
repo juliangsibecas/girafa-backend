@@ -104,23 +104,36 @@ export class UserService {
     }
   }
 
-  async checkAvailability({
-    email,
-    nickname,
-  }: UserCheckAvailabilityDto): Promise<boolean> {
-    const sameEmail = Boolean(await this.model.findOne({ email }));
+  async checkNicknameAvailability(nickname: string): Promise<boolean> {
     const sameNickname = Boolean(await this.model.findOne({ nickname }));
 
-    if (!sameEmail && !sameNickname) return true;
+    if (!sameNickname) return;
+
+    throw new ValidationError({
+      ...insertObjectIf(sameNickname, {
+        nickname: 'El nombre de usuario ya esta en uso.',
+      }),
+    });
+  }
+
+  async checkEmailAvailability(email: string): Promise<boolean> {
+    const sameEmail = Boolean(await this.model.findOne({ email }));
+
+    if (!sameEmail) return;
 
     throw new ValidationError({
       ...insertObjectIf(sameEmail, {
         email: 'El correo electrónico ya esta en uso.',
       }),
-      ...insertObjectIf(sameNickname, {
-        nickname: 'El nombre de usuario ya esta en uso.',
-      }),
     });
+  }
+
+  async checkAvailability({
+    email,
+    nickname,
+  }: UserCheckAvailabilityDto): Promise<void> {
+    await this.checkEmailAvailability(email);
+    await this.checkNicknameAvailability(nickname);
   }
 
   async setRecoveryCode({ id, code }: UserSetRecoveryCodeDto): Promise<void> {

@@ -2,6 +2,7 @@ import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
 import { UnknownError } from 'src/core/graphql';
+import { ErrorCodes } from 'src/core/graphql/utils';
 import { CurrentUser } from '../auth/graphql/decorators';
 import { LoggerService } from '../logger';
 import { NotificationService, NotificationType } from '../notification';
@@ -34,8 +35,21 @@ export class UserResolver {
     @Args('data') data: UserEditInput,
   ): Promise<Boolean> {
     try {
+      const user = await this.users.getById({
+        id: userId,
+        select: ['nickname'],
+      });
+
+      if (user.nickname !== data.nickname) {
+        await this.users.checkNicknameAvailability(data.nickname);
+      }
+
       return Boolean(await this.users.edit({ id: userId, ...data }));
     } catch (e) {
+      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+        throw e;
+      }
+
       this.logger.error({
         path: 'UserEdit',
         data: {
