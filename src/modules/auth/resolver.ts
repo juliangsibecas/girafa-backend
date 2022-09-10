@@ -15,72 +15,103 @@ import { CustomContext, Id } from '../../common/types';
 import { AuthService } from './service';
 import { AllowAny, CurrentUser } from './graphql';
 import { AuthSignIn } from './response';
-import { ValidationError } from 'src/core/graphql';
+import { UnknownError, ValidationError } from 'src/core/graphql';
+import { LoggerService } from '../logger';
+import { ErrorCodes } from 'src/core/graphql/utils';
 
 @Resolver()
 export class AuthResolver {
   constructor(
+    private logger: LoggerService,
+    private mailer: MailerService,
     private users: UserService,
     private auth: AuthService,
-    private mailer: MailerService,
   ) {}
 
   @Mutation(() => AuthSignIn)
   @AllowAny()
   async signUp(
     @Context() ctx: CustomContext,
-    @Args('data') input: AuthSignUpInput,
+    @Args('data') data: AuthSignUpInput,
   ): Promise<AuthSignIn> {
-    await this.users.checkAvailability({
-      email: input.email,
-      nickname: input.nickname,
-    });
+    try {
+      await this.users.checkAvailability({
+        email: data.email,
+        nickname: data.nickname,
+      });
 
-    const password = await this.auth.encryptPassword(input.password);
-    const user = await this.users.create({ ...input, password });
+      const password = await this.auth.encryptPassword(data.password);
+      const user = await this.users.create({ ...data, password });
 
-    const accessToken = this.auth.setAccessToken({ ctx, userId: user._id });
-    const refreshToken = await this.auth.setRefreshToken({
-      ctx,
-      userId: user._id,
-    });
+      const accessToken = this.auth.setAccessToken({ ctx, userId: user._id });
+      const refreshToken = await this.auth.setRefreshToken({
+        ctx,
+        userId: user._id,
+      });
 
-    return { userId: user._id, accessToken, refreshToken };
+      return {
+        userId: user._id,
+        accessToken,
+        refreshToken,
+      };
+    } catch (e) {
+      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+        throw e;
+      }
+
+      this.logger.error({
+        path: 'AuthSignUp',
+        data: { ...data },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Mutation(() => AuthSignIn)
   @AllowAny()
   async signIn(
     @Context() ctx: CustomContext,
-    @Args('data') { email, password }: AuthSignInInput,
+    @Args('data') data: AuthSignInInput,
   ): Promise<AuthSignIn> {
-    const throwError = () => {
-      throw new ValidationError({
-        password: 'El usuario y/o contraseña son incorrectos.',
+    try {
+      const throwError = () => {
+        throw new ValidationError({
+          password: 'El usuario y/o contraseña son incorrectos.',
+        });
+      };
+
+      const user = await this.users.getByEmail({
+        email: data.email,
+        select: ['_id', 'password'],
       });
-    };
 
-    const user = await this.users.getByEmail({
-      email,
-      select: ['_id', 'password'],
-    });
+      if (!user) throwError();
 
-    if (!user) throwError();
+      const isCorrectPassword = await this.auth.comparePasswords(
+        data.password,
+        user.password,
+      );
 
-    const isCorrectPassword = await this.auth.comparePasswords(
-      password,
-      user.password,
-    );
+      if (!isCorrectPassword) throwError();
 
-    if (!isCorrectPassword) throwError();
+      const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
+      const refreshToken = await this.auth.setRefreshToken({
+        ctx,
+        userId: user.id,
+      });
 
-    const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
-    const refreshToken = await this.auth.setRefreshToken({
-      ctx,
-      userId: user.id,
-    });
+      return { userId: user.id, accessToken, refreshToken };
+    } catch (e) {
+      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+        throw e;
+      }
 
-    return { userId: user.id, accessToken, refreshToken };
+      this.logger.error({
+        path: 'AuthSignIn',
+        data: { ...data },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Mutation(() => AuthSignIn)
@@ -111,10 +142,10 @@ export class AuthResolver {
   @Mutation(() => Boolean)
   @AllowAny()
   async generateRecoveryCode(
-    @Args('data') { email }: AuthGenerateRecoveryCodeInput,
+    @Args('data') data: AuthGenerateRecoveryCodeInput,
   ): Promise<boolean> {
     try {
-      const user = await this.users.getByEmail({ email });
+      const user = await this.users.getByEmail(data);
 
       if (!user)
         throw new ValidationError({
@@ -126,7 +157,7 @@ export class AuthResolver {
       await this.users.setRecoveryCode({ id: user.id, code });
 
       const res = await this.mailer.sendMail({
-        to: email,
+        to: data.email,
         subject: 'Recuperar contraseña',
         text: code,
       });
@@ -135,26 +166,33 @@ export class AuthResolver {
 
       return true;
     } catch (e) {
-      console.log(e);
-      return e;
+      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+        throw e;
+      }
+
+      this.logger.error({
+        path: 'AuthGenerateRecoveryCode',
+        data: { ...data },
+      });
+      throw new UnknownError();
     }
   }
 
   @Mutation(() => Boolean)
   @AllowAny()
   async recoverPassword(
-    @Args('data') { code, email, password }: AuthRecoverPasswordInput,
+    @Args('data') data: AuthRecoverPasswordInput,
   ): Promise<boolean> {
     try {
       const user = await this.users.getByEmail({
-        email,
+        email: data.email,
         select: ['recoveryCode'],
       });
 
-      if (!(user.recoveryCode && user.recoveryCode === code))
+      if (!(user.recoveryCode && user.recoveryCode === data.code))
         throw new ForbiddenException('Invalid code');
 
-      const encryptedPassword = await this.auth.encryptPassword(password);
+      const encryptedPassword = await this.auth.encryptPassword(data.password);
 
       await this.users.setPassword({
         id: user.id,
@@ -163,15 +201,18 @@ export class AuthResolver {
 
       return true;
     } catch (e) {
-      console.log(e);
-      return false;
+      this.logger.error({
+        path: 'AuthRecoveryPassword',
+        data: { ...data },
+      });
+      throw new UnknownError();
     }
   }
 
   @Mutation(() => Boolean)
   async changePassword(
     @CurrentUser() userId: Id,
-    @Args('data') { currentPassword, newPassword }: AuthChangePasswordInput,
+    @Args('data') data: AuthChangePasswordInput,
   ): Promise<Boolean> {
     try {
       const user = await this.users.getById({
@@ -180,12 +221,14 @@ export class AuthResolver {
       });
 
       const isCorrectPassword = await this.auth.comparePasswords(
-        currentPassword,
+        data.currentPassword,
         user.password,
       );
 
       if (isCorrectPassword) {
-        const encryptedPassword = await this.auth.encryptPassword(newPassword);
+        const encryptedPassword = await this.auth.encryptPassword(
+          data.newPassword,
+        );
         await this.users.setPassword({
           id: user.id,
           password: encryptedPassword,
@@ -196,8 +239,11 @@ export class AuthResolver {
 
       return false;
     } catch (e) {
-      console.log(e);
-      return false;
+      this.logger.error({
+        path: 'AuthChangePassword',
+        data: { ...data },
+      });
+      throw new UnknownError();
     }
   }
 }

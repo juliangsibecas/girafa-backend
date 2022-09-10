@@ -7,10 +7,12 @@ import { Party, PartySchema } from './schema';
 import { PartyService } from './service';
 import { PartyResolver } from './resolver';
 import { ConfigModule } from '@nestjs/config';
+import { LoggerModule } from '../logger';
 
 @Module({
   imports: [
     ConfigModule,
+    LoggerModule,
     MongooseModule.forFeature([{ name: Party.name, schema: PartySchema }]),
     forwardRef(() => UserModule),
   ],

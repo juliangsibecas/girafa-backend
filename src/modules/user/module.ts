@@ -7,9 +7,11 @@ import { PartyModule } from '../party/module';
 import { User, UserSchema } from './schema';
 import { UserService } from './service';
 import { UserResolver } from './resolver';
+import { LoggerModule } from '../logger';
 
 @Module({
   imports: [
+    LoggerModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => PartyModule),
     forwardRef(() => NotificationModule),

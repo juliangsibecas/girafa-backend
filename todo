@@ -7,3 +7,7 @@ send push notification when expiring party to all attenders with cool data
 send email on party enable
 
 unused update_at?
+
+onesignal token env (key & appid)
+
+party name unique case sensitive

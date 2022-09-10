@@ -1,11 +1,11 @@
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
+import { UnknownError } from 'src/core/graphql';
 import { CurrentUser } from '../auth/graphql/decorators';
-import { NotificationService } from '../notification/service';
-import { NotificationType } from '../notification/type';
-import { PartyDocument, PartyPreview } from '../party';
-import { PartyService } from '../party/service';
+import { LoggerService } from '../logger';
+import { NotificationService, NotificationType } from '../notification';
+import { PartyDocument, PartyPreview, PartyService } from '../party';
 
 import {
   UserChangeAttendingStateInput,
@@ -21,6 +21,7 @@ import { UserService } from './service';
 @Resolver(() => User)
 export class UserResolver {
   constructor(
+    private logger: LoggerService,
     private users: UserService,
     @Inject(forwardRef(() => PartyService)) private parties: PartyService,
     @Inject(forwardRef(() => NotificationService))
@@ -30,13 +31,19 @@ export class UserResolver {
   @Mutation(() => Boolean)
   async userEdit(
     @CurrentUser() userId: Id,
-    @Args('data') { fullName, nickname }: UserEditInput,
+    @Args('data') data: UserEditInput,
   ): Promise<Boolean> {
     try {
-      return Boolean(await this.users.edit({ id: userId, fullName, nickname }));
+      return Boolean(await this.users.edit({ id: userId, ...data }));
     } catch (e) {
-      console.log(e);
-      return false;
+      this.logger.error({
+        path: 'UserEdit',
+        data: {
+          userId,
+          ...data,
+        },
+      });
+      throw new UnknownError();
     }
   }
 
@@ -44,7 +51,17 @@ export class UserResolver {
   userSearch(
     @Args('q', { nullable: true }) q: string = '',
   ): Promise<Array<UserPreview>> {
-    return this.users.search(q);
+    try {
+      return this.users.search(q);
+    } catch (e) {
+      this.logger.error({
+        path: 'UserSearch',
+        data: {
+          q,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Query(() => UserGetByIdResponse)
@@ -52,227 +69,311 @@ export class UserResolver {
     @CurrentUser() myId: Id,
     @Args('id', { type: () => String }) id: Id,
   ): Promise<UserGetByIdResponse> {
-    const user = await this.users.getById({
-      id,
-      select: [
-        '_id',
-        'nickname',
-        'fullName',
-        'followers',
-        'followingCount',
-        'followersCount',
-        'attendedPartiesCount',
-      ],
-    });
-
-    return {
-      ...user.toObject(),
-      isFollowing: Boolean(
-        (user.followers as unknown as Array<Id>).find((id) => id === myId),
-      ),
-    };
+    try {
+      const user = await this.users.getById({
+        id,
+        select: [
+          '_id',
+          'nickname',
+          'fullName',
+          'followers',
+          'followingCount',
+          'followersCount',
+          'attendedPartiesCount',
+        ],
+      });
+      return {
+        ...user.toObject(),
+        isFollowing: Boolean(
+          (user.followers as unknown as Array<Id>).find((id) => id === myId),
+        ),
+      };
+    } catch (e) {
+      this.logger.error({
+        path: 'UserGetById',
+        data: {
+          myId,
+          id,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Query(() => [UserPreview])
   async userGetFollowersById(
     @Args('id', { type: () => String }) id: Id,
   ): Promise<Array<UserPreview>> {
-    const user = await this.users.getById({
-      id,
-      select: ['_id'],
-      relations: [
-        {
-          path: 'followers',
-          select: ['_id', 'nickname', 'fullName'],
-        },
-      ],
-    });
+    try {
+      const user = await this.users.getById({
+        id,
+        select: ['_id'],
+        relations: [
+          {
+            path: 'followers',
+            select: ['_id', 'nickname', 'fullName'],
+          },
+        ],
+      });
 
-    return user.followers;
+      return user.followers;
+    } catch (e) {
+      this.logger.error({
+        path: 'UserGetFollowersById',
+        data: {
+          id,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Query(() => [UserPreview])
   async userGetFollowingById(
     @Args('id', { type: () => String }) id: Id,
   ): Promise<Array<UserPreview>> {
-    const user = await this.users.getById({
-      id,
-      select: ['_id'],
-      relations: [
-        {
-          path: 'following',
-          select: ['_id', 'nickname', 'fullName'],
-        },
-      ],
-    });
+    try {
+      const user = await this.users.getById({
+        id,
+        select: ['_id'],
+        relations: [
+          {
+            path: 'following',
+            select: ['_id', 'nickname', 'fullName'],
+          },
+        ],
+      });
 
-    return user.following;
+      return user.following;
+    } catch (e) {
+      this.logger.error({
+        path: 'UserGetFollowingById',
+        data: {
+          id,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Query(() => [PartyPreview])
   async userGetAttendedPartiesById(
     @Args('id', { type: () => String }) id: Id,
   ): Promise<Array<PartyPreview>> {
-    const user = await this.users.getById({
-      id,
-      select: ['_id'],
-      relations: [
-        {
-          path: 'attendedParties',
-          select: ['_id', 'name'],
-          populate: {
-            path: 'organizer',
-            select: ['nickname'],
+    try {
+      const user = await this.users.getById({
+        id,
+        select: ['_id'],
+        relations: [
+          {
+            path: 'attendedParties',
+            select: ['_id', 'name'],
+            populate: {
+              path: 'organizer',
+              select: ['nickname'],
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
 
-    return user.attendedParties.map((party: PartyDocument) => ({
-      ...party.toObject(),
-      organizerNickname: party.organizer.nickname,
-    }));
+      return user.attendedParties.map((party: PartyDocument) => ({
+        ...party.toObject(),
+        organizerNickname: party.organizer.nickname,
+      }));
+    } catch (e) {
+      this.logger.error({
+        path: 'UserGetAttendedPartiesById',
+        data: {
+          id,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Query(() => [User])
   async userSearchFollowersToInvite(
     @CurrentUser() userId: Id,
-    @Args('data') { partyId, q }: UserSearchFollowersToInviteInput,
+    @Args('data') data: UserSearchFollowersToInviteInput,
   ): Promise<Array<User>> {
-    const like = { $regex: q, $options: 'i' };
+    try {
+      const like = { $regex: data.q, $options: 'i' };
 
-    const user = await this.users.getById({
-      id: userId,
-      relations: [
-        {
-          path: 'followers',
-          select: ['_id', 'nickname', 'fullName'],
-          match: {
-            nickname: like,
-            fullName: like,
-            attendedParties: { $ne: partyId },
+      const user = await this.users.getById({
+        id: userId,
+        relations: [
+          {
+            path: 'followers',
+            select: ['_id', 'nickname', 'fullName'],
+            match: {
+              nickname: like,
+              fullName: like,
+              attendedParties: { $ne: data.partyId },
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
 
-    return user.followers;
+      return user.followers;
+    } catch (e) {
+      this.logger.error({
+        path: 'UserSearchFollowersToInvite',
+        data: {
+          userId,
+          ...data,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Mutation(() => Boolean)
   async userChangeFollowingState(
     @CurrentUser() userId: Id,
-    @Args('data') { followingId, state }: UserChangeFollowingStateInput,
+    @Args('data') data: UserChangeFollowingStateInput,
   ): Promise<boolean> {
-    if (userId === followingId) throw new Error('Same user');
+    try {
+      if (userId === data.followingId) throw new Error('Same user');
 
-    const user = await this.users.getById({
-      id: userId,
-      select: ['nickname', 'following'],
-    });
-
-    const following = await this.users.getById({
-      id: followingId,
-      select: ['nickname'],
-    });
-
-    if (!user || !following) throw new Error('User not found');
-
-    if (state) {
-      await this.users.follow({ user, following });
-
-      await this.notifications.create({
-        type: NotificationType.FOLLOW,
-        user: following,
-        from: user,
+      const user = await this.users.getById({
+        id: userId,
+        select: ['nickname', 'following'],
       });
-    } else {
-      await this.users.unfollow({ user, following });
-    }
 
-    return true;
+      const following = await this.users.getById({
+        id: data.followingId,
+        select: ['nickname'],
+      });
+
+      if (!user || !following) throw new Error('User not found');
+
+      if (data.state) {
+        await this.users.follow({ user, following });
+
+        await this.notifications.create({
+          type: NotificationType.FOLLOW,
+          user: following,
+          from: user,
+        });
+      } else {
+        await this.users.unfollow({ user, following });
+      }
+
+      return true;
+    } catch (e) {
+      this.logger.error({
+        path: 'UserChangeFollowingState',
+        data: {
+          userId,
+          ...data,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 
   @Mutation(() => Boolean)
   async userChangeAttendingState(
     @CurrentUser() userId: Id,
-    @Args('data') { partyId, state }: UserChangeAttendingStateInput,
+    @Args('data') data: UserChangeAttendingStateInput,
   ): Promise<boolean> {
-    const user = await this.users.getById({
-      id: userId,
-    });
+    try {
+      const user = await this.users.getById({
+        id: userId,
+      });
 
-    const party = await this.parties.getById({
-      id: partyId,
-      select: ['_id', 'availability', 'isExpired', 'attenders', 'invited'],
-      relations: ['organizer'],
-    });
+      const party = await this.parties.getById({
+        id: data.partyId,
+        select: ['_id', 'availability', 'isExpired', 'attenders', 'invited'],
+        relations: ['organizer'],
+      });
 
-    if (!user || !party) throw new Error();
+      if (!user || !party) throw new Error();
 
-    if (
-      party.isExpired ||
-      !(await this.parties.userCanAttend({ user, party }))
-    ) {
-      throw new UnauthorizedException();
+      if (
+        party.isExpired ||
+        !(await this.parties.userCanAttend({ user, party }))
+      ) {
+        throw new UnauthorizedException();
+      }
+
+      if (data.state) {
+        await this.users.attend({ user, party });
+        await this.parties.addAttender({ user, party });
+      } else {
+        await this.users.unattend({ user, party });
+        await this.parties.removeAttender({ user, party });
+      }
+
+      return true;
+    } catch (e) {
+      this.logger.error({
+        path: 'UserChangeAttendingState',
+        data: {
+          userId,
+          ...data,
+        },
+      });
+      throw new UnknownError();
     }
-
-    if (state) {
-      await this.users.attend({ user, party });
-      await this.parties.addAttender({ user, party });
-    } else {
-      await this.users.unattend({ user, party });
-      await this.parties.removeAttender({ user, party });
-    }
-
-    return true;
   }
 
   @Mutation(() => Boolean)
   async userSendPartyInvite(
     @CurrentUser() userId: Id,
-    @Args('data') { partyId, invitedId }: UserSendPartyInviteInput,
+    @Args('data') data: UserSendPartyInviteInput,
   ): Promise<Boolean> {
-    // TODO: avoid being re-invited by the same user
+    try {
+      // TODO: avoid being re-invited by the same user
 
-    const party = await this.parties.getById({
-      id: partyId,
-      select: ['name', 'allowInvites', 'isExpired'],
-      relations: ['organizer', 'invited'],
-    });
+      const party = await this.parties.getById({
+        id: data.partyId,
+        select: ['name', 'allowInvites', 'isExpired'],
+        relations: ['organizer', 'invited'],
+      });
 
-    if (
-      party.isExpired ||
-      (!party.allowInvites && party.organizer._id !== userId)
-    )
-      throw new UnauthorizedException();
+      if (
+        party.isExpired ||
+        (!party.allowInvites && party.organizer._id !== userId)
+      )
+        throw new UnauthorizedException();
 
-    const user = await this.users.getById({
-      id: userId,
-      select: ['_id', 'nickname'],
-    });
+      const user = await this.users.getById({
+        id: userId,
+        select: ['_id', 'nickname'],
+      });
 
-    // avaid auto-inviting
-    const filteredInivitedId = invitedId.filter((id) => id !== userId);
+      // avaid auto-inviting
+      const filteredInivitedId = data.invitedId.filter((id) => id !== userId);
 
-    await this.parties.addInvited({ party, invitedId: filteredInivitedId });
+      await this.parties.addInvited({ party, invitedId: filteredInivitedId });
 
-    await Promise.all(
-      filteredInivitedId.map(async (id) => {
-        const invited = await this.users.getById({
-          id: id,
-          select: ['_id', 'nickname'],
-        });
+      await Promise.all(
+        filteredInivitedId.map(async (id) => {
+          const invited = await this.users.getById({
+            id: id,
+            select: ['_id', 'nickname'],
+          });
 
-        return this.notifications.create({
-          type: NotificationType.INVITE,
-          user: invited,
-          from: user,
-          party,
-        });
-      }),
-    );
+          return this.notifications.create({
+            type: NotificationType.INVITE,
+            user: invited,
+            from: user,
+            party,
+          });
+        }),
+      );
 
-    return true;
+      return true;
+    } catch (e) {
+      this.logger.error({
+        path: 'UserSendPartyInvite',
+        data: {
+          userId,
+          ...data,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 }

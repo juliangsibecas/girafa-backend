@@ -1,6 +1,8 @@
 import { Query, Resolver } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
+import { UnknownError } from 'src/core/graphql';
 import { CurrentUser } from '../auth/graphql';
+import { LoggerService } from '../logger';
 import { UserNotification } from './response';
 
 import { Notification } from './schema';
@@ -8,12 +10,25 @@ import { NotificationService } from './service';
 
 @Resolver(() => Notification)
 export class NotificationResolver {
-  constructor(private notifications: NotificationService) {}
+  constructor(
+    private logger: LoggerService,
+    private notifications: NotificationService,
+  ) {}
 
   @Query(() => [UserNotification])
   getNotifications(
     @CurrentUser() userId: Id,
   ): Promise<Array<UserNotification>> {
-    return this.notifications.getByUserId(userId);
+    try {
+      return this.notifications.getByUserId(userId);
+    } catch (e) {
+      this.logger.error({
+        path: 'getNotifications',
+        data: {
+          userId,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 }

@@ -55,6 +55,12 @@ export class EnvironmentVariables {
 
   @IsNotEmpty()
   MAILER_PASSWORD: string;
+
+  @IsNotEmpty()
+  TELEGRAM_KEY: string;
+
+  @IsNotEmpty()
+  TELEGRAM_CHANNEL_ID: string;
 }
 
 export type RawEnvironmentVariables = Record<

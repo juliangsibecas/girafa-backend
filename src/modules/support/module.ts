@@ -1,12 +1,15 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
+
+import { LoggerModule } from '../logger';
+
 import { SupportMessage, SupportMessageSchema } from './schema';
 import { SupportService } from './service';
 import { SupportResolver } from './resolver';
 
 @Module({
   imports: [
+    LoggerModule,
     MongooseModule.forFeature([
       { name: SupportMessage.name, schema: SupportMessageSchema },
     ]),

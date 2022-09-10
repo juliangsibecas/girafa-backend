@@ -1,7 +1,9 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
+import { UnknownError } from 'src/core/graphql';
 
 import { CurrentUser } from '../auth/graphql';
+import { LoggerService } from '../logger';
 
 import { SupportSendMessageInput } from './input';
 import { SupportMessage } from './schema';
@@ -9,24 +11,30 @@ import { SupportService } from './service';
 
 @Resolver(() => SupportMessage)
 export class SupportResolver {
-  constructor(private supportMessages: SupportService) {}
+  constructor(
+    private logger: LoggerService,
+    private supportMessages: SupportService,
+  ) {}
 
   @Mutation(() => Boolean)
   async supportSendMessage(
     @CurrentUser() userId: Id,
-    @Args('data') { subject, body }: SupportSendMessageInput,
+    @Args('data') data: SupportSendMessageInput,
   ): Promise<Boolean> {
     try {
       return Boolean(
         await this.supportMessages.createMessage({
           userId,
-          subject,
-          body,
+          subject: data.subject,
+          body: data.body,
         }),
       );
     } catch (e) {
-      console.log(e);
-      return false;
+      this.logger.error({
+        path: 'supportSendMessage',
+        data: { ...data },
+      });
+      throw new UnknownError();
     }
   }
 }

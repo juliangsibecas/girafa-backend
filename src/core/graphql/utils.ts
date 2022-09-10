@@ -8,8 +8,6 @@ export enum ErrorCodes {
 }
 
 export const handleError = (err: GraphQLError): GraphQLFormattedError => {
-  console.error(err);
-
   if (err instanceof AuthenticationError) {
     return { message: ErrorCodes.AUTH_ERROR };
   }
@@ -17,7 +15,7 @@ export const handleError = (err: GraphQLError): GraphQLFormattedError => {
   if (err instanceof GraphQLError) {
     return {
       message: err.message,
-      extensions: err.extensions.errors as Record<string, string>,
+      extensions: err.extensions as Record<string, string>,
     };
   }
 

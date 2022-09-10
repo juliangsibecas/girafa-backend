@@ -8,6 +8,7 @@ import { jwtConfig } from '../jwt';
 import { mailerConfig } from '../mailer';
 import { dbConfig } from '../mongoose';
 import { s3Config } from '../s3';
+import { telegramConfig } from '../telegram';
 
 import { EnvironmentVariables } from './types';
 
@@ -28,6 +29,14 @@ const validate = (config: Record<string, unknown>) => {
 
 export const configModuleOptions: ConfigModuleOptions = {
   envFilePath: `.env.${process.env.NODE_ENV}`,
-  load: [appConfig, dbConfig, s3Config, authConfig, jwtConfig, mailerConfig],
+  load: [
+    appConfig,
+    dbConfig,
+    s3Config,
+    authConfig,
+    jwtConfig,
+    mailerConfig,
+    telegramConfig,
+  ],
   validate: validate,
 };

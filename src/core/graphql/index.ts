@@ -11,10 +11,6 @@ export const gqlModuleOptions: GraphQLModule['options'] = {
   debug: false,
   formatError: handleError,
   context: ({ req, res }) => ({ req, res }),
-  subscriptions: {
-    'graphql-ws': true,
-    'subscriptions-transport-ws': true,
-  },
 };
 
 export * from './errors';

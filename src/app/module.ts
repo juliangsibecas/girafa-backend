@@ -9,15 +9,15 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { configModuleOptions } from '../core/config';
 import { gqlModuleOptions } from '../core/graphql';
 import { mailerModuleOptions } from '../core/mailer';
+import { mongooseModuleOptions } from '../core/mongoose';
 
 import { UserModule } from '../modules/user';
 import { AuthModule } from '../modules/auth';
 import { GqlAuthGuard } from '../modules/auth';
 import { PartyModule } from '../modules/party';
 import { ImageModule } from '../modules/image';
-import { NotificationModule } from 'src/modules/notification';
-import { mongooseModuleOptions } from 'src/core/mongoose';
-import { SupportModule } from 'src/modules/support';
+import { NotificationModule } from '../modules/notification';
+import { SupportModule } from '../modules/support';
 
 @Module({
   imports: [
@@ -26,6 +26,7 @@ import { SupportModule } from 'src/modules/support';
     MongooseModule.forRootAsync(mongooseModuleOptions),
     ScheduleModule.forRoot(),
     GraphQLModule.forRoot(gqlModuleOptions),
+
     AuthModule,
     ImageModule,
     NotificationModule,
