@@ -8,10 +8,3 @@ export type NotificationCreateDto = {
   from: User;
   party?: Party;
 };
-
-export type NotificationDebounceDto = {
-  type: NotificationType;
-  user: User;
-  from: User;
-  party?: Party;
-};

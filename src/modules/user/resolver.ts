@@ -211,7 +211,7 @@ export class UserResolver {
     @Args('data') data: UserSearchFollowersToInviteInput,
   ): Promise<Array<User>> {
     try {
-      const like = { $regex: data.q, $options: 'i' };
+      const like = { $regex: data.q ?? '', $options: 'i' };
 
       const user = await this.users.getById({
         id: userId,

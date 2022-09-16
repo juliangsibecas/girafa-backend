@@ -1,7 +1,7 @@
 import * as OneSignal from '@onesignal/node-onesignal';
 import { Injectable } from '@nestjs/common';
 
-import { NotificationCreateDto, NotificationDebounceDto } from './dto';
+import { NotificationCreateDto } from './dto';
 import { Notification, NotificationDocument } from './schema';
 import { NotificationType } from './type';
 import { insertObjectIf } from 'src/common/utils';
@@ -41,42 +41,51 @@ export class NotificationService {
     );
   }
 
-  async create(dto: NotificationCreateDto): Promise<void> {
-    const alreadyNotified = false && (await this.debounce(dto));
-
-    if (!alreadyNotified) {
-      const { type, user, from, party } = dto;
-      const notification = await this.notifications.create({
-        type,
-        user: user._id,
-        from: from._id,
-        ...insertObjectIf(type === NotificationType.INVITE, {
-          party,
-        }),
-      });
-
-      await this.push({
-        ...notification.toJSON(),
-        user,
-        from,
-        party,
-      });
-    }
-  }
-
-  async debounce({ type, user, from, party }: NotificationDebounceDto) {
-    const debounceDate = new Date();
-    debounceDate.setHours(debounceDate.getHours() - 6);
-
-    const notification = await this.notifications.findOne({
+  async create({
+    type,
+    user,
+    from,
+    party,
+  }: NotificationCreateDto): Promise<void> {
+    const oldNotification = await this.notifications.findOne({
       type,
       user: user._id,
       from: from._id,
-      createdAt: { $gt: debounceDate },
-      ...insertObjectIf(type === NotificationType.INVITE, { party }),
+      ...insertObjectIf(type === NotificationType.INVITE, {
+        party,
+      }),
     });
 
-    return Boolean(notification);
+    if (oldNotification) {
+      if (this.debounce(oldNotification)) {
+        return;
+      }
+
+      oldNotification.remove();
+    }
+
+    const notification = await this.notifications.create({
+      type,
+      user: user._id,
+      from: from._id,
+      ...insertObjectIf(type === NotificationType.INVITE, {
+        party,
+      }),
+    });
+
+    await this.push({
+      ...notification.toJSON(),
+      user,
+      from,
+      party,
+    });
+  }
+
+  debounce(notification: Notification) {
+    const debounceDate = new Date();
+    debounceDate.setHours(debounceDate.getHours() - 6);
+
+    return Boolean(debounceDate < notification.createdAt);
   }
 
   async push({ _id, from, type, user, party, createdAt }: Notification) {
