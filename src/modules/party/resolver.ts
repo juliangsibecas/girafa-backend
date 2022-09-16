@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
@@ -23,6 +24,7 @@ export class PartyResolver {
   constructor(
     private config: ConfigService,
     private logger: LoggerService,
+    private mailer: MailerService,
     private parties: PartyService,
     @Inject(forwardRef(() => UserService)) private users: UserService,
   ) {}
@@ -72,14 +74,23 @@ export class PartyResolver {
       if (!user) throw new Error();
       if (user.email !== this.config.get('ADMIN_EMAIL'))
         throw new ForbiddenError('');
+
       const party = await this.parties.enable(partyId);
+
       if (party) {
         const organizer = await this.users.getById({
           id: party.organizer as unknown as string,
+          select: ['email', 'attendedParties'],
         });
 
         await this.parties.addAttender({ user: organizer, party });
         await this.users.attend({ user: organizer, party });
+
+        await this.mailer.sendMail({
+          to: organizer.email,
+          subject: 'Fiesta enabled',
+          text: 'Fiesta enabled',
+        });
 
         return true;
       }
