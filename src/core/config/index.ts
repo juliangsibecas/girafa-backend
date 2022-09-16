@@ -7,6 +7,7 @@ import { authConfig } from '../../modules/auth';
 import { jwtConfig } from '../jwt';
 import { mailerConfig } from '../mailer';
 import { dbConfig } from '../mongoose';
+import { onesignalConfig } from '../onesignal';
 import { s3Config } from '../s3';
 import { telegramConfig } from '../telegram';
 
@@ -37,6 +38,7 @@ export const configModuleOptions: ConfigModuleOptions = {
     jwtConfig,
     mailerConfig,
     telegramConfig,
+    onesignalConfig,
   ],
   validate: validate,
 };

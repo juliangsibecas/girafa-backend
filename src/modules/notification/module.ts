@@ -1,4 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LoggerModule } from '../logger';
 
@@ -10,6 +11,7 @@ import { NotificationService } from './service';
 
 @Module({
   imports: [
+    ConfigModule,
     LoggerModule,
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },

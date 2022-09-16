@@ -8,26 +8,28 @@ import { insertObjectIf } from 'src/common/utils';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Id } from 'src/common/types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class NotificationService {
   onesignal: OneSignal.DefaultApi;
 
   constructor(
+    private config: ConfigService,
     @InjectModel(Notification.name)
     private notifications: Model<NotificationDocument>,
   ) {
-    const config = OneSignal.createConfiguration({
-      authMethods: {
-        app_key: {
-          tokenProvider: {
-            getToken: () => 'ZWQzYzYzZTEtNDFkNC00NDQzLThkNTMtZmQ2OTc2NzgyNDgx',
+    this.onesignal = new OneSignal.DefaultApi(
+      OneSignal.createConfiguration({
+        authMethods: {
+          app_key: {
+            tokenProvider: {
+              getToken: () => this.config.get('onesignal.apiKey'),
+            },
           },
         },
-      },
-    });
-
-    this.onesignal = new OneSignal.DefaultApi(config);
+      }),
+    );
   }
 
   async getByUserId(id: Id): Promise<Array<Notification>> {
@@ -95,7 +97,7 @@ export class NotificationService {
         : `${from.nickname} te invito a ${party?.name}`;
 
     await this.onesignal.createNotification({
-      app_id: '1f129d21-afb8-4933-9863-e1ff0ce80f2f',
+      app_id: this.config.get('onesignal.appId'),
       external_id: _id,
       included_segments: [],
       include_external_user_ids: [user._id.toString()],

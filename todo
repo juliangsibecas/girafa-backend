@@ -6,7 +6,4 @@ send email on party enable
 
 unused update_at?
 
-onesignal token env (key & appid)
-
 party name unique case sensitive
-
