@@ -9,11 +9,6 @@ export class ValidationError extends GraphQLError {
 
 export class UnknownError extends GraphQLError {
   constructor() {
-    super(ErrorCodes.UNKNOWN_ERROR, {
-      extensions: {
-        path: 'hola',
-        id: 'id',
-      },
-    });
+    super(ErrorCodes.UNKNOWN_ERROR, {});
   }
 }

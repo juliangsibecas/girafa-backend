@@ -91,6 +91,7 @@ export class NotificationService {
   }
 
   async push({ _id, from, type, user, party, createdAt }: Notification) {
+    // todo
     const body =
       type === NotificationType.FOLLOW
         ? `${from.nickname} ahora te sigue`
@@ -112,6 +113,5 @@ export class NotificationService {
         createdAt,
       },
     });
-    // this.pubSub.publish('aoeu', notification);
   }
 }

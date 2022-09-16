@@ -6,7 +6,10 @@ import { v4 } from 'uuid';
 import { BaseSchema, Id } from 'src/common/types';
 import { User } from '../user';
 
-@Schema({ timestamps: { createdAt: true }, collection: 'support-messages' })
+@Schema({
+  timestamps: { createdAt: true, updatedAt: false },
+  collection: 'support_messages',
+})
 @ObjectType()
 export class SupportMessage extends BaseSchema {
   @Prop({ type: String, default: v4 })
