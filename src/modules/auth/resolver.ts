@@ -4,6 +4,15 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 import { UserService } from '../user/service';
 
+import { CustomContext, Id } from '../../common/types';
+import { UnknownError, ValidationError } from '../../core/graphql';
+import { ErrorCodes } from '../../core/graphql/utils';
+
+import { LoggerService } from '../logger';
+
+import { AuthService } from './service';
+import { AllowAny, CurrentUser } from './graphql';
+import { AuthSignIn } from './response';
 import {
   AuthSignInInput,
   AuthSignUpInput,
@@ -11,13 +20,6 @@ import {
   AuthGenerateRecoveryCodeInput,
   AuthChangePasswordInput,
 } from './input';
-import { CustomContext, Id } from '../../common/types';
-import { AuthService } from './service';
-import { AllowAny, CurrentUser } from './graphql';
-import { AuthSignIn } from './response';
-import { UnknownError, ValidationError } from 'src/core/graphql';
-import { LoggerService } from '../logger';
-import { ErrorCodes } from 'src/core/graphql/utils';
 
 @Resolver()
 export class AuthResolver {

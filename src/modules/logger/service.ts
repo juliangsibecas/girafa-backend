@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TelegramService } from 'nestjs-telegram';
-import { ErrorCodes } from 'src/core/graphql/utils';
+
+import { ErrorCodes } from '../../core/graphql/utils';
+
 import { LoggerErrorDto } from './dto';
 
 @Injectable()

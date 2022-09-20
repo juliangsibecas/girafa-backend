@@ -12,3 +12,15 @@ export class UnknownError extends GraphQLError {
     super(ErrorCodes.UNKNOWN_ERROR, {});
   }
 }
+
+export class NotFoundError extends GraphQLError {
+  constructor() {
+    super(ErrorCodes.NOT_FOUND_ERROR, {});
+  }
+}
+
+export class ForbiddenError extends GraphQLError {
+  constructor() {
+    super(ErrorCodes.FORBIDDEN_ERROR, {});
+  }
+}

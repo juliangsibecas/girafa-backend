@@ -1,8 +1,10 @@
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Id } from 'src/common/types';
-import { UnknownError } from 'src/core/graphql';
-import { ErrorCodes } from 'src/core/graphql/utils';
+
+import { Id } from '../../common/types';
+import { NotFoundError, UnknownError } from '../../core/graphql';
+import { ErrorCodes } from '../../core/graphql/utils';
+
 import { CurrentUser } from '../auth/graphql/decorators';
 import { LoggerService } from '../logger';
 import { NotificationService, NotificationType } from '../notification';
@@ -61,6 +63,59 @@ export class UserResolver {
     }
   }
 
+  @Mutation(() => Boolean)
+  async userDelete(@CurrentUser() userId: Id): Promise<Boolean> {
+    try {
+      const user = await this.users.getById({
+        id: userId,
+        select: ['followers', 'following', 'attendedParties'],
+      });
+
+      await Promise.all([
+        Promise.all(
+          (user.followers as unknown as Array<Id>).map(async (followerId) =>
+            this.users.unfollow({
+              user: await this.users.getById({ id: followerId }),
+              following: user,
+            }),
+          ),
+        ),
+        Promise.all(
+          (user.following as unknown as Array<Id>).map(async (followingId) =>
+            this.users.unfollow({
+              user,
+              following: await this.users.getById({ id: followingId }),
+            }),
+          ),
+        ),
+        Promise.all(
+          (user.attendedParties as unknown as Array<Id>).map(async (partyId) =>
+            this.parties.removeAttender({
+              user,
+              party: await this.parties.getById({ id: partyId }),
+            }),
+          ),
+        ),
+      ]);
+
+      await user.remove();
+
+      return true;
+    } catch (e) {
+      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+        throw e;
+      }
+
+      this.logger.error({
+        path: 'UserDelete',
+        data: {
+          userId,
+        },
+      });
+      throw new UnknownError();
+    }
+  }
+
   @Query(() => [UserPreview])
   userSearch(
     @Args('q', { nullable: true }) q: string = '',
@@ -96,6 +151,9 @@ export class UserResolver {
           'attendedPartiesCount',
         ],
       });
+
+      if (!user) throw new NotFoundError();
+
       return {
         ...user.toObject(),
         isFollowing: Boolean(
@@ -103,6 +161,10 @@ export class UserResolver {
         ),
       };
     } catch (e) {
+      if (e.message === ErrorCodes.NOT_FOUND_ERROR) {
+        throw e;
+      }
+
       this.logger.error({
         path: 'UserGetById',
         data: {
@@ -110,6 +172,7 @@ export class UserResolver {
           id,
         },
       });
+
       throw new UnknownError();
     }
   }

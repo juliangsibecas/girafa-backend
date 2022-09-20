@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Model } from 'mongoose';
 
-import { ValidationError } from 'src/core/graphql';
+import { ValidationError } from '../../core/graphql';
 import { Id, Maybe } from '../../common/types';
 
 import {

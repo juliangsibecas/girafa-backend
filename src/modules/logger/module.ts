@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TelegramModule } from 'nestjs-telegram';
-import { telegramModuleOptions } from 'src/core/telegram';
+
+import { telegramModuleOptions } from '../../core/telegram';
+
 import { LoggerService } from './service';
 
 @Module({

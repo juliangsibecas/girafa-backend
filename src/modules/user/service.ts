@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { insertObjectIf } from 'src/common/utils';
-import { ValidationError } from 'src/core/graphql';
 
+import { insertObjectIf } from '../../common/utils';
+import { ValidationError } from '../../core/graphql';
 import { Maybe } from '../../common/types';
 
 import {
@@ -31,6 +31,7 @@ export class UserService {
   async edit(dto: UserEditDto): Promise<User> {
     return this.model.findByIdAndUpdate(dto.id, dto);
   }
+
 
   async search(q: string): Promise<Array<User>> {
     const like = { $regex: q, $options: 'i' };

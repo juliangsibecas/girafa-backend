@@ -2,7 +2,9 @@ import { v4 } from 'uuid';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { BaseSchema, Id } from 'src/common/types';
+
+import { BaseSchema, Id } from '../../common/types';
+
 import { Notification } from '../notification/schema';
 import { Party } from '../party/schema';
 

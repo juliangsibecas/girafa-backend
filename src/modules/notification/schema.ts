@@ -1,10 +1,13 @@
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { BaseSchema, Id } from 'src/common/types';
 import { v4 } from 'uuid';
-import { Party } from '../party';
+
+import { BaseSchema, Id } from '../../common/types';
+
 import { User } from '../user/schema';
+import { Party } from '../party';
+
 import { NotificationType } from './type';
 
 registerEnumType(NotificationType, {

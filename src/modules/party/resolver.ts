@@ -2,10 +2,15 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { ForbiddenError } from 'apollo-server-express';
-import { Id } from 'src/common/types';
-import { UnknownError } from 'src/core/graphql';
-import { ErrorCodes } from 'src/core/graphql/utils';
+
+import { Id } from '../../common/types';
+import {
+  ForbiddenError,
+  NotFoundError,
+  UnknownError,
+} from '../../core/graphql';
+import { ErrorCodes } from '../../core/graphql';
+
 import { CurrentUser } from '../auth/graphql';
 import { LoggerService } from '../logger';
 import { User, UserPreview, UserService } from '../user';
@@ -73,7 +78,7 @@ export class PartyResolver {
 
       if (!user) throw new Error();
       if (user.email !== this.config.get('ADMIN_EMAIL'))
-        throw new ForbiddenError('');
+        throw new ForbiddenError();
 
       const party = await this.parties.enable(partyId);
 
@@ -97,6 +102,8 @@ export class PartyResolver {
 
       return false;
     } catch (e) {
+      if (e.message === ErrorCodes.FORBIDDEN_ERROR) throw e;
+
       this.logger.error({
         path: 'partyEnable',
         code: e.message,
@@ -167,8 +174,10 @@ export class PartyResolver {
         ],
       });
 
+      if (!party) throw new NotFoundError();
+
       if (!(await this.parties.userCanAttend({ party, user })))
-        throw new UnauthorizedException();
+        throw new ForbiddenError();
 
       return {
         ...party.toObject(),
@@ -178,6 +187,7 @@ export class PartyResolver {
         isOrganizer: userId === party.organizer._id,
       };
     } catch (e) {
+      if (e.message === ErrorCodes.FORBIDDEN_ERROR) throw e;
       this.logger.error({
         path: 'partyGetById',
         data: {

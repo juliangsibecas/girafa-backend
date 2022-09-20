@@ -1,5 +1,7 @@
 import { PopulateOptions } from 'mongoose';
-import { Id } from 'src/common/types';
+
+import { Id } from '../../common/types';
+
 import { PartyDocument } from '../party';
 import { User, UserDocument } from './schema';
 

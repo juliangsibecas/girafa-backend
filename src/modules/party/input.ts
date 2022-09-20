@@ -1,6 +1,8 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { DateResolver } from 'graphql-scalars';
-import { Id } from 'src/common/types';
+
+import { Id } from '../../common/types';
+
 import { Coordinate, CoordinateCreateInput } from './coordinate';
 import { PartyAvailability } from './types';
 

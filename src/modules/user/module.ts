@@ -8,6 +8,8 @@ import { User, UserSchema } from './schema';
 import { UserService } from './service';
 import { UserResolver } from './resolver';
 import { LoggerModule } from '../logger';
+import { UserFollowSeeder } from './__tests__/follow/seeder';
+import { UserDeleteSeeder } from './__tests__/delete/seeder';
 
 @Module({
   imports: [
@@ -17,6 +19,6 @@ import { LoggerModule } from '../logger';
     forwardRef(() => NotificationModule),
   ],
   exports: [UserService],
-  providers: [UserService, UserResolver],
+  providers: [UserService, UserResolver, UserFollowSeeder, UserDeleteSeeder],
 })
 export class UserModule {}

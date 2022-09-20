@@ -2,9 +2,12 @@ import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { DateResolver } from 'graphql-scalars';
 import * as mongoose from 'mongoose';
-import { BaseSchema, Id } from 'src/common/types';
 import { v4 } from 'uuid';
+
+import { BaseSchema, Id } from '../../common/types';
+
 import { User } from '../user/schema';
+
 import { Coordinate } from './coordinate';
 import { PartyAvailability } from './types';
 
@@ -53,7 +56,7 @@ export class Party extends BaseSchema {
   @Prop({
     type: [
       {
-        ref: User.name,
+        ref: 'User',
         type: String,
       },
     ],
@@ -66,7 +69,7 @@ export class Party extends BaseSchema {
   attendersCount: number;
 
   @Prop({
-    ref: User.name,
+    ref: 'User',
     type: String,
   })
   @Field(() => User)
@@ -75,7 +78,7 @@ export class Party extends BaseSchema {
   @Prop({
     type: [
       {
-        ref: User.name,
+        ref: 'User',
         type: String,
       },
     ],

@@ -3,7 +3,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { v4 } from 'uuid';
 
-import { BaseSchema, Id } from 'src/common/types';
+import { BaseSchema, Id } from '../../common/types';
+
 import { User } from '../user';
 
 @Schema({

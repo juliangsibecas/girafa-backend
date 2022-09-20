@@ -1,6 +1,7 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import { Id } from 'src/common/types';
-import { UnknownError } from 'src/core/graphql';
+
+import { Id } from '../../common/types';
+import { UnknownError } from '../../core/graphql';
 
 import { CurrentUser } from '../auth/graphql';
 import { LoggerService } from '../logger';

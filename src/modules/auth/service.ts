@@ -2,11 +2,13 @@ import * as bcrypt from 'bcrypt';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../user';
-import { AuthGetTokenDto } from './dto';
 
+import { CustomContext } from '../../common/types';
+
+import { UserService } from '../user';
+
+import { AuthGetTokenDto } from './dto';
 import { TokenPayload } from './types';
-import { CustomContext } from 'src/common/types';
 
 @Injectable()
 export class AuthService {

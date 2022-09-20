@@ -67,6 +67,7 @@ type Mutation {
   supportSendMessage(data: SupportSendMessageInput!): Boolean!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
+  userDelete: Boolean!
   userEdit(data: UserEditInput!): Boolean!
   userSendPartyInvite(data: UserSendPartyInviteInput!): Boolean!
 }

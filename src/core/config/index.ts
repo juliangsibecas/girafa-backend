@@ -2,7 +2,7 @@ import { ConfigModuleOptions } from '@nestjs/config';
 import { plainToClass } from 'class-transformer';
 import { validateSync } from 'class-validator';
 
-import { appConfig } from '../../app';
+import { appConfig } from '../../app/config';
 import { authConfig } from '../../modules/auth';
 import { jwtConfig } from '../jwt';
 import { mailerConfig } from '../mailer';

@@ -1,10 +1,12 @@
 import { Query, Resolver } from '@nestjs/graphql';
-import { Id } from 'src/common/types';
-import { UnknownError } from 'src/core/graphql';
+
+import { Id } from '../../common/types';
+import { UnknownError } from '../../core/graphql';
+
 import { CurrentUser } from '../auth/graphql';
 import { LoggerService } from '../logger';
-import { UserNotification } from './response';
 
+import { UserNotification } from './response';
 import { Notification } from './schema';
 import { NotificationService } from './service';
 

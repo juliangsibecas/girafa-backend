@@ -1,4 +1,4 @@
-import { Id } from 'src/common/types';
+import { Id } from '../../common/types';
 
 export type TokenPayload = {
   userId: Id;
