@@ -58,10 +58,21 @@ describe('(E2E) User - Follow', () => {
       token,
     );
 
-    const getByIdRes = await getUserById(server, MOCKED_USERS[1]._id, token);
+    const getUserByIdRes = await getUserById(
+      server,
+      MOCKED_USERS[0]._id,
+      token,
+    );
+    const getFollowedByIdRes = await getUserById(
+      server,
+      MOCKED_USERS[1]._id,
+      token,
+    );
 
     expect(followRes.data[followOperation]).toEqual(true);
-    expect(getByIdRes.data.isFollowing).toEqual(true);
+    expect(getUserByIdRes.data.followingCount).toEqual(1);
+    expect(getFollowedByIdRes.data.isFollowing).toEqual(true);
+    expect(getFollowedByIdRes.data.followersCount).toEqual(1);
   });
 
   it('should not follow itself', async () => {
@@ -97,7 +108,7 @@ describe('(E2E) User - Follow', () => {
     const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
     const token = signInRes.data.accessToken;
 
-    const follow = await gql<{ [followOperation]: boolean }>(
+    const followRes = await gql<{ [followOperation]: boolean }>(
       app.getHttpServer(),
       mutation({
         operation: followOperation,
@@ -115,9 +126,20 @@ describe('(E2E) User - Follow', () => {
       token,
     );
 
-    const getByIdRes = await getUserById(server, MOCKED_USERS[1]._id, token);
+    const getUserByIdRes = await getUserById(
+      server,
+      MOCKED_USERS[0]._id,
+      token,
+    );
+    const getFollowedByIdRes = await getUserById(
+      server,
+      MOCKED_USERS[1]._id,
+      token,
+    );
 
-    expect(follow.data[followOperation]).toEqual(true);
-    expect(getByIdRes.data.isFollowing).toEqual(false);
+    expect(followRes.data[followOperation]).toEqual(true);
+    expect(getUserByIdRes.data.followingCount).toEqual(0);
+    expect(getFollowedByIdRes.data.isFollowing).toEqual(false);
+    expect(getFollowedByIdRes.data.followersCount).toEqual(0);
   });
 });

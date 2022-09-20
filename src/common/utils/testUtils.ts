@@ -51,7 +51,12 @@ export const getUserById = async (
           value: id,
         },
       },
-      fields: ['followersCount', 'followingCount', 'isFollowing'],
+      fields: [
+        'followersCount',
+        'followingCount',
+        'attendedPartiesCount',
+        'isFollowing',
+      ],
     }),
     accessToken,
   );
@@ -80,7 +85,7 @@ export const getPartyById = async (
           value: id,
         },
       },
-      fields: ['attendersCount'],
+      fields: ['attendersCount', 'isAttender'],
     }),
     accessToken,
   );

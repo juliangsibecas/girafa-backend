@@ -7,8 +7,9 @@ import { ErrorCodes, gql } from '../../../../core/graphql';
 import { getPartyById, getUserById, signIn } from '../../../../common/utils';
 import { MOCKED_PARTIES } from '../../../../modules/party/__mocks__/party';
 
-import { UserDeleteSeeder } from './seeder';
 import { MOCKED_USERS } from '../../__mocks__/user';
+
+import { UserDeleteSeeder } from './seeder';
 
 describe('(E2E) User - Delete', () => {
   let app: INestApplication;

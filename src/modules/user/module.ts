@@ -3,13 +3,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { NotificationModule } from '../notification';
 import { PartyModule } from '../party/module';
+import { LoggerModule } from '../logger';
 
 import { User, UserSchema } from './schema';
 import { UserService } from './service';
 import { UserResolver } from './resolver';
-import { LoggerModule } from '../logger';
-import { UserFollowSeeder } from './__tests__/follow/seeder';
-import { UserDeleteSeeder } from './__tests__/delete/seeder';
+import { seeders } from './seeder';
 
 @Module({
   imports: [
@@ -19,6 +18,6 @@ import { UserDeleteSeeder } from './__tests__/delete/seeder';
     forwardRef(() => NotificationModule),
   ],
   exports: [UserService],
-  providers: [UserService, UserResolver, UserFollowSeeder, UserDeleteSeeder],
+  providers: [UserService, UserResolver, ...seeders],
 })
 export class UserModule {}

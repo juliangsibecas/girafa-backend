@@ -2,7 +2,11 @@ import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { Id } from '../../common/types';
-import { NotFoundError, UnknownError } from '../../core/graphql';
+import {
+  ForbiddenError,
+  NotFoundError,
+  UnknownError,
+} from '../../core/graphql';
 import { ErrorCodes } from '../../core/graphql/utils';
 
 import { CurrentUser } from '../auth/graphql/decorators';
@@ -371,7 +375,7 @@ export class UserResolver {
         party.isExpired ||
         !(await this.parties.userCanAttend({ user, party }))
       ) {
-        throw new UnauthorizedException();
+        throw new ForbiddenError();
       }
 
       if (data.state) {
@@ -384,6 +388,7 @@ export class UserResolver {
 
       return true;
     } catch (e) {
+      if (e.message) throw new ForbiddenError();
       this.logger.error({
         path: 'UserChangeAttendingState',
         data: {
