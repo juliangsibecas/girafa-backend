@@ -1,17 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TelegramService } from 'nestjs-telegram';
 
-import { ErrorCodes } from '../../core/graphql/utils';
+import { ErrorCodes } from '../../core/graphql';
 
-import { LoggerErrorDto } from './dto';
+import { LoggerDebugDto, LoggerErrorDto } from './dto';
 
 @Injectable()
 export class LoggerService {
+  private logger = new Logger();
+
   constructor(
     private config: ConfigService,
     private telegram: TelegramService,
   ) {}
+
+  async debug({ path, data }: LoggerDebugDto) {
+    this.logger.debug({ path, data });
+  }
 
   async error({ path, code = ErrorCodes.UNKNOWN_ERROR, data }: LoggerErrorDto) {
     this.telegram

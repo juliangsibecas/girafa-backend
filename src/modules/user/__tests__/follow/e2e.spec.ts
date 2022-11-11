@@ -3,31 +3,39 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { mutation } from 'gql-query-builder';
 
 import { AppModule } from '../../../../app';
-import { ErrorCodes, gql } from '../../../../core/graphql';
-import { getUserById, signIn } from '../../../../common/utils';
+import { ErrorCodes } from '../../../../core/graphql';
+import { TestSuite } from '../../../../common/utils';
 
 import { UserChangeFollowingStateInput } from '../../input';
-import { MOCKED_USERS } from '../../__mocks__/user';
 
-import { UserFollowSeeder } from './seeder';
+import { UserChangeFollowingStateSeeder } from './seeder';
+import { userChangeFollowingStateMocks } from './mocks';
 
 describe('(E2E) User - Follow', () => {
   let app: INestApplication;
-  let server: any;
-  let seeder: UserFollowSeeder;
+  let seeder: UserChangeFollowingStateSeeder;
+  let suite: TestSuite;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
-    seeder = module.get<UserFollowSeeder>(UserFollowSeeder);
+    seeder = module.get<UserChangeFollowingStateSeeder>(
+      UserChangeFollowingStateSeeder,
+    );
 
     await seeder.run();
 
     app = module.createNestApplication();
-    server = app.getHttpServer();
     await app.init();
+
+    suite = new TestSuite({
+      server: app.getHttpServer(),
+      ...userChangeFollowingStateMocks,
+    });
+
+    await suite.generateAccessTokens();
   });
 
   afterAll(async () => {
@@ -37,11 +45,7 @@ describe('(E2E) User - Follow', () => {
   it('should follow', async () => {
     const followOperation = 'userChangeFollowingState';
 
-    const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
-    const token = signInRes.data.accessToken;
-
-    const followRes = await gql<{ [followOperation]: boolean }>(
-      server,
+    const followRes = await suite.exec<{ [followOperation]: boolean }>(
       mutation({
         operation: followOperation,
         variables: {
@@ -49,25 +53,16 @@ describe('(E2E) User - Follow', () => {
             type: `UserChangeFollowingStateInput`,
             required: true,
             value: {
-              followingId: MOCKED_USERS[1]._id,
+              followingId: suite.users[1]._id,
               state: true,
             } as UserChangeFollowingStateInput,
           },
         },
       }),
-      token,
     );
 
-    const getUserByIdRes = await getUserById(
-      server,
-      MOCKED_USERS[0]._id,
-      token,
-    );
-    const getFollowedByIdRes = await getUserById(
-      server,
-      MOCKED_USERS[1]._id,
-      token,
-    );
+    const getUserByIdRes = await suite.getUserById(0);
+    const getFollowedByIdRes = await suite.getUserById(1);
 
     expect(followRes.data[followOperation]).toEqual(true);
     expect(getUserByIdRes.data.followingCount).toEqual(1);
@@ -78,11 +73,7 @@ describe('(E2E) User - Follow', () => {
   it('should not follow itself', async () => {
     const followOperation = 'userChangeFollowingState';
 
-    const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
-    const token = signInRes.data.accessToken;
-
-    const follow = await gql<{ [followOperation]: boolean }>(
-      server,
+    const followRes = await suite.exec<{ [followOperation]: boolean }>(
       mutation({
         operation: followOperation,
         variables: {
@@ -90,26 +81,21 @@ describe('(E2E) User - Follow', () => {
             type: `UserChangeFollowingStateInput`,
             required: true,
             value: {
-              followingId: MOCKED_USERS[0]._id,
+              followingId: suite.users[0]._id,
               state: true,
             } as UserChangeFollowingStateInput,
           },
         },
       }),
-      token,
     );
 
-    expect(follow.errors[0].message).toEqual(ErrorCodes.UNKNOWN_ERROR);
+    expect(followRes.errors[0].message).toEqual(ErrorCodes.UNKNOWN_ERROR);
   });
 
   it('should unfollow', async () => {
     const followOperation = 'userChangeFollowingState';
 
-    const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
-    const token = signInRes.data.accessToken;
-
-    const followRes = await gql<{ [followOperation]: boolean }>(
-      app.getHttpServer(),
+    const followRes = await suite.exec<{ [followOperation]: boolean }>(
       mutation({
         operation: followOperation,
         variables: {
@@ -117,25 +103,16 @@ describe('(E2E) User - Follow', () => {
             type: `UserChangeFollowingStateInput`,
             required: true,
             value: {
-              followingId: MOCKED_USERS[1]._id,
+              followingId: suite.users[1]._id,
               state: false,
             } as UserChangeFollowingStateInput,
           },
         },
       }),
-      token,
     );
 
-    const getUserByIdRes = await getUserById(
-      server,
-      MOCKED_USERS[0]._id,
-      token,
-    );
-    const getFollowedByIdRes = await getUserById(
-      server,
-      MOCKED_USERS[1]._id,
-      token,
-    );
+    const getUserByIdRes = await suite.getUserById(0);
+    const getFollowedByIdRes = await suite.getUserById(1);
 
     expect(followRes.data[followOperation]).toEqual(true);
     expect(getUserByIdRes.data.followingCount).toEqual(0);

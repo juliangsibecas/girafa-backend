@@ -3,11 +3,11 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { Id } from '../../common/types';
 import {
+  ErrorCodes,
   ForbiddenError,
   NotFoundError,
   UnknownError,
 } from '../../core/graphql';
-import { ErrorCodes } from '../../core/graphql/utils';
 
 import { CurrentUser } from '../auth/graphql/decorators';
 import { LoggerService } from '../logger';
@@ -30,9 +30,8 @@ export class UserResolver {
   constructor(
     private logger: LoggerService,
     private users: UserService,
-    @Inject(forwardRef(() => PartyService)) private parties: PartyService,
-    @Inject(forwardRef(() => NotificationService))
     private notifications: NotificationService,
+    @Inject(forwardRef(() => PartyService)) private parties: PartyService,
   ) {}
 
   @Mutation(() => Boolean)
@@ -100,9 +99,8 @@ export class UserResolver {
             }),
           ),
         ),
+        user.remove(),
       ]);
-
-      await user.remove();
 
       return true;
     } catch (e) {
@@ -389,6 +387,7 @@ export class UserResolver {
       return true;
     } catch (e) {
       if (e.message) throw new ForbiddenError();
+
       this.logger.error({
         path: 'UserChangeAttendingState',
         data: {

@@ -5,11 +5,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { insertObjectIf } from '../../common/utils';
-import { Id } from '../../common/types';
+import { Environment, Id } from '../../common/types';
 
 import { NotificationCreateDto } from './dto';
 import { Notification, NotificationDocument } from './schema';
-import { NotificationType } from './type';
+import { NotificationType } from './types';
 
 @Injectable()
 export class NotificationService {
@@ -76,11 +76,25 @@ export class NotificationService {
       }),
     });
 
-    await this.push({
-      ...notification.toJSON(),
-      user,
-      from,
-      party,
+    if (this.config.get('app.env') !== Environment.TEST) {
+      await this.push({
+        ...notification.toJSON(),
+        user,
+        from,
+        party,
+      });
+    }
+  }
+
+  async deleteByUser(userId: string): Promise<void> {
+    return this.notifications.remove({
+      from: userId,
+    });
+  }
+
+  async deleteByParty(partyId: string): Promise<void> {
+    return this.notifications.remove({
+      party: partyId,
     });
   }
 
@@ -92,7 +106,7 @@ export class NotificationService {
   }
 
   async push({ _id, from, type, user, party, createdAt }: Notification) {
-    // todo
+    // TODO
     const body =
       type === NotificationType.FOLLOW
         ? `${from.nickname} ahora te sigue`

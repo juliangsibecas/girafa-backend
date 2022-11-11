@@ -15,3 +15,4 @@ export const gqlModuleOptions: GraphQLModule['options'] = {
 
 export * from './errors';
 export * from './utils';
+export * from './types';

@@ -17,15 +17,15 @@ input AuthRecoverPasswordInput {
   password: String!
 }
 
-type AuthSignIn {
-  accessToken: String!
-  refreshToken: String!
-  userId: String!
-}
-
 input AuthSignInInput {
   email: String!
   password: String!
+}
+
+type AuthSignInResponse {
+  accessToken: String!
+  refreshToken: String!
+  userId: String!
 }
 
 input AuthSignUpInput {
@@ -59,11 +59,12 @@ type Mutation {
   changePassword(data: AuthChangePasswordInput!): Boolean!
   generateRecoveryCode(data: AuthGenerateRecoveryCodeInput!): Boolean!
   partyCreate(data: PartyCreateInput!): String!
+  partyDelete(id: String!): Boolean!
   partyEnable(id: String!): Boolean!
   recoverPassword(data: AuthRecoverPasswordInput!): Boolean!
-  signIn(data: AuthSignInInput!): AuthSignIn!
-  signInFromRefreshToken: AuthSignIn!
-  signUp(data: AuthSignUpInput!): AuthSignIn!
+  signIn(data: AuthSignInInput!): AuthSignInResponse!
+  signInFromRefreshToken: AuthSignInResponse!
+  signUp(data: AuthSignUpInput!): AuthSignInResponse!
   supportSendMessage(data: SupportSendMessageInput!): Boolean!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
@@ -162,7 +163,7 @@ input PartySearchAttendersInput {
 }
 
 type Query {
-  getNotifications: [UserNotification!]!
+  notificationsGetByUserId: [UserNotification!]!
   partyFind: [PartyMapPreview!]!
   partyGetById(id: String!): PartyGetByIdResponse!
   partySearch(q: String): [PartyPreview!]!

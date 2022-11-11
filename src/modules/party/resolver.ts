@@ -5,14 +5,15 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { Id } from '../../common/types';
 import {
+  ErrorCodes,
   ForbiddenError,
   NotFoundError,
   UnknownError,
 } from '../../core/graphql';
-import { ErrorCodes } from '../../core/graphql';
 
 import { CurrentUser } from '../auth/graphql';
 import { LoggerService } from '../logger';
+import { NotificationService } from '../notification';
 import { User, UserPreview, UserService } from '../user';
 
 import { PartyCreateInput, PartySearchAttendersInput } from './input';
@@ -31,6 +32,8 @@ export class PartyResolver {
     private logger: LoggerService,
     private mailer: MailerService,
     private parties: PartyService,
+    @Inject(forwardRef(() => NotificationService))
+    private notifications: NotificationService,
     @Inject(forwardRef(() => UserService)) private users: UserService,
   ) {}
 
@@ -116,6 +119,41 @@ export class PartyResolver {
     }
   }
 
+  @Mutation(() => Boolean)
+  async partyDelete(
+    @CurrentUser() userId: Id,
+    @Args('id') partyId: Id,
+  ): Promise<Boolean> {
+    try {
+      const party = await this.parties.getById({ id: partyId });
+
+      await Promise.all([
+        Promise.all(
+          (party.attenders as unknown as Array<Id>).map(async (attenderId) =>
+            this.users.unattend({
+              party,
+              user: await this.users.getById({ id: attenderId }),
+            }),
+          ),
+        ),
+        this.notifications.deleteByParty(partyId),
+        party.remove(),
+      ]);
+
+      return true;
+    } catch (e) {
+      this.logger.error({
+        path: 'partyDelete',
+        code: e.message,
+        data: {
+          userId,
+          partyId,
+        },
+      });
+      throw new UnknownError();
+    }
+  }
+
   @Query(() => [PartyMapPreview])
   partyFind(@CurrentUser() userId: Id): Promise<Array<PartyMapPreview>> {
     try {
@@ -187,7 +225,12 @@ export class PartyResolver {
         isOrganizer: userId === party.organizer._id,
       };
     } catch (e) {
-      if (e.message === ErrorCodes.FORBIDDEN_ERROR) throw e;
+      if (
+        [ErrorCodes.FORBIDDEN_ERROR, ErrorCodes.NOT_FOUND_ERROR].includes(
+          e.message,
+        )
+      )
+        throw e;
       this.logger.error({
         path: 'partyGetById',
         data: {

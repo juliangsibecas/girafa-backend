@@ -18,7 +18,7 @@ export class NotificationResolver {
   ) {}
 
   @Query(() => [UserNotification])
-  getNotifications(
+  notificationsGetByUserId(
     @CurrentUser() userId: Id,
   ): Promise<Array<UserNotification>> {
     try {

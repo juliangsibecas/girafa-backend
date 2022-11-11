@@ -2,19 +2,17 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mutation } from 'gql-query-builder';
 
+import { TestSuite } from '../../../../common/utils';
 import { AppModule } from '../../../../app';
-import { ErrorCodes, gql } from '../../../../core/graphql';
-import { getPartyById, getUserById, signIn } from '../../../../common/utils';
-import { MOCKED_PARTIES } from '../../../../modules/party/__mocks__/party';
-
-import { MOCKED_USERS } from '../../__mocks__/user';
+import { ErrorCodes } from '../../../../core/graphql';
 
 import { UserDeleteSeeder } from './seeder';
+import { userDeleteMocks } from './mocks';
 
 describe('(E2E) User - Delete', () => {
   let app: INestApplication;
-  let server: any;
   let seeder: UserDeleteSeeder;
+  let suite: TestSuite;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,8 +24,10 @@ describe('(E2E) User - Delete', () => {
     await seeder.run();
 
     app = module.createNestApplication();
-    server = app.getHttpServer();
     await app.init();
+
+    suite = new TestSuite({ server: app.getHttpServer(), ...userDeleteMocks });
+    await suite.generateAccessTokens();
   });
 
   afterAll(async () => {
@@ -37,30 +37,22 @@ describe('(E2E) User - Delete', () => {
   it('should delete', async () => {
     const deleteOperation = 'userDelete';
 
-    const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
-    const deleteMutation = await gql<{ [deleteOperation]: boolean }>(
-      server,
+    const deleteRes = await suite.exec<{ [deleteOperation]: boolean }>(
       mutation({
         operation: deleteOperation,
       }),
-      signInRes.data.accessToken,
     );
 
-    const gumpySignInRes = await signIn(server, 'gumpy@gmail.com');
-    const token = gumpySignInRes.data.accessToken;
-
-    const sibeRes = await getUserById(server, MOCKED_USERS[0]._id, token);
-    const gumpyRes = await getUserById(server, MOCKED_USERS[1]._id, token);
-    const cosmoRes = await getUserById(server, MOCKED_USERS[2]._id, token);
-    const guayraRes = await getUserById(server, MOCKED_USERS[3]._id, token);
-    const partyRes = await getPartyById(server, MOCKED_PARTIES[0]._id, token);
-
-    const signInAfterDeleteRes = await signIn(
-      server,
-      'juliangsibecas@gmail.com',
+    const [sibeRes, gumpyRes, cosmoRes, guayraRes] = await Promise.all(
+      [0, 1, 2, 3].map((idx) => suite.getUserById(idx)),
     );
 
-    expect(deleteMutation.data[deleteOperation]).toEqual(true);
+    const partyRes = await suite.getPartyById(0, 1);
+
+    const signInAfterDeleteRes = await suite.signIn('juliangsibecas@gmail.com');
+
+
+    expect(deleteRes.data[deleteOperation]).toEqual(true);
     expect(sibeRes.errors[0].message).toEqual(ErrorCodes.NOT_FOUND_ERROR);
     expect(gumpyRes.data.followersCount).toEqual(0);
     expect(gumpyRes.data.followingCount).toEqual(0);

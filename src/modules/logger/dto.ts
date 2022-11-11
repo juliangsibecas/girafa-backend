@@ -1,3 +1,8 @@
+export interface LoggerDebugDto {
+  path: string;
+  data?: Record<string, unknown>;
+}
+
 export interface LoggerErrorDto {
   path: string;
   code?: string;

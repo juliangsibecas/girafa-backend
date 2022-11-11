@@ -2,33 +2,38 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mutation } from 'gql-query-builder';
 
+import { TestSuite } from '../../../../common/utils';
 import { AppModule } from '../../../../app';
-import { gql } from '../../../../core/graphql';
-import { getPartyById, getUserById, signIn } from '../../../../common/utils';
-import { MOCKED_PARTIES } from '../../../../modules/party/__mocks__/party';
 
 import { UserChangeAttendingStateInput } from '../../input';
-import { MOCKED_USERS } from '../../__mocks__/user';
 
-import { UserAttendSeeder } from './seeder';
+import { userChangeAttendingStateMocks } from './mocks';
+import { UserChangeAttendingStateSeeder } from './seeder';
 
 describe('(E2E) User - Attend', () => {
   let app: INestApplication;
-  let server: any;
-  let seeder: UserAttendSeeder;
+  let seeder: UserChangeAttendingStateSeeder;
+  let suite: TestSuite;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
-    seeder = module.get<UserAttendSeeder>(UserAttendSeeder);
+    seeder = module.get<UserChangeAttendingStateSeeder>(
+      UserChangeAttendingStateSeeder,
+    );
 
     await seeder.run();
 
     app = module.createNestApplication();
-    server = app.getHttpServer();
     await app.init();
+
+    suite = new TestSuite({
+      server: app.getHttpServer(),
+      ...userChangeAttendingStateMocks,
+    });
+    await suite.generateAccessTokens();
   });
 
   afterAll(async () => {
@@ -38,11 +43,7 @@ describe('(E2E) User - Attend', () => {
   it('should attend', async () => {
     const attendOperation = 'userChangeAttendingState';
 
-    const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
-    const token = signInRes.data.accessToken;
-
-    const attendRes = await gql<{ [attendOperation]: boolean }>(
-      server,
+    const attendRes = await suite.exec<{ [attendOperation]: boolean }>(
       mutation({
         operation: attendOperation,
         variables: {
@@ -50,25 +51,16 @@ describe('(E2E) User - Attend', () => {
             type: `UserChangeAttendingStateInput`,
             required: true,
             value: {
-              partyId: MOCKED_PARTIES[0]._id,
+              partyId: suite.parties[0]._id,
               state: true,
             } as UserChangeAttendingStateInput,
           },
         },
       }),
-      token,
     );
 
-    const getPartyByIdRes = await getPartyById(
-      server,
-      MOCKED_PARTIES[0]._id,
-      token,
-    );
-    const getUserByIdRes = await getUserById(
-      server,
-      MOCKED_USERS[0]._id,
-      token,
-    );
+    const getPartyByIdRes = await suite.getPartyById(0);
+    const getUserByIdRes = await suite.getUserById(0);
 
     expect(attendRes.data[attendOperation]).toEqual(true);
     expect(getPartyByIdRes.data.isAttender).toEqual(true);
@@ -79,11 +71,7 @@ describe('(E2E) User - Attend', () => {
   it('should unattend', async () => {
     const attendOperation = 'userChangeAttendingState';
 
-    const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
-    const token = signInRes.data.accessToken;
-
-    const attendRes = await gql<{ [attendOperation]: boolean }>(
-      server,
+    const attendRes = await suite.exec<{ [attendOperation]: boolean }>(
       mutation({
         operation: attendOperation,
         variables: {
@@ -91,25 +79,16 @@ describe('(E2E) User - Attend', () => {
             type: `UserChangeAttendingStateInput`,
             required: true,
             value: {
-              partyId: MOCKED_PARTIES[0]._id,
+              partyId: suite.parties[0]._id,
               state: false,
             } as UserChangeAttendingStateInput,
           },
         },
       }),
-      token,
     );
 
-    const getPartyByIdRes = await getPartyById(
-      server,
-      MOCKED_PARTIES[0]._id,
-      token,
-    );
-    const getUserByIdRes = await getUserById(
-      server,
-      MOCKED_USERS[0]._id,
-      token,
-    );
+    const getPartyByIdRes = await suite.getPartyById(0);
+    const getUserByIdRes = await suite.getUserById(0);
 
     expect(attendRes.data[attendOperation]).toEqual(true);
     expect(getPartyByIdRes.data.isAttender).toEqual(false);
@@ -120,11 +99,7 @@ describe('(E2E) User - Attend', () => {
   it('should not unattend an unatteded party', async () => {
     const attendOperation = 'userChangeAttendingState';
 
-    const signInRes = await signIn(server, 'juliangsibecas@gmail.com');
-    const token = signInRes.data.accessToken;
-
-    const attendRes = await gql<{ [attendOperation]: boolean }>(
-      server,
+    const attendRes = await suite.exec<{ [attendOperation]: boolean }>(
       mutation({
         operation: attendOperation,
         variables: {
@@ -132,25 +107,16 @@ describe('(E2E) User - Attend', () => {
             type: `UserChangeAttendingStateInput`,
             required: true,
             value: {
-              partyId: MOCKED_PARTIES[0]._id,
+              partyId: suite.parties[0]._id,
               state: false,
             } as UserChangeAttendingStateInput,
           },
         },
       }),
-      token,
     );
 
-    const getPartyByIdRes = await getPartyById(
-      server,
-      MOCKED_PARTIES[0]._id,
-      token,
-    );
-    const getUserByIdRes = await getUserById(
-      server,
-      MOCKED_USERS[0]._id,
-      token,
-    );
+    const getPartyByIdRes = await suite.getPartyById(0);
+    const getUserByIdRes = await suite.getUserById(0);
 
     expect(attendRes.data[attendOperation]).toEqual(true);
     expect(getPartyByIdRes.data.isAttender).toEqual(false);

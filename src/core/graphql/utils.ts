@@ -2,24 +2,7 @@ import * as request from 'supertest';
 import { Server } from 'https';
 import { AuthenticationError } from 'apollo-server-express';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-
-interface Operation {
-  variables: any;
-  query: string;
-}
-
-interface Response<T> {
-  data?: T;
-  errors?: Array<{ message: ErrorCodes }>;
-}
-
-export enum ErrorCodes {
-  AUTH_ERROR = 'AUTH_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
-  FORBIDDEN_ERROR = 'FORBIDEN_ERROR',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-}
+import { ErrorCodes, Operation, Response } from './types';
 
 export const handleError = (err: GraphQLError): GraphQLFormattedError => {
   if (err instanceof AuthenticationError) {

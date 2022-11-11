@@ -2,10 +2,11 @@ import * as bcrypt from 'bcrypt';
 import { v4 } from 'uuid';
 import { User } from '../schema';
 
-export const mockUser = (
-  data: Pick<User, 'email' | 'nickname' | 'fullName'>,
-): User => ({
+export const mockUser = (data: Partial<User>): User => ({
   _id: v4(),
+  email: 'juliangsibecas@gmail.com',
+  nickname: 'juliangsibecas',
+  fullName: 'Julian Gomez Sibecas',
   following: [],
   followingCount: 0,
   followers: [],
@@ -20,11 +21,7 @@ export const mockUser = (
 });
 
 export const MOCKED_USERS = [
-  mockUser({
-    email: 'juliangsibecas@gmail.com',
-    nickname: 'juliangsibecas',
-    fullName: 'Julian Gomez Sibecas',
-  }),
+  mockUser({}),
   mockUser({
     email: 'gumpy@gmail.com',
     nickname: 'gumpy',

@@ -1,6 +1,6 @@
 import { Party } from '../party';
 import { User } from '../user';
-import { NotificationType } from './type';
+import { NotificationType } from './types';
 
 export type NotificationCreateDto = {
   type: NotificationType;

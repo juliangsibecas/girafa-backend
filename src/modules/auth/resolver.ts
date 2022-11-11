@@ -5,14 +5,13 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { UserService } from '../user/service';
 
 import { CustomContext, Id } from '../../common/types';
-import { UnknownError, ValidationError } from '../../core/graphql';
-import { ErrorCodes } from '../../core/graphql/utils';
+import { ErrorCodes, UnknownError, ValidationError } from '../../core/graphql';
 
 import { LoggerService } from '../logger';
 
 import { AuthService } from './service';
 import { AllowAny, CurrentUser } from './graphql';
-import { AuthSignIn } from './response';
+import { AuthSignInResponse } from './response';
 import {
   AuthSignInInput,
   AuthSignUpInput,
@@ -30,12 +29,12 @@ export class AuthResolver {
     private auth: AuthService,
   ) {}
 
-  @Mutation(() => AuthSignIn)
+  @Mutation(() => AuthSignInResponse)
   @AllowAny()
   async signUp(
     @Context() ctx: CustomContext,
     @Args('data') data: AuthSignUpInput,
-  ): Promise<AuthSignIn> {
+  ): Promise<AuthSignInResponse> {
     try {
       await this.users.checkAvailability({
         email: data.email,
@@ -69,13 +68,18 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => AuthSignIn)
+  @Mutation(() => AuthSignInResponse)
   @AllowAny()
   async signIn(
     @Context() ctx: CustomContext,
     @Args('data') data: AuthSignInInput,
-  ): Promise<AuthSignIn> {
+  ): Promise<AuthSignInResponse> {
     try {
+      this.logger.debug({
+        path: 'AuthSignIn',
+        data: { ...data },
+      });
+
       const throwError = () => {
         throw new ValidationError({
           password: 'El usuario y/o contraseña son incorrectos.',
@@ -116,11 +120,11 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => AuthSignIn)
+  @Mutation(() => AuthSignInResponse)
   @AllowAny()
   async signInFromRefreshToken(
     @Context() ctx: CustomContext,
-  ): Promise<AuthSignIn> {
+  ): Promise<AuthSignInResponse> {
     const token = this.auth.getRefreshToken(ctx);
 
     const payload = await this.auth.decodeToken(token);
@@ -192,7 +196,7 @@ export class AuthResolver {
       });
 
       if (!(user.recoveryCode && user.recoveryCode === data.code))
-        throw new ForbiddenException('Invalid code');
+        throw new ValidationError({});
 
       const encryptedPassword = await this.auth.encryptPassword(data.password);
 
@@ -203,6 +207,10 @@ export class AuthResolver {
 
       return true;
     } catch (e) {
+      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+        throw e;
+      }
+
       this.logger.error({
         path: 'AuthRecoveryPassword',
         data: { ...data },

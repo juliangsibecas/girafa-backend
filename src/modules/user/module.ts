@@ -13,9 +13,9 @@ import { seeders } from './seeder';
 @Module({
   imports: [
     LoggerModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    NotificationModule,
     forwardRef(() => PartyModule),
-    forwardRef(() => NotificationModule),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   exports: [UserService],
   providers: [UserService, UserResolver, ...seeders],

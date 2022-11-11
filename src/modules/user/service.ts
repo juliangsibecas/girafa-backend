@@ -32,7 +32,6 @@ export class UserService {
     return this.model.findByIdAndUpdate(dto.id, dto);
   }
 
-
   async search(q: string): Promise<Array<User>> {
     const like = { $regex: q, $options: 'i' };
 

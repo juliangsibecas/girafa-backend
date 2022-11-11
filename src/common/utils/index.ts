@@ -1,2 +1,3 @@
 export * from './insertIf';
-export * from './testUtils';
+export * from './test';
+export * from './seeder';

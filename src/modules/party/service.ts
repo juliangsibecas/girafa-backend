@@ -26,7 +26,7 @@ export class PartyService {
     return this.model.create(dto);
   }
 
-  async enable(id: string): Promise<PartyDocument | undefined> {
+  async enable(id: Id): Promise<PartyDocument | undefined> {
     return this.model.findByIdAndUpdate(id, { isEnabled: true });
   }
 

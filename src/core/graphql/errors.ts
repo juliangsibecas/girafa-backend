@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql';
-import { ErrorCodes } from './utils';
+import { ErrorCodes } from './types';
 
 export class ValidationError extends GraphQLError {
   constructor(errors: Record<string, string>) {
