@@ -33,8 +33,11 @@ export class EnvironmentVariables {
   AWS_ACCESS_KEY_ID: string;
   @IsNotEmpty()
   AWS_SECRET_ACCESS_KEY: string;
+
   @IsNotEmpty()
-  AWS_S3_ENDPOINT: string;
+  BUCKET_ENDPOINT: string;
+  @IsNotEmpty()
+  BUCKET_NAME: string;
 
   @IsNotEmpty()
   MAILER_HOST: string;

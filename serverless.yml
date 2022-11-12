@@ -14,8 +14,4 @@ resources:
     UserBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: user-pictures
-    PartyBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: party-pictures
+        BucketName: girafa-assets 

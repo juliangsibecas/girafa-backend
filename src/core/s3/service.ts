@@ -49,13 +49,13 @@ export class S3Service {
   }
 
   async upload(
-    bucketName: string,
+    folder: string,
     fileName: string,
     file: Express.Multer.File,
   ): Promise<boolean> {
     const params: AWS.S3.PutObjectRequest = {
-      Bucket: bucketName,
-      Key: fileName,
+      Bucket: this.config.get('s3.name'),
+      Key: `${folder}/${fileName}`,
       Body: file.buffer,
     };
 
