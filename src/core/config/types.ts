@@ -39,9 +39,8 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   BUCKET_NAME: string;
 
-  @IsNotEmpty()
+  MAILER_SERVICE: string;
   MAILER_HOST: string;
-  @IsNotEmpty()
   MAILER_PORT: string;
   @IsNotEmpty()
   MAILER_USER: string;

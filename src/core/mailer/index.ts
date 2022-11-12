@@ -10,6 +10,7 @@ export const mailerModuleOptions = {
 
     return {
       transport: {
+        service: mailer.service,
         host: mailer.host,
         port: mailer.port,
         auth: {
