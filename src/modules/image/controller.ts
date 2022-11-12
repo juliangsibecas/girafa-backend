@@ -25,9 +25,16 @@ export class ImageController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     try {
+      this.logger.debug({
+        path: 'UploadProfilePicture',
+        data: { id: req.user },
+      });
       await this.s3.uploadUserPicture(req.user, file);
     } catch (e) {
-      this.logger.error({ path: 'ImageUploadUser', data: e });
+      this.logger.error({
+        path: 'UploadProfilePicture',
+        data: { id: req.user, ...e },
+      });
     }
   }
 
@@ -40,9 +47,10 @@ export class ImageController {
   ) {
     // TODO: verify user is organizer
     try {
+      this.logger.debug({ path: 'UploadPartyPicture', data: { id } });
       await this.s3.uploadPartyPicture(id, file);
     } catch (e) {
-      this.logger.error({ path: 'ImageUploadParty', data: e });
+      this.logger.error({ path: 'UploadPartyPicture', data: { id, ...e } });
     }
   }
 }
