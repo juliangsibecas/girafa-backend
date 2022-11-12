@@ -16,7 +16,7 @@ export class LoggerService {
   ) {}
 
   async debug({ path, data }: LoggerDebugDto) {
-    this.logger.debug({ path, data });
+    this.logger.log({ path, data });
   }
 
   async error({ path, code = ErrorCodes.UNKNOWN_ERROR, data }: LoggerErrorDto) {

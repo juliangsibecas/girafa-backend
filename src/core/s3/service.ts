@@ -32,23 +32,13 @@ export class S3Service {
     });
   }
 
-  async upload(
-    folder: string,
-    fileName: string,
-    file: Express.Multer.File,
-  ): Promise<boolean> {
+  async upload(folder: string, fileName: string, file: Express.Multer.File) {
     const params: AWS.S3.PutObjectRequest = {
       Bucket: this.config.get('s3.name'),
       Key: `${folder}/${fileName}`,
       Body: file.buffer,
     };
 
-    try {
-      await this.s3.upload(params).promise();
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
+    await this.s3.upload(params).promise();
   }
 }
