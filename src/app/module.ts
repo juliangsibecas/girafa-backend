@@ -24,8 +24,8 @@ import { SupportModule } from '../modules/support';
     ConfigModule.forRoot(configModuleOptions),
     MailerModule.forRootAsync(mailerModuleOptions),
     MongooseModule.forRootAsync(mongooseModuleOptions),
+    GraphQLModule.forRootAsync(gqlModuleOptions),
     ScheduleModule.forRoot(),
-    GraphQLModule.forRoot(gqlModuleOptions),
 
     AuthModule,
     ImageModule,
