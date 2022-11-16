@@ -20,7 +20,7 @@ export const mongooseModuleOptions: MongooseModuleAsyncOptions = {
     const db: DbConfig = config.get('db');
 
     return {
-      uri: `mongodb://${db.host}:${db.port}/${db.name}`,
+      uri: `mongodb://${db.user}:${db.password}@${db.host}:${db.port}/${db.name}`,
     };
   },
 };
