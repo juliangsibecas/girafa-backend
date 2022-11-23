@@ -19,8 +19,14 @@ export const mongooseModuleOptions: MongooseModuleAsyncOptions = {
 
     const db: DbConfig = config.get('db');
 
+    if (db.user && db.password) {
+      return {
+        uri: `mongodb://${db.user}:${db.password}@${db.host}:${db.port}/${db.name}`,
+      };
+    }
+
     return {
-      uri: `mongodb://${db.user}:${db.password}@${db.host}:${db.port}/${db.name}`,
+      uri: `mongodb://${db.host}:${db.port}/${db.name}`,
     };
   },
 };
