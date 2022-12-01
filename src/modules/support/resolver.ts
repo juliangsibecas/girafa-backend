@@ -4,6 +4,7 @@ import { Id } from '../../common/types';
 import { UnknownError } from '../../core/graphql';
 
 import { CurrentUser } from '../auth/graphql';
+import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
 
 import { SupportSendMessageInput } from './input';
@@ -18,6 +19,7 @@ export class SupportResolver {
   ) {}
 
   @Mutation(() => Boolean)
+  @Features([FeatureToggleName.MAILING])
   async supportSendMessage(
     @CurrentUser() userId: Id,
     @Args('data') data: SupportSendMessageInput,

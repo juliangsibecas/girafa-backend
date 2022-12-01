@@ -1,6 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { Id } from '../../common/types';
@@ -12,9 +11,12 @@ import {
 } from '../../core/graphql';
 
 import { CurrentUser } from '../auth/graphql';
+import { Role, Roles } from '../auth/role';
+import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
 import { NotificationService } from '../notification';
 import { User, UserPreview, UserService } from '../user';
+import { UserDocument } from '../user/schema';
 
 import { PartyCreateInput, PartySearchAttendersInput } from './input';
 import {
@@ -28,7 +30,6 @@ import { PartyService } from './service';
 @Resolver(() => Party)
 export class PartyResolver {
   constructor(
-    private config: ConfigService,
     private logger: LoggerService,
     private mailer: MailerService,
     private parties: PartyService,
@@ -38,15 +39,12 @@ export class PartyResolver {
   ) {}
 
   @Mutation(() => String)
+  @Features([FeatureToggleName.PARTY_CREATE])
   async partyCreate(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('data') data: PartyCreateInput,
   ): Promise<string> {
     try {
-      const user = await this.users.getById({ id: userId });
-
-      if (!user) throw new Error();
-
       await this.parties.checkAvailability(data.name);
 
       const { _id } = await this.parties.create({
@@ -63,7 +61,7 @@ export class PartyResolver {
       this.logger.error({
         path: 'partyCreate',
         data: {
-          userId,
+          userId: user._id,
           ...data,
         },
       });
@@ -72,16 +70,13 @@ export class PartyResolver {
   }
 
   @Mutation(() => Boolean)
+  @Roles([Role.ADMIN])
   async partyEnable(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('id') partyId: string,
   ): Promise<Boolean> {
     try {
-      const user = await this.users.getById({ id: userId, select: ['email'] });
-
       if (!user) throw new Error();
-      if (user.email !== this.config.get('ADMIN_EMAIL'))
-        throw new ForbiddenError();
 
       const party = await this.parties.enable(partyId);
 
@@ -111,7 +106,7 @@ export class PartyResolver {
         path: 'partyEnable',
         code: e.message,
         data: {
-          userId,
+          userId: user._id,
           partyId,
         },
       });
@@ -120,8 +115,9 @@ export class PartyResolver {
   }
 
   @Mutation(() => Boolean)
+  @Features([FeatureToggleName.PARTY_DELETE])
   async partyDelete(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('id') partyId: Id,
   ): Promise<Boolean> {
     try {
@@ -146,7 +142,7 @@ export class PartyResolver {
         path: 'partyDelete',
         code: e.message,
         data: {
-          userId,
+          userId: user._id,
           partyId,
         },
       });
@@ -155,14 +151,17 @@ export class PartyResolver {
   }
 
   @Query(() => [PartyMapPreview])
-  partyFind(@CurrentUser() userId: Id): Promise<Array<PartyMapPreview>> {
+  @Features([FeatureToggleName.PARTY_GET])
+  partyFind(
+    @CurrentUser() user: UserDocument,
+  ): Promise<Array<PartyMapPreview>> {
     try {
-      return this.parties.find({ userId });
+      return this.parties.find({ userId: user._id });
     } catch (e) {
       this.logger.error({
         path: 'partyFind',
         data: {
-          userId,
+          userId: user._id,
         },
       });
       throw new UnknownError();
@@ -170,17 +169,18 @@ export class PartyResolver {
   }
 
   @Query(() => [PartyPreview])
+  @Features([FeatureToggleName.PARTY_GET])
   partySearch(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('q', { nullable: true }) q: string = '',
   ): Promise<Array<PartyPreview>> {
     try {
-      return this.parties.search({ userId, q });
+      return this.parties.search({ userId: user._id, q });
     } catch (e) {
       this.logger.error({
         path: 'partySearch',
         data: {
-          userId,
+          userId: user._id,
           q,
         },
       });
@@ -189,13 +189,14 @@ export class PartyResolver {
   }
 
   @Query(() => PartyGetByIdResponse)
+  @Features([FeatureToggleName.PARTY_GET])
   async partyGetById(
-    @CurrentUser() userId: Id,
+    @CurrentUser() { _id }: UserDocument,
     @Args('id', { type: () => String }) partyId: Id,
   ): Promise<PartyGetByIdResponse> {
     try {
       const user = await this.users.getById({
-        id: userId,
+        id: _id,
         relations: ['attendedParties'],
       });
 
@@ -222,7 +223,7 @@ export class PartyResolver {
         isAttender: Boolean(
           user.attendedParties.find(({ _id }) => _id === partyId),
         ),
-        isOrganizer: userId === party.organizer._id,
+        isOrganizer: user._id === party.organizer._id,
       };
     } catch (e) {
       if (
@@ -234,7 +235,7 @@ export class PartyResolver {
       this.logger.error({
         path: 'partyGetById',
         data: {
-          userId,
+          userId: _id,
           partyId,
         },
       });
@@ -243,15 +244,15 @@ export class PartyResolver {
   }
 
   @Query(() => [UserPreview])
+  @Features([
+    FeatureToggleName.PARTY_GET,
+    FeatureToggleName.PARTY_SEARCH_ATTENDERS,
+  ])
   async partySearchAttenders(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('data') data: PartySearchAttendersInput,
   ): Promise<Array<User>> {
     try {
-      const user = await this.users.getById({
-        id: userId,
-      });
-
       const like = { $regex: data.q ?? '', $options: 'i' };
 
       const party = await this.parties.getById({
@@ -277,7 +278,7 @@ export class PartyResolver {
       this.logger.error({
         path: 'partySearchAttenders',
         data: {
-          userId,
+          userId: user._id,
           ...data,
         },
       });

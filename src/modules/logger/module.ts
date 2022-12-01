@@ -7,7 +7,10 @@ import { telegramModuleOptions } from '../../core/telegram';
 import { LoggerService } from './service';
 
 @Module({
-  imports: [ConfigModule, TelegramModule.forRootAsync(telegramModuleOptions)],
+  imports: [
+    ConfigModule,
+    TelegramModule.forRootAsync(telegramModuleOptions as any),
+  ],
   providers: [LoggerService],
   exports: [LoggerService],
 })

@@ -1,4 +1,5 @@
 import { registerAs } from '@nestjs/config';
+
 import { Environment } from '../common/types';
 
 export interface AppConfig {

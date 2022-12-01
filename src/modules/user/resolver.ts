@@ -10,6 +10,7 @@ import {
 } from '../../core/graphql';
 
 import { CurrentUser } from '../auth/graphql/decorators';
+import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
 import { NotificationService, NotificationType } from '../notification';
 import { PartyDocument, PartyPreview, PartyService } from '../party';
@@ -22,7 +23,7 @@ import {
   UserSendPartyInviteInput,
 } from './input';
 import { UserGetByIdResponse, UserPreview } from './response';
-import { User } from './schema';
+import { User, UserDocument } from './schema';
 import { UserService } from './service';
 
 @Resolver(() => User)
@@ -35,21 +36,17 @@ export class UserResolver {
   ) {}
 
   @Mutation(() => Boolean)
+  @Features([FeatureToggleName.USER_EDIT])
   async userEdit(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('data') data: UserEditInput,
   ): Promise<Boolean> {
     try {
-      const user = await this.users.getById({
-        id: userId,
-        select: ['nickname'],
-      });
-
       if (user.nickname !== data.nickname) {
         await this.users.checkNicknameAvailability(data.nickname);
       }
 
-      return Boolean(await this.users.edit({ id: userId, ...data }));
+      return Boolean(await this.users.edit({ id: user._id, ...data }));
     } catch (e) {
       if (e.message === ErrorCodes.VALIDATION_ERROR) {
         throw e;
@@ -58,7 +55,7 @@ export class UserResolver {
       this.logger.error({
         path: 'UserEdit',
         data: {
-          userId,
+          userId: user._id,
           ...data,
         },
       });
@@ -67,13 +64,9 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  async userDelete(@CurrentUser() userId: Id): Promise<Boolean> {
+  @Features([FeatureToggleName.USER_DELETE])
+  async userDelete(@CurrentUser() user: UserDocument): Promise<Boolean> {
     try {
-      const user = await this.users.getById({
-        id: userId,
-        select: ['followers', 'following', 'attendedParties'],
-      });
-
       await Promise.all([
         Promise.all(
           (user.followers as unknown as Array<Id>).map(async (followerId) =>
@@ -111,7 +104,7 @@ export class UserResolver {
       this.logger.error({
         path: 'UserDelete',
         data: {
-          userId,
+          userId: user._id,
         },
       });
       throw new UnknownError();
@@ -119,6 +112,7 @@ export class UserResolver {
   }
 
   @Query(() => [UserPreview])
+  @Features([FeatureToggleName.USER_GET])
   userSearch(
     @Args('q', { nullable: true }) q: string = '',
   ): Promise<Array<UserPreview>> {
@@ -136,8 +130,9 @@ export class UserResolver {
   }
 
   @Query(() => UserGetByIdResponse)
+  @Features([FeatureToggleName.USER_GET])
   async userGetById(
-    @CurrentUser() myId: Id,
+    @CurrentUser() { _id: myId }: UserDocument,
     @Args('id', { type: () => String }) id: Id,
   ): Promise<UserGetByIdResponse> {
     try {
@@ -180,6 +175,7 @@ export class UserResolver {
   }
 
   @Query(() => [UserPreview])
+  @Features([FeatureToggleName.USER_GET, FeatureToggleName.USER_GET_FOLLOWERS])
   async userGetFollowersById(
     @Args('id', { type: () => String }) id: Id,
   ): Promise<Array<UserPreview>> {
@@ -207,6 +203,7 @@ export class UserResolver {
     }
   }
 
+  @Features([FeatureToggleName.USER_GET, FeatureToggleName.USER_GET_FOLLOWING])
   @Query(() => [UserPreview])
   async userGetFollowingById(
     @Args('id', { type: () => String }) id: Id,
@@ -236,6 +233,10 @@ export class UserResolver {
   }
 
   @Query(() => [PartyPreview])
+  @Features([
+    FeatureToggleName.USER_GET,
+    FeatureToggleName.USER_GET_ATTENDED_PARTIES,
+  ])
   async userGetAttendedPartiesById(
     @Args('id', { type: () => String }) id: Id,
   ): Promise<Array<PartyPreview>> {
@@ -271,15 +272,16 @@ export class UserResolver {
   }
 
   @Query(() => [User])
+  @Features([FeatureToggleName.USER_SEARCH_FOLLOWERS_TO_INVITE])
   async userSearchFollowersToInvite(
-    @CurrentUser() userId: Id,
+    @CurrentUser() { _id }: UserDocument,
     @Args('data') data: UserSearchFollowersToInviteInput,
   ): Promise<Array<User>> {
     try {
       const like = { $regex: data.q ?? '', $options: 'i' };
 
       const user = await this.users.getById({
-        id: userId,
+        id: _id,
         relations: [
           {
             path: 'followers',
@@ -298,7 +300,7 @@ export class UserResolver {
       this.logger.error({
         path: 'UserSearchFollowersToInvite',
         data: {
-          userId,
+          userId: _id,
           ...data,
         },
       });
@@ -307,17 +309,13 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
+  @Features([FeatureToggleName.USER_CHANGE_FOLLOWING_STATE])
   async userChangeFollowingState(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('data') data: UserChangeFollowingStateInput,
   ): Promise<boolean> {
     try {
-      if (userId === data.followingId) throw new Error('Same user');
-
-      const user = await this.users.getById({
-        id: userId,
-        select: ['nickname', 'following'],
-      });
+      if (user._id === data.followingId) throw new Error('Same user');
 
       const following = await this.users.getById({
         id: data.followingId,
@@ -343,7 +341,7 @@ export class UserResolver {
       this.logger.error({
         path: 'UserChangeFollowingState',
         data: {
-          userId,
+          userId: user._id,
           ...data,
         },
       });
@@ -352,15 +350,12 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
+  @Features([FeatureToggleName.USER_CHANGE_ATTENDING_STATE])
   async userChangeAttendingState(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('data') data: UserChangeAttendingStateInput,
   ): Promise<boolean> {
     try {
-      const user = await this.users.getById({
-        id: userId,
-      });
-
       const party = await this.parties.getById({
         id: data.partyId,
         select: ['_id', 'availability', 'isExpired', 'attenders', 'invited'],
@@ -391,7 +386,7 @@ export class UserResolver {
       this.logger.error({
         path: 'UserChangeAttendingState',
         data: {
-          userId,
+          userId: user.id,
           ...data,
         },
       });
@@ -400,8 +395,9 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
+  @Features([FeatureToggleName.USER_SEND_PARTY_INVITE])
   async userSendPartyInvite(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('data') data: UserSendPartyInviteInput,
   ): Promise<Boolean> {
     try {
@@ -415,17 +411,12 @@ export class UserResolver {
 
       if (
         party.isExpired ||
-        (!party.allowInvites && party.organizer._id !== userId)
+        (!party.allowInvites && party.organizer._id !== user._id)
       )
         throw new UnauthorizedException();
 
-      const user = await this.users.getById({
-        id: userId,
-        select: ['_id', 'nickname'],
-      });
-
       // avaid auto-inviting
-      const filteredInivitedId = data.invitedId.filter((id) => id !== userId);
+      const filteredInivitedId = data.invitedId.filter((id) => id !== user._id);
 
       await this.parties.addInvited({ party, invitedId: filteredInivitedId });
 
@@ -450,7 +441,7 @@ export class UserResolver {
       this.logger.error({
         path: 'UserSendPartyInvite',
         data: {
-          userId,
+          userId: user._id,
           ...data,
         },
       });

@@ -1,9 +1,7 @@
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { MailerService } from '@nestjs-modules/mailer';
 
 import { UserService } from '../user/service';
-
 import { CustomContext, Id } from '../../common/types';
 import { ErrorCodes, UnknownError, ValidationError } from '../../core/graphql';
 
@@ -19,6 +17,8 @@ import {
   AuthGenerateRecoveryCodeInput,
   AuthChangePasswordInput,
 } from './input';
+import { FeatureToggleName } from '../featureToggle';
+import { Features } from '../featureToggle';
 
 @Resolver()
 export class AuthResolver {
@@ -31,6 +31,7 @@ export class AuthResolver {
 
   @Mutation(() => AuthSignInResponse)
   @AllowAny()
+  @Features([FeatureToggleName.SIGN_UP])
   async signUp(
     @Context() ctx: CustomContext,
     @Args('data') data: AuthSignUpInput,
@@ -120,7 +121,7 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => AuthSignInResponse)
+  /* @Mutation(() => AuthSignInResponse)
   @AllowAny()
   async signInFromRefreshToken(
     @Context() ctx: CustomContext,
@@ -143,10 +144,11 @@ export class AuthResolver {
     });
 
     return { userId: user._id, accessToken, refreshToken };
-  }
+  } */
 
   @Mutation(() => Boolean)
   @AllowAny()
+  @Features([FeatureToggleName.MAILING])
   async generateRecoveryCode(
     @Args('data') data: AuthGenerateRecoveryCodeInput,
   ): Promise<boolean> {

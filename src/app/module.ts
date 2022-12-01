@@ -18,6 +18,11 @@ import { PartyModule } from '../modules/party';
 import { ImageModule } from '../modules/image';
 import { NotificationModule } from '../modules/notification';
 import { SupportModule } from '../modules/support';
+import {
+  FeatureToggleGuard,
+  FeatureToggleModule,
+} from '../modules/featureToggle';
+import { RoleGuard } from 'src/modules/auth/role';
 
 @Module({
   imports: [
@@ -27,6 +32,7 @@ import { SupportModule } from '../modules/support';
     GraphQLModule.forRootAsync(gqlModuleOptions),
     ScheduleModule.forRoot(),
 
+    FeatureToggleModule,
     AuthModule,
     ImageModule,
     NotificationModule,
@@ -40,6 +46,8 @@ import { SupportModule } from '../modules/support';
       useFactory: (ref) => new GqlAuthGuard(ref),
       inject: [Reflector],
     },
+    { provide: APP_GUARD, useClass: FeatureToggleGuard },
+    { provide: APP_GUARD, useClass: RoleGuard },
   ],
 })
 export class AppModule {}

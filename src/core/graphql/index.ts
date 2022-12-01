@@ -1,9 +1,11 @@
 import { join } from 'path';
 import { ApolloDriver } from '@nestjs/apollo';
-import { handleError } from './utils';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { appConfig } from 'src/app';
-import { Environment } from 'src/common/types';
+
+import { appConfig } from '../../app/config';
+import { Environment } from '../../common/types';
+
+import { handleError } from './utils';
 
 export const gqlModuleOptions = {
   imports: [ConfigModule.forFeature(appConfig)],

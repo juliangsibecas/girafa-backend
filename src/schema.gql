@@ -55,15 +55,47 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+type FeatureToggle {
+  _id: String!
+  name: FeatureToggleName!
+  value: Boolean!
+}
+
+input FeatureToggleChangeValueInput {
+  name: FeatureToggleName!
+  value: Boolean!
+}
+
+enum FeatureToggleName {
+  MAILING
+  NOTIFICATION_GET
+  PARTY_CREATE
+  PARTY_DELETE
+  PARTY_GET
+  PARTY_SEARCH_ATTENDERS
+  SIGN_UP
+  USER_CHANGE_ATTENDING_STATE
+  USER_CHANGE_FOLLOWING_STATE
+  USER_DELETE
+  USER_EDIT
+  USER_GET
+  USER_GET_ATTENDED_PARTIES
+  USER_GET_FOLLOWERS
+  USER_GET_FOLLOWING
+  USER_SEARCH_FOLLOWERS_TO_INVITE
+  USER_SEND_PARTY_INVITE
+}
+
 type Mutation {
   changePassword(data: AuthChangePasswordInput!): Boolean!
+  featureToggleChangeValue(data: FeatureToggleChangeValueInput!): Boolean!
+  featureToggleSync: Boolean!
   generateRecoveryCode(data: AuthGenerateRecoveryCodeInput!): Boolean!
   partyCreate(data: PartyCreateInput!): String!
   partyDelete(id: String!): Boolean!
   partyEnable(id: String!): Boolean!
   recoverPassword(data: AuthRecoverPasswordInput!): Boolean!
   signIn(data: AuthSignInInput!): AuthSignInResponse!
-  signInFromRefreshToken: AuthSignInResponse!
   signUp(data: AuthSignUpInput!): AuthSignInResponse!
   supportSendMessage(data: SupportSendMessageInput!): Boolean!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
@@ -163,6 +195,8 @@ input PartySearchAttendersInput {
 }
 
 type Query {
+  featureToggleGetEnabledNames: [FeatureToggleName!]!
+  featureToggleList: [FeatureToggle!]!
   notificationsGetByUserId: [UserNotification!]!
   partyFind: [PartyMapPreview!]!
   partyGetById(id: String!): PartyGetByIdResponse!

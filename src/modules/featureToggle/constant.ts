@@ -1,0 +1,1 @@
+export const FEATURE_TOGGLE_KEY = 'FEATURE_TOGGLE';

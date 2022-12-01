@@ -24,3 +24,9 @@ export class ForbiddenError extends GraphQLError {
     super(ErrorCodes.FORBIDDEN_ERROR, {});
   }
 }
+
+export class FeatureToggleError extends GraphQLError {
+  constructor() {
+    super(ErrorCodes.FEATURE_TOGGLE_ERROR, {});
+  }
+}

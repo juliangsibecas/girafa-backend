@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
 
 import { UserModule } from '../user/module';
 import { LoggerModule } from '../logger';
@@ -13,7 +12,6 @@ import { seeders } from './seeders';
 
 @Module({
   imports: [
-    ConfigModule,
     LoggerModule,
     forwardRef(() => NotificationModule),
     forwardRef(() => UserModule),
