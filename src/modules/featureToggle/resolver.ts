@@ -5,7 +5,10 @@ import { AllowAny } from '../auth/graphql';
 import { Role, Roles } from '../auth/role';
 
 import { LoggerService } from '../logger';
-import { FeatureToggleChangeValueInput } from './input';
+import {
+  FeatureToggleChangeValueInput,
+  FeatureTogglePopulateInput,
+} from './input';
 import { FeatureToggle } from './schema';
 import { FeatureToggleService } from './service';
 import { FeatureToggleName } from './types';
@@ -47,10 +50,12 @@ export class FeatureToggleResolver {
 
   @Mutation(() => Boolean)
   @Roles([Role.ADMIN])
-  async featureToggleSync(): Promise<boolean> {
+  async featureToggleSync(
+    @Args('data') data: FeatureTogglePopulateInput,
+  ): Promise<boolean> {
     try {
       await this.featureToggles.clear();
-      await this.featureToggles.populate();
+      await this.featureToggles.populate(data);
 
       return true;
     } catch (e) {

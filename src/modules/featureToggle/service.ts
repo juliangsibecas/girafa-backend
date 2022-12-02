@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FeatureToggleChangeValueDto } from './dto';
+import { FeatureToggleChangeValueDto, FeatureTogglePopulateDto } from './dto';
 
 import { FeatureToggle, FeatureToggleDocument } from './schema';
 import { FeatureToggleName } from './types';
@@ -23,10 +23,14 @@ export class FeatureToggleService {
     return fts.map(({ name }) => name);
   }
 
-  populate() {
+  populate(dto: FeatureTogglePopulateDto) {
     return Promise.all(
       Object.keys(FeatureToggleName).map((name) =>
-        this.featureToggles.findOneAndUpdate({ name }, {}, { upsert: true }),
+        this.featureToggles.findOneAndUpdate(
+          { name },
+          dto.value == undefined ? {} : { value: dto.value },
+          { upsert: true },
+        ),
       ),
     );
   }

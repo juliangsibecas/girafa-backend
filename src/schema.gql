@@ -86,10 +86,14 @@ enum FeatureToggleName {
   USER_SEND_PARTY_INVITE
 }
 
+input FeatureTogglePopulateInput {
+  value: Boolean
+}
+
 type Mutation {
   changePassword(data: AuthChangePasswordInput!): Boolean!
   featureToggleChangeValue(data: FeatureToggleChangeValueInput!): Boolean!
-  featureToggleSync: Boolean!
+  featureToggleSync(data: FeatureTogglePopulateInput!): Boolean!
   generateRecoveryCode(data: AuthGenerateRecoveryCodeInput!): Boolean!
   partyCreate(data: PartyCreateInput!): String!
   partyDelete(id: String!): Boolean!
