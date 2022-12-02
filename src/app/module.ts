@@ -23,6 +23,7 @@ import {
   FeatureToggleModule,
 } from '../modules/featureToggle';
 import { RoleGuard } from 'src/modules/auth/role';
+import { AppController } from './controller';
 
 @Module({
   imports: [
@@ -49,5 +50,6 @@ import { RoleGuard } from 'src/modules/auth/role';
     { provide: APP_GUARD, useClass: FeatureToggleGuard },
     { provide: APP_GUARD, useClass: RoleGuard },
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
