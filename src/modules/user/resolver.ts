@@ -142,6 +142,7 @@ export class UserResolver {
           '_id',
           'nickname',
           'fullName',
+          'following',
           'followers',
           'followingCount',
           'followersCount',
@@ -155,6 +156,9 @@ export class UserResolver {
         ...user.toObject(),
         isFollowing: Boolean(
           (user.followers as unknown as Array<Id>).find((id) => id === myId),
+        ),
+        isFollower: Boolean(
+          (user.following as unknown as Array<Id>).find((id) => id === myId),
         ),
       };
     } catch (e) {

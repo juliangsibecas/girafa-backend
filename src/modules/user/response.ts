@@ -18,4 +18,6 @@ export class UserGetByIdResponse extends PickType(User, [
 ]) {
   @Field()
   isFollowing: boolean;
+  @Field()
+  isFollower: boolean;
 }

@@ -261,6 +261,7 @@ type UserGetByIdResponse {
   followersCount: Float!
   followingCount: Float!
   fullName: String!
+  isFollower: Boolean!
   isFollowing: Boolean!
   nickname: String!
 }
