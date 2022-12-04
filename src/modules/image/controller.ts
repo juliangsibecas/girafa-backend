@@ -12,6 +12,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../../core/s3';
 import { JwtAuthGuard } from '../auth/jwt/guard';
 import { LoggerService } from '../logger';
+import { UserDocument } from '../user/schema';
 
 @Controller('images')
 export class ImageController {
@@ -21,19 +22,15 @@ export class ImageController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadProfilePicture(
-    @Request() req: Request & { user: string },
+    @Request() req: Request & { user: UserDocument },
     @UploadedFile() file: Express.Multer.File,
   ) {
     try {
-      this.logger.debug({
-        path: 'UploadProfilePicture',
-        data: { id: req.user },
-      });
-      await this.s3.uploadUserPicture(req.user, file);
+      await this.s3.uploadUserPicture(req.user._id, file);
     } catch (e) {
       this.logger.error({
         path: 'UploadProfilePicture',
-        data: { id: req.user, ...e },
+        data: { user: req.user, ...e },
       });
     }
   }
@@ -47,7 +44,6 @@ export class ImageController {
   ) {
     // TODO: verify user is organizer
     try {
-      this.logger.debug({ path: 'UploadPartyPicture', data: { id } });
       await this.s3.uploadPartyPicture(id, file);
     } catch (e) {
       this.logger.error({ path: 'UploadPartyPicture', data: { id, ...e } });

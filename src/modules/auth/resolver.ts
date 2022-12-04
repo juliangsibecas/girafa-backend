@@ -76,11 +76,6 @@ export class AuthResolver {
     @Args('data') data: AuthSignInInput,
   ): Promise<AuthSignInResponse> {
     try {
-      this.logger.debug({
-        path: 'AuthSignIn',
-        data: { ...data },
-      });
-
       const throwError = () => {
         throw new ValidationError({
           password: 'El usuario y/o contraseña son incorrectos.',
