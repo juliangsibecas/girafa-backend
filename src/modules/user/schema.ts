@@ -3,7 +3,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 
-import { BaseSchema, Id } from '../../common/types';
+import { ArrayField, BaseSchema, Id } from '../../common/types';
 
 import { Notification } from '../notification/schema';
 import { Party } from '../party/schema';
@@ -43,7 +43,7 @@ export class User extends BaseSchema {
     ],
   })
   @Field(() => [User])
-  followers: Array<User>;
+  followers: ArrayField<User>;
 
   @Prop({ default: 0 })
   @Field()
@@ -58,7 +58,7 @@ export class User extends BaseSchema {
     ],
   })
   @Field(() => [User])
-  following: Array<User>;
+  following: ArrayField<User>;
 
   @Prop({ default: 0 })
   @Field()
@@ -73,7 +73,7 @@ export class User extends BaseSchema {
     ],
   })
   @Field(() => [Party])
-  attendedParties: Array<Party>;
+  attendedParties: ArrayField<Party>;
 
   @Prop({ default: 0 })
   @Field()
@@ -87,8 +87,18 @@ export class User extends BaseSchema {
       },
     ],
   })
+  organizedParties: ArrayField<Party>;
+
+  @Prop({
+    type: [
+      {
+        ref: 'Party',
+        type: String,
+      },
+    ],
+  })
   @Field(() => [Party])
-  invites: Array<Party>;
+  invites: ArrayField<Party>;
 
   @Prop({
     type: [
@@ -99,7 +109,7 @@ export class User extends BaseSchema {
     ],
   })
   @Field(() => [Notification])
-  notifications: Array<Notification>;
+  notifications: ArrayField<Notification>;
 
   //
   // meta

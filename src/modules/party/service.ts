@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Model } from 'mongoose';
 
-import { ValidationError } from '../../core/graphql';
+import { ErrorDescription, ValidationError } from '../../core/graphql';
 import { Id, Maybe } from '../../common/types';
 
 import {
@@ -11,6 +11,7 @@ import {
   PartyChangeAttendingStateDto,
   PartyCreateDto,
   PartyGetByIdDto,
+  PartyRemoveOrganizerDto,
   PartySearchDto,
 } from './dto';
 import { PartyMapPreview, PartyPreview } from './response';
@@ -125,7 +126,7 @@ export class PartyService {
       ...publics,
     ].map((party) => ({
       ...party.toJSON(),
-      organizerNickname: party.organizer.nickname,
+      organizerNickname: party.organizer ? party.organizer.nickname : null,
     }));
   }
 
@@ -220,7 +221,9 @@ export class PartyService {
 
     if (!party) return;
 
-    throw new ValidationError({ name: 'Ya hay una fiesta con ese nombre' });
+    throw new ValidationError({
+      name: ErrorDescription.PARTY_NAME_NOT_AVAILABLE,
+    });
   }
 
   async addAttender({ user, party }: PartyChangeAttendingStateDto) {
@@ -247,27 +250,31 @@ export class PartyService {
     });
   }
 
+  async removeOrganizer({ id }: PartyRemoveOrganizerDto) {
+    return this.model.findByIdAndUpdate(id, { organizer: null });
+  }
+
   async userCanAttend({ user, party }: PartyChangeAttendingStateDto) {
     const isPublic = party.availability === PartyAvailability.PUBLIC;
     if (isPublic) return true;
 
     const isFollower =
       party.availability === PartyAvailability.FOLLOWERS &&
-      (party.organizer.followers as unknown as Array<Id>).find(
+      (party.organizer.followers as Array<Id>).find(
         (id: Id) => id === user._id,
       );
     if (isFollower) return true;
 
     const isFollowing =
       party.availability === PartyAvailability.FOLLOWING &&
-      (party.organizer.following as unknown as Array<Id>).find(
+      (party.organizer.following as Array<Id>).find(
         (id: Id) => id === user._id,
       );
     if (isFollowing) return true;
 
     const isPrivate =
       party.availability === PartyAvailability.PRIVATE &&
-      (party.invited as unknown as Array<Id>).find((id: Id) => id === user._id);
+      (party.invited as Array<Id>).find((id: Id) => id === user._id);
     if (isPrivate) return true;
 
     const isOrganizer = party.organizer._id === user._id;

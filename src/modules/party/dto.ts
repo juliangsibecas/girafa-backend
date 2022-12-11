@@ -43,3 +43,7 @@ export class PartyAddinvitedDto {
   party: PartyDocument;
   invitedId: Array<Id>;
 }
+
+export class PartyRemoveOrganizerDto {
+  id: Id;
+}

@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { insertObjectIf } from '../../common/utils';
-import { ValidationError } from '../../core/graphql';
+import { ErrorDescription, ValidationError } from '../../core/graphql';
 import { Maybe } from '../../common/types';
 
 import {
@@ -17,6 +16,7 @@ import {
   UserSetRefreshTokenDto,
   UserSetPasswordDto,
   UserEditDto,
+  UserAddOrganizedPartyDto,
 } from './dto';
 import { User, UserDocument } from './schema';
 
@@ -86,6 +86,14 @@ export class UserService {
     }
   }
 
+  async addOrganizedParty({ user, party }: UserAddOrganizedPartyDto) {
+    if (!user.organizedParties.includes(party._id)) {
+      await user.updateOne({
+        $addToSet: { organizedParties: party._id },
+      });
+    }
+  }
+
   async attend({ user, party }: UserChangeAttendingStateDto) {
     if (!user.attendedParties.includes(party._id)) {
       await user.updateOne({
@@ -107,24 +115,20 @@ export class UserService {
   async checkNicknameAvailability(nickname: string): Promise<boolean> {
     const sameNickname = Boolean(await this.model.findOne({ nickname }));
 
-    if (!sameNickname) return;
+    if (!sameNickname) return true;
 
     throw new ValidationError({
-      ...insertObjectIf(sameNickname, {
-        nickname: 'El nombre de usuario ya esta en uso.',
-      }),
+      nickname: ErrorDescription.USER_NAME_NOT_AVAILABLE,
     });
   }
 
   async checkEmailAvailability(email: string): Promise<boolean> {
     const sameEmail = Boolean(await this.model.findOne({ email }));
 
-    if (!sameEmail) return;
+    if (!sameEmail) return true;
 
     throw new ValidationError({
-      ...insertObjectIf(sameEmail, {
-        email: 'El correo electrónico ya esta en uso.',
-      }),
+      nickname: ErrorDescription.EMAIL_NOT_AVAILABLE,
     });
   }
 

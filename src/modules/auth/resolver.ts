@@ -3,7 +3,12 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 import { UserService } from '../user/service';
 import { CustomContext, Id } from '../../common/types';
-import { ErrorCodes, UnknownError, ValidationError } from '../../core/graphql';
+import {
+  ErrorCode,
+  ErrorDescription,
+  UnknownError,
+  ValidationError,
+} from '../../core/graphql';
 
 import { LoggerService } from '../logger';
 
@@ -57,7 +62,7 @@ export class AuthResolver {
         refreshToken,
       };
     } catch (e) {
-      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
       }
 
@@ -78,7 +83,7 @@ export class AuthResolver {
     try {
       const throwError = () => {
         throw new ValidationError({
-          password: 'El usuario y/o contraseña son incorrectos.',
+          password: ErrorDescription.SIGN_IN_INVALID,
         });
       };
 
@@ -89,12 +94,14 @@ export class AuthResolver {
 
       if (!user) throwError();
 
-      const isCorrectPassword = await this.auth.comparePasswords(
-        data.password,
-        user.password,
-      );
-
-      if (!isCorrectPassword) throwError();
+      try {
+        await this.auth.comparePasswords({
+          raw: data.password,
+          encrypted: user.password,
+        });
+      } catch (e) {
+        throwError();
+      }
 
       const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
       const refreshToken = await this.auth.setRefreshToken({
@@ -104,7 +111,7 @@ export class AuthResolver {
 
       return { userId: user.id, accessToken, refreshToken };
     } catch (e) {
-      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
       }
 
@@ -152,7 +159,7 @@ export class AuthResolver {
 
       if (!user)
         throw new ValidationError({
-          email: 'Correo electrónico no encontrado.',
+          email: ErrorDescription.EMAIL_NOT_FOUND,
         });
 
       const code = Math.floor(Math.random() * (9999 - 1000) + 1000).toString();
@@ -161,6 +168,7 @@ export class AuthResolver {
 
       const res = await this.mailer.sendMail({
         to: data.email,
+        // TODO
         subject: 'Recuperar contraseña',
         text: code,
       });
@@ -169,7 +177,7 @@ export class AuthResolver {
 
       return true;
     } catch (e) {
-      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
       }
 
@@ -192,6 +200,7 @@ export class AuthResolver {
         select: ['recoveryCode'],
       });
 
+      // TODO
       if (!(user.recoveryCode && user.recoveryCode === data.code))
         throw new ValidationError({});
 
@@ -204,7 +213,7 @@ export class AuthResolver {
 
       return true;
     } catch (e) {
-      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
       }
 
@@ -227,24 +236,20 @@ export class AuthResolver {
         select: ['password'],
       });
 
-      const isCorrectPassword = await this.auth.comparePasswords(
-        data.currentPassword,
-        user.password,
+      await this.auth.comparePasswords({
+        raw: data.currentPassword,
+        encrypted: user.password,
+      });
+
+      const encryptedPassword = await this.auth.encryptPassword(
+        data.newPassword,
       );
+      await this.users.setPassword({
+        id: user.id,
+        password: encryptedPassword,
+      });
 
-      if (isCorrectPassword) {
-        const encryptedPassword = await this.auth.encryptPassword(
-          data.newPassword,
-        );
-        await this.users.setPassword({
-          id: user.id,
-          password: encryptedPassword,
-        });
-
-        return true;
-      }
-
-      return false;
+      return true;
     } catch (e) {
       this.logger.error({
         path: 'AuthChangePassword',

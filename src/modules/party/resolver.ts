@@ -4,7 +4,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { Id } from '../../common/types';
 import {
-  ErrorCodes,
+  ErrorCode,
   ForbiddenError,
   NotFoundError,
   UnknownError,
@@ -47,14 +47,19 @@ export class PartyResolver {
     try {
       await this.parties.checkAvailability(data.name);
 
-      const { _id } = await this.parties.create({
+      const party = await this.parties.create({
         ...data,
         organizer: user._id,
       });
 
-      return _id;
+      await this.users.addOrganizedParty({
+        user,
+        party,
+      });
+
+      return party._id;
     } catch (e) {
-      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
       }
 
@@ -82,7 +87,7 @@ export class PartyResolver {
 
       if (party) {
         const organizer = await this.users.getById({
-          id: party.organizer as unknown as string,
+          id: party.organizer as unknown as Id,
           select: ['email', 'attendedParties'],
         });
 
@@ -100,7 +105,7 @@ export class PartyResolver {
 
       return false;
     } catch (e) {
-      if (e.message === ErrorCodes.FORBIDDEN_ERROR) throw e;
+      if (e.message === ErrorCode.FORBIDDEN_ERROR) throw e;
 
       this.logger.error({
         path: 'partyEnable',
@@ -125,7 +130,7 @@ export class PartyResolver {
 
       await Promise.all([
         Promise.all(
-          (party.attenders as unknown as Array<Id>).map(async (attenderId) =>
+          (party.attenders as Array<Id>).map(async (attenderId) =>
             this.users.unattend({
               party,
               user: await this.users.getById({ id: attenderId }),
@@ -191,15 +196,10 @@ export class PartyResolver {
   @Query(() => PartyGetByIdResponse)
   @Features([FeatureToggleName.PARTY_GET])
   async partyGetById(
-    @CurrentUser() { _id }: UserDocument,
+    @CurrentUser() user: UserDocument,
     @Args('id', { type: () => String }) partyId: Id,
   ): Promise<PartyGetByIdResponse> {
     try {
-      const user = await this.users.getById({
-        id: _id,
-        relations: ['attendedParties'],
-      });
-
       const party = await this.parties.getById({
         id: partyId,
         relations: [
@@ -221,13 +221,13 @@ export class PartyResolver {
       return {
         ...party.toObject(),
         isAttender: Boolean(
-          user.attendedParties.find(({ _id }) => _id === partyId),
+          (user.attendedParties as Array<Id>).find((id) => id === partyId),
         ),
-        isOrganizer: user._id === party.organizer._id,
+        isOrganizer: user._id === party.organizer?._id,
       };
     } catch (e) {
       if (
-        [ErrorCodes.FORBIDDEN_ERROR, ErrorCodes.NOT_FOUND_ERROR].includes(
+        [ErrorCode.FORBIDDEN_ERROR, ErrorCode.NOT_FOUND_ERROR].includes(
           e.message,
         )
       )
@@ -235,7 +235,7 @@ export class PartyResolver {
       this.logger.error({
         path: 'partyGetById',
         data: {
-          userId: _id,
+          userId: user._id,
           partyId,
         },
       });
@@ -273,7 +273,7 @@ export class PartyResolver {
       if (!(await this.parties.userCanAttend({ party, user })))
         throw new UnauthorizedException();
 
-      return party.attenders;
+      return party.attenders as Array<User>;
     } catch (e) {
       this.logger.error({
         path: 'partySearchAttenders',

@@ -46,3 +46,9 @@ export class UserEditInput {
   @Field()
   nickname: string;
 }
+
+@InputType()
+export class UserDeleteInput {
+  @Field()
+  password: string;
+}

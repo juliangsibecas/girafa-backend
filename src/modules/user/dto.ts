@@ -44,6 +44,11 @@ export interface UserChangeAttendingStateDto {
   party: PartyDocument;
 }
 
+export interface UserAddOrganizedPartyDto {
+  user: UserDocument;
+  party: PartyDocument;
+}
+
 export interface UserSetRecoveryCodeDto {
   id: Id;
   code: string;

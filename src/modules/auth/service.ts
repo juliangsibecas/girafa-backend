@@ -3,11 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
+import { ErrorDescription, ValidationError } from '../../core/graphql';
 import { CustomContext } from '../../common/types';
 
 import { UserService } from '../user';
 
-import { AuthGetTokenDto } from './dto';
+import { AuthComparePasswordDto, AuthGetTokenDto } from './dto';
 import { TokenPayload } from './types';
 
 @Injectable()
@@ -27,8 +28,15 @@ export class AuthService {
     return bcrypt.hash(password, this.config.get('auth.saltRounds'));
   }
 
-  async comparePasswords(a: string, b: string): Promise<boolean> {
-    return bcrypt.compare(a, b);
+  async comparePasswords({
+    raw,
+    encrypted,
+  }: AuthComparePasswordDto): Promise<boolean> {
+    const isCorrect = await bcrypt.compare(raw, encrypted);
+
+    if (isCorrect) return true;
+
+    throw new ValidationError({ password: ErrorDescription.PASSWORD_INVALID });
   }
 
   getRefreshToken(ctx: CustomContext): string {

@@ -21,5 +21,6 @@ import { LoggerModule } from '../logger';
     UserModule,
   ],
   providers: [AuthService, AuthResolver, JwtStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -104,7 +104,7 @@ type Mutation {
   supportSendMessage(data: SupportSendMessageInput!): Boolean!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
-  userDelete: Boolean!
+  userDelete(data: UserDeleteInput!): Boolean!
   userEdit(data: UserEditInput!): Boolean!
   userSendPartyInvite(data: UserSendPartyInviteInput!): Boolean!
 }
@@ -140,7 +140,7 @@ type Party {
   isExpired: Boolean!
   name: String!
   openBar: Boolean!
-  organizer: User!
+  organizer: User
   updatedAt: DateTime
 }
 
@@ -176,7 +176,7 @@ type PartyGetByIdResponse {
   isOrganizer: Boolean!
   name: String!
   openBar: Boolean!
-  organizer: User!
+  organizer: User
 }
 
 type PartyMapPreview {
@@ -248,6 +248,10 @@ input UserChangeAttendingStateInput {
 input UserChangeFollowingStateInput {
   followingId: String!
   state: Boolean!
+}
+
+input UserDeleteInput {
+  password: String!
 }
 
 input UserEditInput {

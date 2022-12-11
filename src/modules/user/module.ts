@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationModule } from '../notification';
 import { PartyModule } from '../party/module';
 import { LoggerModule } from '../logger';
+import { AuthModule } from '../auth';
 
 import { User, UserSchema } from './schema';
 import { UserService } from './service';
@@ -14,6 +15,7 @@ import { seeders } from './seeder';
   imports: [
     LoggerModule,
     NotificationModule,
+    forwardRef(() => AuthModule),
     forwardRef(() => PartyModule),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],

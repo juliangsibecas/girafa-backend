@@ -2,11 +2,11 @@ import * as request from 'supertest';
 import { Server } from 'https';
 import { AuthenticationError } from 'apollo-server-express';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-import { ErrorCodes, Operation, Response } from './types';
+import { ErrorCode, Operation, Response } from './types';
 
 export const handleError = (err: GraphQLError): GraphQLFormattedError => {
   if (err instanceof AuthenticationError) {
-    return { message: ErrorCodes.AUTH_ERROR };
+    return { message: ErrorCode.AUTH_ERROR };
   }
 
   if (err instanceof GraphQLError) {

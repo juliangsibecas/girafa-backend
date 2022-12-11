@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { mutation } from 'gql-query-builder';
 
 import { AppModule } from '../../../../app';
-import { ErrorCodes } from '../../../../core/graphql';
+import { ErrorCode } from '../../../../core/graphql';
 import { TestSuite } from '../../../../common/utils';
 
 import { PartyDeleteSeeder } from './seeder';
@@ -66,7 +66,7 @@ describe('(E2E) Party - Delete', () => {
     );
 
     expect(deleteMutation.data[deleteOperation]).toEqual(true);
-    expect(partyRes.errors[0].message).toEqual(ErrorCodes.NOT_FOUND_ERROR);
+    expect(partyRes.errors[0].message).toEqual(ErrorCode.NOT_FOUND_ERROR);
 
     expect(sibeRes.data.attendedPartiesCount).toEqual(1);
     expect(gumpyRes.data.attendedPartiesCount).toEqual(2);

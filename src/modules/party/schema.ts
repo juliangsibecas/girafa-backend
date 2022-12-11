@@ -4,7 +4,7 @@ import { DateResolver } from 'graphql-scalars';
 import * as mongoose from 'mongoose';
 import { v4 } from 'uuid';
 
-import { BaseSchema, Id } from '../../common/types';
+import { ArrayField, BaseSchema, Id, Maybe } from '../../common/types';
 
 import { User } from '../user/schema';
 
@@ -24,6 +24,13 @@ export class Party extends BaseSchema {
   @Prop()
   @Field()
   name: string;
+
+  @Prop({
+    ref: 'User',
+    type: String,
+  })
+  @Field(() => User, { nullable: true })
+  organizer: Maybe<User>;
 
   @Prop()
   @Field(() => PartyAvailability)
@@ -62,18 +69,11 @@ export class Party extends BaseSchema {
     ],
   })
   @Field(() => [User])
-  attenders: Array<User>;
+  attenders: ArrayField<User>;
 
   @Prop({ default: 0 })
   @Field()
   attendersCount: number;
-
-  @Prop({
-    ref: 'User',
-    type: String,
-  })
-  @Field(() => User)
-  organizer: User;
 
   @Prop({
     type: [
@@ -84,7 +84,7 @@ export class Party extends BaseSchema {
     ],
   })
   @Field(() => [User])
-  invited: Array<User>;
+  invited: ArrayField<User>;
 
   @Prop({ default: false })
   @Field()

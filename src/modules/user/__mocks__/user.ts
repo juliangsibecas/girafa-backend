@@ -13,6 +13,7 @@ export const mockUser = (data: Partial<User>): User => ({
   followersCount: 0,
   attendedParties: [],
   attendedPartiesCount: 0,
+  organizedParties: [],
   createdAt: new Date(),
   invites: [],
   notifications: [],

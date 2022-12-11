@@ -3,7 +3,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { Id } from '../../common/types';
 import {
-  ErrorCodes,
+  ErrorCode,
   ForbiddenError,
   NotFoundError,
   UnknownError,
@@ -12,12 +12,14 @@ import {
 import { CurrentUser } from '../auth/graphql/decorators';
 import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
+import { AuthService } from '../auth';
 import { NotificationService, NotificationType } from '../notification';
-import { PartyDocument, PartyPreview, PartyService } from '../party';
+import { Party, PartyDocument, PartyPreview, PartyService } from '../party';
 
 import {
   UserChangeAttendingStateInput,
   UserChangeFollowingStateInput,
+  UserDeleteInput,
   UserEditInput,
   UserSearchFollowersToInviteInput,
   UserSendPartyInviteInput,
@@ -32,6 +34,7 @@ export class UserResolver {
     private logger: LoggerService,
     private users: UserService,
     private notifications: NotificationService,
+    @Inject(forwardRef(() => AuthService)) private auth: AuthService,
     @Inject(forwardRef(() => PartyService)) private parties: PartyService,
   ) {}
 
@@ -48,7 +51,7 @@ export class UserResolver {
 
       return Boolean(await this.users.edit({ id: user._id, ...data }));
     } catch (e) {
-      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
       }
 
@@ -65,11 +68,23 @@ export class UserResolver {
 
   @Mutation(() => Boolean)
   @Features([FeatureToggleName.USER_DELETE])
-  async userDelete(@CurrentUser() user: UserDocument): Promise<Boolean> {
+  async userDelete(
+    @CurrentUser() user: UserDocument,
+    @Args('data') data: UserDeleteInput,
+  ): Promise<Boolean> {
+    const password = (
+      await this.users.getById({ id: user._id, select: ['password'] })
+    ).password;
+
+    await this.auth.comparePasswords({
+      raw: data.password,
+      encrypted: password,
+    });
+
     try {
       await Promise.all([
         Promise.all(
-          (user.followers as unknown as Array<Id>).map(async (followerId) =>
+          (user.followers as Array<Id>).map(async (followerId) =>
             this.users.unfollow({
               user: await this.users.getById({ id: followerId }),
               following: user,
@@ -77,7 +92,7 @@ export class UserResolver {
           ),
         ),
         Promise.all(
-          (user.following as unknown as Array<Id>).map(async (followingId) =>
+          (user.following as Array<Id>).map(async (followingId) =>
             this.users.unfollow({
               user,
               following: await this.users.getById({ id: followingId }),
@@ -85,7 +100,14 @@ export class UserResolver {
           ),
         ),
         Promise.all(
-          (user.attendedParties as unknown as Array<Id>).map(async (partyId) =>
+          (user.organizedParties as Array<Id>).map(async (partyId) =>
+            this.parties.removeOrganizer({
+              id: partyId,
+            }),
+          ),
+        ),
+        Promise.all(
+          (user.attendedParties as Array<Id>).map(async (partyId) =>
             this.parties.removeAttender({
               user,
               party: await this.parties.getById({ id: partyId }),
@@ -97,7 +119,7 @@ export class UserResolver {
 
       return true;
     } catch (e) {
-      if (e.message === ErrorCodes.VALIDATION_ERROR) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
       }
 
@@ -155,14 +177,14 @@ export class UserResolver {
       return {
         ...user.toObject(),
         isFollowing: Boolean(
-          (user.followers as unknown as Array<Id>).find((id) => id === myId),
+          (user.followers as Array<Id>).find((id) => id === myId),
         ),
         isFollower: Boolean(
-          (user.following as unknown as Array<Id>).find((id) => id === myId),
+          (user.following as Array<Id>).find((id) => id === myId),
         ),
       };
     } catch (e) {
-      if (e.message === ErrorCodes.NOT_FOUND_ERROR) {
+      if (e.message === ErrorCode.NOT_FOUND_ERROR) {
         throw e;
       }
 
@@ -195,7 +217,7 @@ export class UserResolver {
         ],
       });
 
-      return user.followers;
+      return user.followers as Array<User>;
     } catch (e) {
       this.logger.error({
         path: 'UserGetFollowersById',
@@ -224,7 +246,7 @@ export class UserResolver {
         ],
       });
 
-      return user.following;
+      return user.following as Array<User>;
     } catch (e) {
       this.logger.error({
         path: 'UserGetFollowingById',
@@ -260,10 +282,12 @@ export class UserResolver {
         ],
       });
 
-      return user.attendedParties.map((party: PartyDocument) => ({
-        ...party.toObject(),
-        organizerNickname: party.organizer.nickname,
-      }));
+      return (user.attendedParties as Array<Party>).map(
+        (party: PartyDocument) => ({
+          ...party.toObject(),
+          organizerNickname: party.organizer.nickname,
+        }),
+      );
     } catch (e) {
       this.logger.error({
         path: 'UserGetAttendedPartiesById',
@@ -299,7 +323,7 @@ export class UserResolver {
         ],
       });
 
-      return user.followers;
+      return user.followers as Array<User>;
     } catch (e) {
       this.logger.error({
         path: 'UserSearchFollowersToInvite',
@@ -419,7 +443,7 @@ export class UserResolver {
       )
         throw new UnauthorizedException();
 
-      // avaid auto-inviting
+      // avoid auto-inviting
       const filteredInivitedId = data.invitedId.filter((id) => id !== user._id);
 
       await this.parties.addInvited({ party, invitedId: filteredInivitedId });
