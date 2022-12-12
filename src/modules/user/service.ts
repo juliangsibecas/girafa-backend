@@ -128,7 +128,7 @@ export class UserService {
     if (!sameEmail) return true;
 
     throw new ValidationError({
-      nickname: ErrorDescription.EMAIL_NOT_AVAILABLE,
+      email: ErrorDescription.EMAIL_NOT_AVAILABLE,
     });
   }
 

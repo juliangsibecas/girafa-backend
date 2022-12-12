@@ -22,8 +22,9 @@ import {
   FeatureToggleGuard,
   FeatureToggleModule,
 } from '../modules/featureToggle';
-import { RoleGuard } from 'src/modules/auth/role';
+import { RoleGuard } from '../modules/auth/role';
 import { AppController } from './controller';
+import { TypesSyncModule } from '../modules/typesSync';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AppController } from './controller';
     GraphQLModule.forRootAsync(gqlModuleOptions),
     ScheduleModule.forRoot(),
 
+    TypesSyncModule,
     FeatureToggleModule,
     AuthModule,
     ImageModule,

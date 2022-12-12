@@ -55,6 +55,24 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+enum ErrorCode {
+  AUTH_ERROR
+  FEATURE_TOGGLE_ERROR
+  FORBIDDEN_ERROR
+  NOT_FOUND_ERROR
+  UNKNOWN_ERROR
+  VALIDATION_ERROR
+}
+
+enum ErrorDescription {
+  EMAIL_NOT_AVAILABLE
+  EMAIL_NOT_FOUND
+  PARTY_NAME_NOT_AVAILABLE
+  PASSWORD_INVALID
+  SIGN_IN_INVALID
+  USER_NAME_NOT_AVAILABLE
+}
+
 type FeatureToggle {
   _id: String!
   name: FeatureToggleName!
@@ -206,6 +224,7 @@ type Query {
   partyGetById(id: String!): PartyGetByIdResponse!
   partySearch(q: String): [PartyPreview!]!
   partySearchAttenders(data: PartySearchAttendersInput!): [UserPreview!]!
+  typesSync: TypesSyncResponse!
   userGetAttendedPartiesById(id: String!): [PartyPreview!]!
   userGetById(id: String!): UserGetByIdResponse!
   userGetFollowersById(id: String!): [UserPreview!]!
@@ -217,6 +236,11 @@ type Query {
 input SupportSendMessageInput {
   body: String!
   subject: String!
+}
+
+type TypesSyncResponse {
+  code: ErrorCode!
+  description: ErrorDescription!
 }
 
 type User {
