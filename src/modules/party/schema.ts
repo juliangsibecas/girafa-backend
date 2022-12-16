@@ -1,4 +1,4 @@
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { DateResolver } from 'graphql-scalars';
 import * as mongoose from 'mongoose';
@@ -9,11 +9,7 @@ import { ArrayField, BaseSchema, Id, Maybe } from '../../common/types';
 import { User } from '../user/schema';
 
 import { Coordinate } from './coordinate';
-import { PartyAvailability } from './types';
-
-registerEnumType(PartyAvailability, {
-  name: 'PartyAvailability',
-});
+import { PartyAvailability, PartyStatus } from './types';
 
 @Schema({ timestamps: true })
 @ObjectType()
@@ -24,6 +20,10 @@ export class Party extends BaseSchema {
   @Prop()
   @Field()
   name: string;
+
+  @Prop()
+  @Field(() => PartyStatus)
+  status: PartyStatus;
 
   @Prop({
     ref: 'User',
@@ -85,14 +85,6 @@ export class Party extends BaseSchema {
   })
   @Field(() => [User])
   invited: ArrayField<User>;
-
-  @Prop({ default: false })
-  @Field()
-  isExpired: boolean;
-
-  @Prop({ default: false })
-  @Field()
-  isEnabled: boolean;
 }
 
 export type PartyDocument = Party & mongoose.Document;

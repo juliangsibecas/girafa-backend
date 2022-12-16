@@ -16,7 +16,7 @@ import {
 } from './dto';
 import { PartyMapPreview, PartyPreview } from './response';
 import { Party, PartyDocument } from './schema';
-import { PartyAvailability } from './types';
+import { PartyAvailability, PartyStatus } from './types';
 
 @Injectable()
 export class PartyService {
@@ -28,7 +28,7 @@ export class PartyService {
   }
 
   async enable(id: Id): Promise<PartyDocument | undefined> {
-    return this.model.findByIdAndUpdate(id, { isEnabled: true });
+    return this.model.findByIdAndUpdate(id, { status: PartyStatus.ENABLED });
   }
 
   async find({ userId }: PartySearchDto): Promise<Array<PartyMapPreview>> {
@@ -41,8 +41,7 @@ export class PartyService {
     };
 
     const baseQuery: Partial<Party> = {
-      isExpired: false,
-      isEnabled: true,
+      status: PartyStatus.ENABLED,
     };
 
     const publics = await this.model
@@ -138,8 +137,10 @@ export class PartyService {
     };
     const nameLike = { name: { $regex: q, $options: 'i' } };
 
-    const baseQuery: Partial<Party> = {
-      isEnabled: true,
+    const baseQuery = {
+      status: {
+        $in: [PartyStatus.ENABLED, PartyStatus.EXPIRED],
+      },
     };
 
     const publics = await this.model
@@ -204,7 +205,7 @@ export class PartyService {
       ...publics,
     ].map((party) => ({
       ...party.toJSON(),
-      organizerNickname: party.organizer.nickname,
+      organizerNickname: party.organizer ? party.organizer.nickname : undefined,
     }));
   }
 
@@ -295,7 +296,7 @@ export class PartyService {
         date: new Date(date.getTime() - userTimezoneOffset),
       },
       {
-        isExpired: true,
+        status: PartyStatus.EXPIRED,
       },
     );
 

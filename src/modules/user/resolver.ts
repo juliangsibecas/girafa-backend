@@ -27,6 +27,7 @@ import {
 import { UserGetByIdResponse, UserPreview } from './response';
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
+import { PartyStatus } from '../party/types';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -386,14 +387,14 @@ export class UserResolver {
     try {
       const party = await this.parties.getById({
         id: data.partyId,
-        select: ['_id', 'availability', 'isExpired', 'attenders', 'invited'],
+        select: ['_id', 'availability', 'status', 'attenders', 'invited'],
         relations: ['organizer'],
       });
 
       if (!user || !party) throw new Error();
 
       if (
-        party.isExpired ||
+        party.status === PartyStatus.EXPIRED ||
         !(await this.parties.userCanAttend({ user, party }))
       ) {
         throw new ForbiddenError();
@@ -433,12 +434,12 @@ export class UserResolver {
 
       const party = await this.parties.getById({
         id: data.partyId,
-        select: ['name', 'allowInvites', 'isExpired'],
+        select: ['name', 'allowInvites', 'status'],
         relations: ['organizer', 'invited'],
       });
 
       if (
-        party.isExpired ||
+        party.status === PartyStatus.EXPIRED ||
         (!party.allowInvites && party.organizer._id !== user._id)
       )
         throw new UnauthorizedException();
@@ -475,5 +476,17 @@ export class UserResolver {
       });
       throw new UnknownError();
     }
+  }
+
+  @Query(() => Boolean)
+  async userCheckPartyValidating(
+    @CurrentUser() user: UserDocument,
+  ): Promise<Boolean> {
+    const { status } = await this.parties.getById({
+      id: user.organizedParties.pop() as Id,
+      select: ['status'],
+    });
+
+    return status === PartyStatus.CREATED;
   }
 }

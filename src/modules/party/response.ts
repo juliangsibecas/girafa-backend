@@ -21,6 +21,7 @@ export class PartyMapPreview extends PickType(Party, [
 @ObjectType()
 export class PartyGetByIdResponse extends PickType(Party, [
   '_id',
+  'status',
   'availability',
   'name',
   'organizer',
@@ -31,7 +32,6 @@ export class PartyGetByIdResponse extends PickType(Party, [
   'attenders',
   'attendersCount',
   'allowInvites',
-  'isExpired',
 ]) {
   @Field()
   isAttender: boolean;

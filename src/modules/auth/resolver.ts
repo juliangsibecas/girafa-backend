@@ -63,7 +63,6 @@ export class AuthResolver {
       };
     } catch (e) {
       if (e.message === ErrorCode.VALIDATION_ERROR) {
-        console.log(e.extensions);
         throw e;
       }
 

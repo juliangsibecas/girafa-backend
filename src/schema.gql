@@ -154,11 +154,10 @@ type Party {
   date: Date!
   description: String!
   invited: [User!]!
-  isEnabled: Boolean!
-  isExpired: Boolean!
   name: String!
   openBar: Boolean!
   organizer: User
+  status: PartyStatus!
   updatedAt: DateTime
 }
 
@@ -190,11 +189,11 @@ type PartyGetByIdResponse {
   date: Date!
   description: String!
   isAttender: Boolean!
-  isExpired: Boolean!
   isOrganizer: Boolean!
   name: String!
   openBar: Boolean!
   organizer: User
+  status: PartyStatus!
 }
 
 type PartyMapPreview {
@@ -216,6 +215,12 @@ input PartySearchAttendersInput {
   q: String
 }
 
+enum PartyStatus {
+  CREATED
+  ENABLED
+  EXPIRED
+}
+
 type Query {
   featureToggleGetEnabledNames: [FeatureToggleName!]!
   featureToggleList: [FeatureToggle!]!
@@ -225,6 +230,7 @@ type Query {
   partySearch(q: String): [PartyPreview!]!
   partySearchAttenders(data: PartySearchAttendersInput!): [UserPreview!]!
   typesSync: TypesSyncResponse!
+  userCheckPartyValidating: Boolean!
   userGetAttendedPartiesById(id: String!): [PartyPreview!]!
   userGetById(id: String!): UserGetByIdResponse!
   userGetFollowersById(id: String!): [UserPreview!]!

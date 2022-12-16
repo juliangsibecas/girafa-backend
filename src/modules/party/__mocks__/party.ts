@@ -3,12 +3,13 @@ import { v4 } from 'uuid';
 import { MOCKED_USERS } from '../../../modules/user/__mocks__/user';
 
 import { Party } from '../schema';
-import { PartyAvailability } from '../types';
+import { PartyAvailability, PartyStatus } from '../types';
 
 export const mockParty = (
   data: Pick<Party, 'name' | 'availability'>,
 ): Party => ({
   _id: v4(),
+  status: PartyStatus.ENABLED,
   allowInvites: true,
   date: new Date(),
   openBar: true,
@@ -22,8 +23,6 @@ export const mockParty = (
   attendersCount: 0,
   organizer: MOCKED_USERS[0],
   invited: [],
-  isEnabled: true,
-  isExpired: false,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...data,
