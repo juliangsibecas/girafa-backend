@@ -18,6 +18,11 @@ export interface UserEditDto {
   nickname: string;
 }
 
+export interface UserSearchDto {
+  id: Id;
+  search: string;
+}
+
 export interface UserGetByIdDto {
   id: Id;
   select?: Array<keyof User>;

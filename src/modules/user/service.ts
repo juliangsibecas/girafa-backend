@@ -17,6 +17,7 @@ import {
   UserSetPasswordDto,
   UserEditDto,
   UserAddOrganizedPartyDto,
+  UserSearchDto,
 } from './dto';
 import { User, UserDocument } from './schema';
 
@@ -32,11 +33,14 @@ export class UserService {
     return this.model.findByIdAndUpdate(dto.id, dto);
   }
 
-  async search(q: string): Promise<Array<User>> {
-    const like = { $regex: q, $options: 'i' };
+  async search(dto: UserSearchDto): Promise<Array<User>> {
+    const like = { $regex: dto.search, $options: 'i' };
 
     return this.model.find(
       {
+        _id: {
+          $ne: dto.id,
+        },
         $or: [{ nickname: like }, { fullName: like }],
       },
       ['_id', 'nickname', 'fullName'],

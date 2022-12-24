@@ -137,10 +137,11 @@ export class UserResolver {
   @Query(() => [UserPreview])
   @Features([FeatureToggleName.USER_GET])
   userSearch(
+    @CurrentUser() user: UserDocument,
     @Args('q', { nullable: true }) q: string = '',
   ): Promise<Array<UserPreview>> {
     try {
-      return this.users.search(q);
+      return this.users.search({ id: user._id, search: q });
     } catch (e) {
       this.logger.error({
         path: 'UserSearch',
