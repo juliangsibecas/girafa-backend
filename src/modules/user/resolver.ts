@@ -484,6 +484,10 @@ export class UserResolver {
     @CurrentUser() user: UserDocument,
   ): Promise<Boolean> {
     try {
+      if (!user.organizedParties.length) {
+        return false;
+      }
+
       const { status } = await this.parties.getById({
         id: user.organizedParties.pop() as Id,
         select: ['status'],
