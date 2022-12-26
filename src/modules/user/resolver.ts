@@ -483,11 +483,21 @@ export class UserResolver {
   async userCheckPartyValidating(
     @CurrentUser() user: UserDocument,
   ): Promise<Boolean> {
-    const { status } = await this.parties.getById({
-      id: user.organizedParties.pop() as Id,
-      select: ['status'],
-    });
+    try {
+      const { status } = await this.parties.getById({
+        id: user.organizedParties.pop() as Id,
+        select: ['status'],
+      });
 
-    return status === PartyStatus.CREATED;
+      return status === PartyStatus.CREATED;
+    } catch (e) {
+      this.logger.error({
+        path: 'UserCheckPartyValidation',
+        data: {
+          userId: user._id,
+        },
+      });
+      throw new UnknownError();
+    }
   }
 }
