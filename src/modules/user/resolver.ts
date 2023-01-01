@@ -287,7 +287,7 @@ export class UserResolver {
       return (user.attendedParties as Array<Party>).map(
         (party: PartyDocument) => ({
           ...party.toObject(),
-          organizerNickname: party.organizer.nickname,
+          organizerNickname: party.organizer?.nickname,
         }),
       );
     } catch (e) {
@@ -295,6 +295,7 @@ export class UserResolver {
         path: 'UserGetAttendedPartiesById',
         data: {
           id,
+          data: e,
         },
       });
       throw new UnknownError();

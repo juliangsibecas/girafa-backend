@@ -125,7 +125,7 @@ export class PartyService {
       ...publics,
     ].map((party) => ({
       ...party.toJSON(),
-      organizerNickname: party.organizer ? party.organizer.nickname : null,
+      organizerNickname: party.organizer?.nickname,
     }));
   }
 
@@ -205,7 +205,7 @@ export class PartyService {
       ...publics,
     ].map((party) => ({
       ...party.toJSON(),
-      organizerNickname: party.organizer ? party.organizer.nickname : undefined,
+      organizerNickname: party.organizer?.nickname,
     }));
   }
 
