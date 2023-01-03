@@ -1,10 +1,3 @@
-check required fields when populating current user
-
-check party expiration
 send push notification when expiring party to all attenders with cool data
 
 party name unique case sensitive
-
-user delete => party organizer
-
-add logging to http endpoints
