@@ -27,7 +27,7 @@ import {
 import { UserGetByIdResponse, UserPreview } from './response';
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
-import { PartyStatus } from '../party/types';
+import { PartyAvailability, PartyStatus } from '../party/types';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -280,6 +280,10 @@ export class UserResolver {
               path: 'organizer',
               select: ['nickname'],
             },
+            match: {
+              availability: PartyAvailability.PUBLIC,
+              status: { $ne: PartyStatus.CREATED },
+            },
           },
         ],
       });
@@ -318,8 +322,14 @@ export class UserResolver {
             path: 'followers',
             select: ['_id', 'nickname', 'fullName'],
             match: {
-              nickname: like,
-              fullName: like,
+              $or: [
+                {
+                  nickname: like,
+                },
+                {
+                  fullName: like,
+                },
+              ],
               attendedParties: { $ne: data.partyId },
             },
           },
@@ -333,6 +343,7 @@ export class UserResolver {
         data: {
           userId: _id,
           ...data,
+          e,
         },
       });
       throw new UnknownError();
