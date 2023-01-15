@@ -170,7 +170,7 @@ export class AuthResolver {
         to: data.email,
         // TODO
         subject: 'Recuperar contraseña',
-        text: code,
+        html: `<h1>Recuperar contraseña</h1><p>El código de recuperación es: <b>${code}</b></p>`,
       });
 
       if (!res.accepted.length) throw new Error();
@@ -183,7 +183,7 @@ export class AuthResolver {
 
       this.logger.error({
         path: 'AuthGenerateRecoveryCode',
-        data: { ...data },
+        data: { ...data, e },
       });
       throw new UnknownError();
     }
