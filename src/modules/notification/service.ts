@@ -106,11 +106,10 @@ export class NotificationService {
   }
 
   async push({ _id, from, type, user, party, createdAt }: Notification) {
-    // TODO
     const body =
       type === NotificationType.FOLLOW
-        ? `${from.nickname} ahora te sigue`
-        : `${from.nickname} te invito a ${party?.name}`;
+        ? `${from.nickname} te sigue`
+        : `${from.nickname} te invitó a ${party?.name}`;
 
     await this.onesignal.createNotification({
       app_id: this.config.get('onesignal.appId'),
