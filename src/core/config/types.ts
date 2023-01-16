@@ -50,7 +50,9 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   TELEGRAM_KEY: string;
   @IsNotEmpty()
-  TELEGRAM_CHANNEL_ID: string;
+  TELEGRAM_LOGS_CHANNEL_ID: string;
+  @IsNotEmpty()
+  TELEGRAM_ANALYTICS_CHANNEL_ID: string;
 
   @IsNotEmpty()
   ONESIGNAL_API_KEY: string;

@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TelegramService } from 'nestjs-telegram';
+import { TelegramException, TelegramService } from 'nestjs-telegram';
 
 import { ErrorCode } from '../../core/graphql';
 
-import { LoggerDebugDto, LoggerErrorDto } from './dto';
+import { LoggerAnalyticDto, LoggerDebugDto, LoggerErrorDto } from './dto';
 
 @Injectable()
 export class LoggerService {
@@ -15,14 +15,27 @@ export class LoggerService {
     private telegram: TelegramService,
   ) {}
 
-  async debug({ path, data }: LoggerDebugDto) {
+  async analytic({ text }: LoggerAnalyticDto) {
+    try {
+      await this.telegram
+        .sendMessage({
+          chat_id: this.config.get('telegram.channels.analytics'),
+          text,
+        })
+        .toPromise();
+    } catch (e) {
+      console.log((e as TelegramException).message);
+    }
+  }
+
+  debug({ path, data }: LoggerDebugDto) {
     this.logger.log({ path, data });
   }
 
   async error({ path, code = ErrorCode.UNKNOWN_ERROR, data }: LoggerErrorDto) {
-    this.telegram
+    await this.telegram
       .sendMessage({
-        chat_id: this.config.get('telegram.channelId') as string,
+        chat_id: this.config.get('telegram.channels.logs'),
         text: `
         <b>${path}</b> - ${code}
 <code>${JSON.stringify(data)}</code>

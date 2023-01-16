@@ -56,6 +56,10 @@ export class AuthResolver {
         userId: user._id,
       });
 
+      this.logger.analytic({
+        text: `Nuevo usuario: ${user.fullName} - @${user.nickname}`,
+      });
+
       return {
         userId: user._id,
         accessToken,
@@ -168,7 +172,6 @@ export class AuthResolver {
 
       const res = await this.mailer.sendMail({
         to: data.email,
-        // TODO
         subject: 'Recuperar contraseña',
         html: `<h1>Recuperar contraseña</h1><p>El código de recuperación es: <b>${code}</b></p>`,
       });
