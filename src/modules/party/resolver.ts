@@ -1,4 +1,3 @@
-import { MailerService } from '@nestjs-modules/mailer';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
@@ -31,7 +30,6 @@ import { PartyService } from './service';
 export class PartyResolver {
   constructor(
     private logger: LoggerService,
-    private mailer: MailerService,
     private parties: PartyService,
     @Inject(forwardRef(() => NotificationService))
     private notifications: NotificationService,
@@ -94,10 +92,12 @@ export class PartyResolver {
         await this.parties.addAttender({ user: organizer, party });
         await this.users.attend({ user: organizer, party });
 
-        await this.mailer.sendMail({
-          to: organizer.email,
-          subject: 'Fiesta enabled',
-          text: 'Fiesta enabled',
+        await this.notifications.rawPush({
+          toIds: [organizer._id],
+          text: `${party.name} fue aceptada 😎`,
+          data: {
+            partyId: party._id,
+          },
         });
 
         return true;

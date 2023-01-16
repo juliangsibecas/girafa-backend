@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 import { insertObjectIf } from '../../common/utils';
 import { Environment, Id } from '../../common/types';
 
-import { NotificationCreateDto } from './dto';
+import { NotificationCreateDto, RawPushNotification } from './dto';
 import { Notification, NotificationDocument } from './schema';
 import { NotificationType } from './types';
 
@@ -106,17 +106,15 @@ export class NotificationService {
   }
 
   async push({ _id, from, type, user, party, createdAt }: Notification) {
-    const body =
+    const text =
       type === NotificationType.FOLLOW
         ? `${from.nickname} te sigue`
         : `${from.nickname} te invitó a ${party?.name}`;
 
-    await this.onesignal.createNotification({
-      app_id: this.config.get('onesignal.appId'),
-      external_id: _id,
-      included_segments: [],
-      include_external_user_ids: [user._id.toString()],
-      contents: { en: body },
+    await this.rawPush({
+      id: _id,
+      toIds: [user._id],
+      text,
       data: {
         _id,
         type,
@@ -126,6 +124,17 @@ export class NotificationService {
         }),
         createdAt,
       },
+    });
+  }
+
+  rawPush({ id, toIds, text, data }: RawPushNotification) {
+    return this.onesignal.createNotification({
+      app_id: this.config.get('onesignal.appId'),
+      external_id: id,
+      included_segments: [],
+      include_external_user_ids: toIds,
+      contents: { en: text },
+      data,
     });
   }
 }
