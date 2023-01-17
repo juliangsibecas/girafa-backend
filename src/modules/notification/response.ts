@@ -14,4 +14,7 @@ export class UserNotification extends PickType(Notification, [
 
   @Field(() => PartyPreview, { nullable: true })
   party?: PartyPreview;
+
+  @Field({ nullable: true })
+  url?: string;
 }

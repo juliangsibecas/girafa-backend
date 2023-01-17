@@ -14,5 +14,5 @@ export type RawPushNotification = {
   id?: Id;
   toIds: Array<Id>;
   text: string;
-  data: Record<string, any>;
+  data: { url: string } & Record<string, any>;
 };

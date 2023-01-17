@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { insertObjectIf } from '../../common/utils';
+import { insertObjectIf, notificationTypeToDeepLink } from '../../common/utils';
 import { Environment, Id } from '../../common/types';
 
 import { NotificationCreateDto, RawPushNotification } from './dto';
@@ -123,6 +123,7 @@ export class NotificationService {
           party: { _id: party?._id, name: party?.name },
         }),
         createdAt,
+        url: `${notificationTypeToDeepLink(type)}/${party?._id ?? from._id}`,
       },
     });
   }

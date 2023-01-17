@@ -1,5 +1,6 @@
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { createDeepLink } from 'src/common/utils';
 
 import { Id } from '../../common/types';
 import {
@@ -97,6 +98,7 @@ export class PartyResolver {
           text: `${party.name} fue aceptada 😎`,
           data: {
             partyId: party._id,
+            url: createDeepLink(`party/${party._id}`),
           },
         });
 

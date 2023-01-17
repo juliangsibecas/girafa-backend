@@ -306,6 +306,7 @@ type UserNotification {
   from: UserPreview!
   party: PartyPreview
   type: NotificationType!
+  url: String
 }
 
 type UserPreview {
