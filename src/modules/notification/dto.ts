@@ -1,4 +1,5 @@
-import { Id } from 'src/common/types';
+import { Id } from '../../common/types';
+
 import { Party } from '../party';
 import { User } from '../user';
 import { NotificationType } from './types';

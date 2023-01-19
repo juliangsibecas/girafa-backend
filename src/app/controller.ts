@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { AllowAny } from 'src/modules/auth';
+
+import { AllowAny } from '../modules/auth';
 
 @Controller()
 export class AppController {

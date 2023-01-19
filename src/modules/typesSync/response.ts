@@ -1,5 +1,5 @@
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { ErrorCode, ErrorDescription } from 'src/core/graphql';
+import { ErrorCode, ErrorDescription } from '../../core/graphql';
 
 registerEnumType(ErrorCode, {
   name: 'ErrorCode',

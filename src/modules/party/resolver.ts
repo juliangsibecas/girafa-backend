@@ -1,7 +1,7 @@
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { createDeepLink } from 'src/common/utils';
 
+import { createDeepLink } from '../../common/utils';
 import { Id } from '../../common/types';
 import {
   ErrorCode,

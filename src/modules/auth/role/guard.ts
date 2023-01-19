@@ -2,7 +2,9 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { User } from 'src/modules/user';
+
+import { User } from '../../../modules/user';
+
 import { ROLES_KEY } from './constant';
 import { RoleMetadata } from './types';
 
