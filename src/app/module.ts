@@ -25,6 +25,7 @@ import {
 import { RoleGuard } from '../modules/auth/role';
 import { AppController } from './controller';
 import { TypesSyncModule } from '../modules/typesSync';
+import { AppInfoModule } from '../modules/appInfo/module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TypesSyncModule } from '../modules/typesSync';
     GraphQLModule.forRootAsync(gqlModuleOptions),
     ScheduleModule.forRoot(),
 
+    AppInfoModule,
     TypesSyncModule,
     FeatureToggleModule,
     AuthModule,
