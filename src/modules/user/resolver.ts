@@ -21,10 +21,11 @@ import {
   UserChangeFollowingStateInput,
   UserDeleteInput,
   UserEditInput,
+  UserGetInput,
   UserSearchFollowersToInviteInput,
   UserSendPartyInviteInput,
 } from './input';
-import { UserGetByIdResponse, UserPreview } from './response';
+import { UserGetResponse, UserPreview } from './response';
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
 import { PartyAvailability, PartyStatus } from '../party/types';
@@ -153,26 +154,38 @@ export class UserResolver {
     }
   }
 
-  @Query(() => UserGetByIdResponse)
+  @Query(() => UserGetResponse)
   @Features([FeatureToggleName.USER_GET])
-  async userGetById(
+  async userGet(
     @CurrentUser() { _id: myId }: UserDocument,
-    @Args('id', { type: () => String }) id: Id,
-  ): Promise<UserGetByIdResponse> {
+    @Args('data') data: UserGetInput,
+  ): Promise<UserGetResponse> {
     try {
-      const user = await this.users.getById({
-        id,
-        select: [
-          '_id',
-          'nickname',
-          'fullName',
-          'following',
-          'followers',
-          'followingCount',
-          'followersCount',
-          'attendedPartiesCount',
-        ],
-      });
+      let user: UserDocument;
+      const select: Array<keyof User> = [
+        '_id',
+        'nickname',
+        'fullName',
+        'following',
+        'followers',
+        'followingCount',
+        'followersCount',
+        'attendedPartiesCount',
+      ];
+
+      if (data.id) {
+        user = await this.users.getById({
+          id: data.id,
+          select,
+        });
+      }
+
+      if (data.nickname) {
+        user = await this.users.getByNickname({
+          nickname: data.nickname,
+          select,
+        });
+      }
 
       if (!user) throw new NotFoundError();
 
@@ -191,10 +204,10 @@ export class UserResolver {
       }
 
       this.logger.error({
-        path: 'UserGetById',
+        path: 'UserGet',
         data: {
           myId,
-          id,
+          ...data,
         },
       });
 

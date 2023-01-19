@@ -8,7 +8,7 @@ export class UserPreview extends PickType(User, ['_id', 'nickname']) {
 }
 
 @ObjectType()
-export class UserGetByIdResponse extends PickType(User, [
+export class UserGetResponse extends PickType(User, [
   '_id',
   'nickname',
   'fullName',

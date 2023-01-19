@@ -1,6 +1,6 @@
 import { mutation, query } from 'gql-query-builder';
 
-import { UserGetByIdResponse } from '../../../modules/user';
+import { UserGetResponse } from '../../../modules/user';
 import { AuthSignInInput } from '../../../modules/auth/input';
 import { PartyGetByIdResponse } from '../../../modules/party';
 import { Notification } from '../../../modules/notification';
@@ -40,7 +40,7 @@ export class TestHelpers extends TestBase {
   async getUserById(idx: number, byIdx?: number) {
     const operationName = 'userGetById';
 
-    const res = await this.exec<UserGetByIdResponse>(
+    const res = await this.exec<UserGetResponse>(
       query({
         operation: operationName,
         variables: {
@@ -60,7 +60,7 @@ export class TestHelpers extends TestBase {
       byIdx,
     );
 
-    return this.formatRes<UserGetByIdResponse>(res, operationName);
+    return this.formatRes<UserGetResponse>(res, operationName);
   }
 
   async getPartyById(idx: number, byIdx?: number) {

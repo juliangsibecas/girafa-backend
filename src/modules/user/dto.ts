@@ -34,6 +34,12 @@ export interface UserGetByEmailDto {
   select?: Array<keyof User>;
 }
 
+export interface UserGetByNicknameDto {
+  nickname: string;
+  select?: Array<keyof User>;
+  relations?: Array<keyof User | PopulateOptions>;
+}
+
 export interface UserCheckAvailabilityDto {
   email: string;
   nickname: string;

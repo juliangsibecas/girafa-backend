@@ -18,6 +18,7 @@ import {
   UserEditDto,
   UserAddOrganizedPartyDto,
   UserSearchDto,
+  UserGetByNicknameDto,
 } from './dto';
 import { User, UserDocument } from './schema';
 
@@ -60,6 +61,14 @@ export class UserService {
     select,
   }: UserGetByEmailDto): Promise<Maybe<UserDocument>> {
     return this.model.findOne({ email }, select);
+  }
+
+  async getByNickname({
+    nickname,
+    select = [],
+    relations = [],
+  }: UserGetByNicknameDto): Promise<Maybe<UserDocument>> {
+    return this.model.findOne({ nickname }, select).populate(relations);
   }
 
   async follow({ user, following }: UserChangeFollowingStateDto) {

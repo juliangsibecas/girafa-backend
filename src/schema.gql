@@ -231,8 +231,8 @@ type Query {
   partySearchAttenders(data: PartySearchAttendersInput!): [UserPreview!]!
   typesSync: TypesSyncResponse!
   userCheckPartyValidating: Boolean!
+  userGet(data: UserGetInput!): UserGetResponse!
   userGetAttendedPartiesById(id: String!): [PartyPreview!]!
-  userGetById(id: String!): UserGetByIdResponse!
   userGetFollowersById(id: String!): [UserPreview!]!
   userGetFollowingById(id: String!): [UserPreview!]!
   userSearch(q: String): [UserPreview!]!
@@ -289,7 +289,12 @@ input UserEditInput {
   nickname: String!
 }
 
-type UserGetByIdResponse {
+input UserGetInput {
+  id: String
+  nickname: String
+}
+
+type UserGetResponse {
   _id: String!
   attendedPartiesCount: Float!
   followersCount: Float!
