@@ -102,6 +102,7 @@ enum FeatureToggleName {
   USER_GET_FOLLOWING
   USER_SEARCH_FOLLOWERS_TO_INVITE
   USER_SEND_PARTY_INVITE
+  USER_SHARE
 }
 
 input FeatureTogglePopulateInput {
