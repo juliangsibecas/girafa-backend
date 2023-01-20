@@ -265,6 +265,7 @@ type User {
   following: [User!]!
   followingCount: Float!
   fullName: String!
+  instagramUsername: String
   invites: [Party!]!
   nickname: String!
   notifications: [Notification!]!
@@ -290,6 +291,7 @@ input UserDeleteInput {
 
 input UserEditInput {
   fullName: String!
+  instagramUsername: String
   nickname: String!
 }
 
@@ -304,6 +306,7 @@ type UserGetResponse {
   followersCount: Float!
   followingCount: Float!
   fullName: String!
+  instagramUsername: String
   isFollower: Boolean!
   isFollowing: Boolean!
   nickname: String!

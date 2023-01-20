@@ -166,6 +166,7 @@ export class UserResolver {
         '_id',
         'nickname',
         'fullName',
+        'instagramUsername',
         'following',
         'followers',
         'followingCount',

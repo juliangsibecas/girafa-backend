@@ -54,6 +54,9 @@ export class UserEditInput {
 
   @Field()
   nickname: string;
+
+  @Field({ nullable: true })
+  instagramUsername?: string;
 }
 
 @InputType()

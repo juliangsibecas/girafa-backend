@@ -16,6 +16,7 @@ export interface UserEditDto {
   id: Id;
   fullName: string;
   nickname: string;
+  instagramUsername?: string;
 }
 
 export interface UserSearchDto {

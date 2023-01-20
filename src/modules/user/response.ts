@@ -12,6 +12,7 @@ export class UserGetResponse extends PickType(User, [
   '_id',
   'nickname',
   'fullName',
+  'instagramUsername',
   'followersCount',
   'followingCount',
   'attendedPartiesCount',

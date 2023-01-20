@@ -32,6 +32,10 @@ export class User extends BaseSchema {
 
   @Prop()
   @Field({ nullable: true })
+  instagramUsername?: string;
+
+  @Prop()
+  @Field({ nullable: true })
   bio?: string;
 
   @Prop({
