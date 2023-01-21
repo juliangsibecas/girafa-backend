@@ -42,13 +42,15 @@ export class AuthResolver {
     @Args('data') data: AuthSignUpInput,
   ): Promise<AuthSignInResponse> {
     try {
+      const nickname = data.nickname.toLowerCase();
+
       await this.users.checkAvailability({
         email: data.email,
-        nickname: data.nickname,
+        nickname,
       });
 
       const password = await this.auth.encryptPassword(data.password);
-      const user = await this.users.create({ ...data, password });
+      const user = await this.users.create({ ...data, nickname, password });
 
       const accessToken = this.auth.setAccessToken({ ctx, userId: user._id });
       const refreshToken = await this.auth.setRefreshToken({
