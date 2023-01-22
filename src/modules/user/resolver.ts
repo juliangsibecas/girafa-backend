@@ -47,11 +47,14 @@ export class UserResolver {
     @Args('data') data: UserEditInput,
   ): Promise<Boolean> {
     try {
+      const nickname = data.nickname.toLowerCase();
       if (user.nickname !== data.nickname) {
         await this.users.checkNicknameAvailability(data.nickname);
       }
 
-      return Boolean(await this.users.edit({ id: user._id, ...data }));
+      return Boolean(
+        await this.users.edit({ id: user._id, nickname, ...data }),
+      );
     } catch (e) {
       if (e.message === ErrorCode.VALIDATION_ERROR) {
         throw e;
