@@ -208,7 +208,7 @@ export class UserResolver {
         path: 'UserGet',
         data: {
           myId,
-          ...data,
+          data,
         },
       });
 
@@ -378,7 +378,7 @@ export class UserResolver {
         select: ['nickname'],
       });
 
-      if (!user || !following) throw new Error('User not found');
+      if (!user || !following) throw new NotFoundError();
 
       if (data.state) {
         await this.users.follow({ user, following });

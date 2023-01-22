@@ -7,7 +7,7 @@ const dict = {
   [NotificationType.INVITE]: 'party',
 };
 
-export const createDeepLink = (str: string) => `${scheme}/${str}`;
+export const createDeepLink = (str: string) => `${scheme}${str}`;
 
 export const notificationTypeToDeepLink = (type: NotificationType) =>
   createDeepLink(dict[type]);
