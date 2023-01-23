@@ -51,12 +51,13 @@ export class UserResolver {
   ): Promise<Boolean> {
     try {
       const nickname = data.nickname.toLowerCase();
+
       if (user.nickname !== data.nickname) {
         await this.users.checkNicknameAvailability(data.nickname);
       }
 
       return Boolean(
-        await this.users.edit({ id: user._id, nickname, ...data }),
+        await this.users.edit({ ...data, id: user._id, nickname }),
       );
     } catch (e) {
       if (e.message === ErrorCode.VALIDATION_ERROR) {
@@ -94,7 +95,7 @@ export class UserResolver {
         user,
         userService: this.users,
         partyService: this.parties,
-        notificationsService: this.notifications
+        notificationsService: this.notifications,
       });
 
       return true;
@@ -123,7 +124,7 @@ export class UserResolver {
         user: await this.users.getById({ id: data.id }),
         userService: this.users,
         partyService: this.parties,
-        notificationsService: this.notifications
+        notificationsService: this.notifications,
       });
 
       return true;
