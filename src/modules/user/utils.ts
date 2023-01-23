@@ -1,4 +1,5 @@
 import { Id } from 'src/common/types';
+import { NotificationService } from '../notification';
 
 import { PartyService } from '../party';
 
@@ -9,10 +10,12 @@ export const userDelete = ({
   user,
   userService,
   partyService,
+  notificationsService,
 }: {
   user: UserDocument;
   userService: UserService;
   partyService: PartyService;
+  notificationsService: NotificationService;
 }) =>
   Promise.all([
     Promise.all(
@@ -46,5 +49,6 @@ export const userDelete = ({
         }),
       ),
     ),
+    notificationsService.deleteByUser(user._id),
     user.remove(),
   ]);

@@ -94,6 +94,7 @@ export class UserResolver {
         user,
         userService: this.users,
         partyService: this.parties,
+        notificationsService: this.notifications
       });
 
       return true;
@@ -116,10 +117,13 @@ export class UserResolver {
   @Roles([Role.ADMIN])
   async userBan(@Args('data') data: UserBanInput): Promise<Boolean> {
     try {
+      await this.notifications.deleteByUser(data.id);
+
       await userDelete({
         user: await this.users.getById({ id: data.id }),
         userService: this.users,
         partyService: this.parties,
+        notificationsService: this.notifications
       });
 
       return true;
