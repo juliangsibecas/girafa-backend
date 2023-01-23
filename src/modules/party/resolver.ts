@@ -84,36 +84,86 @@ export class PartyResolver {
 
       const party = await this.parties.enable(partyId);
 
-      if (party) {
-        const organizer = await this.users.getById({
-          id: party.organizer as unknown as Id,
-          select: ['email', 'attendedParties'],
-        });
-
-        await this.parties.addAttender({ user: organizer, party });
-        await this.users.attend({ user: organizer, party });
-
-        await this.notifications.rawPush({
-          toIds: [organizer._id],
-          text: `${party.name} fue aceptada 😎`,
-          data: {
-            partyId: party._id,
-            url: createDeepLink(`party/${party._id}`),
-          },
-        });
-
-        return true;
+      if (!party) {
+        throw new NotFoundError();
       }
 
-      return false;
+      const organizer = await this.users.getById({
+        id: party.organizer as unknown as Id,
+        select: ['email', 'attendedParties'],
+      });
+
+      await this.parties.addAttender({ user: organizer, party });
+      await this.users.attend({ user: organizer, party });
+
+      await this.notifications.rawPush({
+        toIds: [organizer._id],
+        text: `${party.name} fue aceptada 😎`,
+        data: {
+          partyId: party._id,
+          url: createDeepLink(`party/${party._id}`),
+        },
+      });
+
+      return true;
     } catch (e) {
-      if (e.message === ErrorCode.FORBIDDEN_ERROR) throw e;
+      if (
+        [ErrorCode.NOT_FOUND_ERROR, ErrorCode.FORBIDDEN_ERROR].includes(
+          e.message,
+        )
+      ) {
+        throw e;
+      }
 
       this.logger.error({
         path: 'partyEnable',
         code: e.message,
         data: {
           userId: user._id,
+          partyId,
+        },
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Mutation(() => Boolean)
+  @Roles([Role.ADMIN])
+  async partyReject(@Args('id') partyId: Id): Promise<Boolean> {
+    await this.notifications.rawPush({
+      toIds: ['3f200689-84b7-496e-a20a-7858f6616e70'],
+      text: ` fue rechazada.`,
+    });
+
+    try {
+      const party = await this.parties.getById({ id: partyId });
+
+      if (!party) {
+        throw new NotFoundError();
+      }
+
+      const organizer = await this.users.getById({
+        id: party.organizer as unknown as string,
+      });
+
+      await this.users.removeOrganizedParty({ user: organizer, party });
+      await party.remove();
+
+      await this.notifications.rawPush({
+        toIds: [organizer._id],
+        text: `${party.name} fue rechazada.`,
+      });
+
+      return true;
+    } catch (e) {
+      if (e.message === ErrorCode.NOT_FOUND_ERROR) {
+        throw e;
+      }
+
+      this.logger.error({
+        path: 'partyReject',
+        code: e.message,
+        data: {
           partyId,
         },
       });

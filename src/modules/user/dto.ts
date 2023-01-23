@@ -61,6 +61,11 @@ export interface UserAddOrganizedPartyDto {
   party: PartyDocument;
 }
 
+export interface UserRemoveOrganizedPartyDto {
+  user: UserDocument;
+  party: PartyDocument;
+}
+
 export interface UserSetRecoveryCodeDto {
   id: Id;
   code: string;

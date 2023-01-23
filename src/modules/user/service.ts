@@ -19,6 +19,7 @@ import {
   UserAddOrganizedPartyDto,
   UserSearchDto,
   UserGetByNicknameDto,
+  UserRemoveOrganizedPartyDto,
 } from './dto';
 import { User, UserDocument } from './schema';
 
@@ -103,6 +104,14 @@ export class UserService {
     if (!user.organizedParties.includes(party._id)) {
       await user.updateOne({
         $addToSet: { organizedParties: party._id },
+      });
+    }
+  }
+
+  async removeOrganizedParty({ user, party }: UserRemoveOrganizedPartyDto) {
+    if (user.organizedParties.includes(party._id)) {
+      await user.updateOne({
+        $pull: { organizedParties: party._id },
       });
     }
   }

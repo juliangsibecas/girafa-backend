@@ -119,6 +119,7 @@ type Mutation {
   partyCreate(data: PartyCreateInput!): String!
   partyDelete(id: String!): Boolean!
   partyEnable(id: String!): Boolean!
+  partyReject(id: String!): Boolean!
   recoverPassword(data: AuthRecoverPasswordInput!): Boolean!
   signIn(data: AuthSignInInput!): AuthSignInResponse!
   signUp(data: AuthSignUpInput!): AuthSignInResponse!
