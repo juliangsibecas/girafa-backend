@@ -118,7 +118,11 @@ export class NotificationService {
       data: {
         _id,
         type,
-        from: { _id: from._id, nickname: from.nickname },
+        from: {
+          _id: from._id,
+          nickname: from.nickname,
+          pictureId: from.pictureId,
+        },
         ...insertObjectIf(type === NotificationType.INVITE, {
           party: { _id: party?._id, name: party?.name },
         }),

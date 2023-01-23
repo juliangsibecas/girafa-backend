@@ -8,6 +8,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { uuid } from 'uuidv4';
 
 import { S3Service } from '../../core/s3';
 import { JwtAuthGuard } from '../auth/jwt/guard';
@@ -26,7 +27,16 @@ export class ImageController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     try {
-      await this.s3.uploadUserPicture(req.user._id, file);
+      const newId = uuid();
+      const lastId = req.user.pictureId;
+
+      req.user.pictureId = newId;
+
+      await Promise.all([
+        req.user.save(),
+        this.s3.deleteUserPicture(lastId),
+        this.s3.uploadUserPicture(newId, file),
+      ]);
     } catch (e) {
       this.logger.error({
         path: 'UploadProfilePicture',

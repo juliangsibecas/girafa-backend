@@ -3,8 +3,15 @@ import { NotificationService } from '../notification';
 
 import { PartyService } from '../party';
 
-import { UserDocument } from './schema';
+import { User, UserDocument } from './schema';
 import { UserService } from './service';
+
+export const userPreviewFields: Array<keyof User> = [
+  '_id',
+  'nickname',
+  'fullName',
+  'pictureId',
+];
 
 export const userDelete = ({
   user,

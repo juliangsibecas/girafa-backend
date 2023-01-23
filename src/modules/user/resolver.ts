@@ -30,7 +30,7 @@ import { UserGetResponse, UserPreview } from './response';
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
 import { PartyAvailability, PartyStatus } from '../party/types';
-import { userDelete } from './utils';
+import { userDelete, userPreviewFields } from './utils';
 import { Role, Roles } from '../auth/role';
 
 @Resolver(() => User)
@@ -174,6 +174,7 @@ export class UserResolver {
         '_id',
         'nickname',
         'fullName',
+        'pictureId',
         'instagramUsername',
         'following',
         'followers',
@@ -236,7 +237,7 @@ export class UserResolver {
         relations: [
           {
             path: 'followers',
-            select: ['_id', 'nickname', 'fullName'],
+            select: userPreviewFields,
           },
         ],
       });
@@ -265,7 +266,7 @@ export class UserResolver {
         relations: [
           {
             path: 'following',
-            select: ['_id', 'nickname', 'fullName'],
+            select: userPreviewFields,
           },
         ],
       });
@@ -342,7 +343,7 @@ export class UserResolver {
         relations: [
           {
             path: 'followers',
-            select: ['_id', 'nickname', 'fullName'],
+            select: userPreviewFields,
             match: {
               $or: [
                 {
@@ -488,7 +489,7 @@ export class UserResolver {
         filteredInivitedId.map(async (id) => {
           const invited = await this.users.getById({
             id: id,
-            select: ['_id', 'nickname'],
+            select: userPreviewFields,
           });
 
           return this.notifications.create({

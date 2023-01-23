@@ -26,6 +26,7 @@ import {
 } from './response';
 import { Party } from './schema';
 import { PartyService } from './service';
+import { userPreviewFields } from '../user/utils';
 
 @Resolver(() => Party)
 export class PartyResolver {
@@ -261,6 +262,7 @@ export class PartyResolver {
             options: {
               limit: 10,
             },
+            select: ['pictureId'],
           },
         ],
       });
@@ -314,7 +316,7 @@ export class PartyResolver {
           'organizer',
           {
             path: 'attenders',
-            select: ['_id', 'nickname', 'fullName'],
+            select: userPreviewFields,
             match: {
               $or: [{ nickname: like }, { fullName: like }],
             },

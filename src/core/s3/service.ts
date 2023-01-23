@@ -14,10 +14,19 @@ export class S3Service {
     endpoint: new AWS.Endpoint(this.config.get('s3.endpoint')),
   });
 
+  async deleteUserPicture(pictureId: string) {
+    return this.s3
+      .deleteObject({
+        Bucket: this.config.get('s3.name'),
+        Key: `${pictureId}.jpeg`,
+      })
+      .promise();
+  }
+
   async uploadUserPicture(userId: string, file: Express.Multer.File) {
     const buffer = await sharp(file.buffer).jpeg().toBuffer();
 
-    await this.upload('user-pictures', `${userId}.jpeg`, {
+    return this.upload('user-pictures', `${userId}.jpeg`, {
       ...file,
       buffer,
     });
@@ -26,7 +35,7 @@ export class S3Service {
   async uploadPartyPicture(partyId: string, file: Express.Multer.File) {
     const buffer = await sharp(file.buffer).jpeg().toBuffer();
 
-    await this.upload('party-pictures', `${partyId}.jpeg`, {
+    return this.upload('party-pictures', `${partyId}.jpeg`, {
       ...file,
       buffer,
     });
@@ -39,6 +48,6 @@ export class S3Service {
       Body: file.buffer,
     };
 
-    await this.s3.upload(params).promise();
+    return this.s3.upload(params).promise();
   }
 }

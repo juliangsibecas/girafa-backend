@@ -26,6 +26,10 @@ export class User extends BaseSchema {
   @Field()
   fullName: string;
 
+  @Prop()
+  @Field({ nullable: true })
+  pictureId?: string;
+
   @Prop({ select: false })
   @Field({ nullable: true })
   password?: string;
