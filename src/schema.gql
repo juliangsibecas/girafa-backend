@@ -123,6 +123,7 @@ type Mutation {
   signIn(data: AuthSignInInput!): AuthSignInResponse!
   signUp(data: AuthSignUpInput!): AuthSignInResponse!
   supportSendMessage(data: SupportSendMessageInput!): Boolean!
+  userBan(data: UserBanInput!): Boolean!
   userChangeAttendingState(data: UserChangeAttendingStateInput!): Boolean!
   userChangeFollowingState(data: UserChangeFollowingStateInput!): Boolean!
   userDelete(data: UserDeleteInput!): Boolean!
@@ -273,6 +274,10 @@ type User {
   recoveryCode: String
   refreshToken: String
   updatedAt: DateTime
+}
+
+input UserBanInput {
+  id: String!
 }
 
 input UserChangeAttendingStateInput {

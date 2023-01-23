@@ -64,3 +64,9 @@ export class UserDeleteInput {
   @Field()
   password: string;
 }
+
+@InputType()
+export class UserBanInput {
+  @Field()
+  id: string;
+}

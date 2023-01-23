@@ -17,6 +17,7 @@ import { NotificationService, NotificationType } from '../notification';
 import { Party, PartyDocument, PartyPreview, PartyService } from '../party';
 
 import {
+  UserBanInput,
   UserChangeAttendingStateInput,
   UserChangeFollowingStateInput,
   UserDeleteInput,
@@ -29,6 +30,8 @@ import { UserGetResponse, UserPreview } from './response';
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
 import { PartyAvailability, PartyStatus } from '../party/types';
+import { userDelete } from './utils';
+import { Role, Roles } from '../auth/role';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -87,40 +90,11 @@ export class UserResolver {
     });
 
     try {
-      await Promise.all([
-        Promise.all(
-          (user.followers as Array<Id>).map(async (followerId) =>
-            this.users.unfollow({
-              user: await this.users.getById({ id: followerId }),
-              following: user,
-            }),
-          ),
-        ),
-        Promise.all(
-          (user.following as Array<Id>).map(async (followingId) =>
-            this.users.unfollow({
-              user,
-              following: await this.users.getById({ id: followingId }),
-            }),
-          ),
-        ),
-        Promise.all(
-          (user.organizedParties as Array<Id>).map(async (partyId) =>
-            this.parties.removeOrganizer({
-              id: partyId,
-            }),
-          ),
-        ),
-        Promise.all(
-          (user.attendedParties as Array<Id>).map(async (partyId) =>
-            this.parties.removeAttender({
-              user,
-              party: await this.parties.getById({ id: partyId }),
-            }),
-          ),
-        ),
-        user.remove(),
-      ]);
+      await userDelete({
+        user,
+        userService: this.users,
+        partyService: this.parties,
+      });
 
       return true;
     } catch (e) {
@@ -132,6 +106,32 @@ export class UserResolver {
         path: 'UserDelete',
         data: {
           userId: user._id,
+        },
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Mutation(() => Boolean)
+  @Roles([Role.ADMIN])
+  async userBan(@Args('data') data: UserBanInput): Promise<Boolean> {
+    try {
+      await userDelete({
+        user: await this.users.getById({ id: data.id }),
+        userService: this.users,
+        partyService: this.parties,
+      });
+
+      return true;
+    } catch (e) {
+      if (e.message === ErrorCode.VALIDATION_ERROR) {
+        throw e;
+      }
+
+      this.logger.error({
+        path: 'UserBan',
+        data: {
+          userId: data.id,
         },
       });
       throw new UnknownError();
