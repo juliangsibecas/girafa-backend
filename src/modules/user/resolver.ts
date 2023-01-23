@@ -53,7 +53,7 @@ export class UserResolver {
       const nickname = data.nickname.toLowerCase();
 
       if (user.nickname !== data.nickname) {
-        await this.users.checkNicknameAvailability(data.nickname);
+        await this.users.checkNicknameAvailability(nickname);
       }
 
       return Boolean(
