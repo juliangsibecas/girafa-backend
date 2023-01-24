@@ -45,7 +45,7 @@ export class UserService {
         },
         $or: [{ nickname: like }, { fullName: like }],
       },
-      ['_id', 'nickname', 'fullName'],
+      ['_id', 'nickname', 'fullName', 'pictureId'],
     );
   }
 

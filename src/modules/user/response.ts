@@ -2,7 +2,11 @@ import { Field, ObjectType, PickType } from '@nestjs/graphql';
 import { User } from './schema';
 
 @ObjectType()
-export class UserPreview extends PickType(User, ['_id', 'nickname']) {
+export class UserPreview extends PickType(User, [
+  '_id',
+  'nickname',
+  'pictureId',
+]) {
   @Field({ nullable: true })
   fullName?: string;
 }
@@ -11,6 +15,7 @@ export class UserPreview extends PickType(User, ['_id', 'nickname']) {
 export class UserGetResponse extends PickType(User, [
   '_id',
   'nickname',
+  'pictureId',
   'fullName',
   'instagramUsername',
   'followersCount',

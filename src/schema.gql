@@ -272,6 +272,7 @@ type User {
   nickname: String!
   notifications: [Notification!]!
   password: String
+  pictureId: String
   recoveryCode: String
   refreshToken: String
   updatedAt: DateTime
@@ -316,6 +317,7 @@ type UserGetResponse {
   isFollower: Boolean!
   isFollowing: Boolean!
   nickname: String!
+  pictureId: String
 }
 
 type UserNotification {
@@ -331,6 +333,7 @@ type UserPreview {
   _id: String!
   fullName: String
   nickname: String!
+  pictureId: String
 }
 
 input UserSearchFollowersToInviteInput {
