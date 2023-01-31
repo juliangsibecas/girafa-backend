@@ -57,6 +57,10 @@ export class PartyResolver {
         party,
       });
 
+      await this.logger.analytic({
+        text: `${user.nickname} creó la fiesta "${party.name}"`,
+      });
+
       return party._id;
     } catch (e) {
       if (e.message === ErrorCode.VALIDATION_ERROR) {

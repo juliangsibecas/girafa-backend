@@ -6,6 +6,7 @@ import { UnknownError } from '../../core/graphql';
 import { CurrentUser } from '../auth/graphql';
 import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
+import { UserDocument } from '../user/schema';
 
 import { SupportSendMessageInput } from './input';
 import { SupportMessage } from './schema';
@@ -21,13 +22,17 @@ export class SupportResolver {
   @Mutation(() => Boolean)
   @Features([FeatureToggleName.MAILING])
   async supportSendMessage(
-    @CurrentUser() userId: Id,
+    @CurrentUser() user: UserDocument,
     @Args('data') data: SupportSendMessageInput,
   ): Promise<Boolean> {
     try {
+      await this.logger.analytic({
+        text: `${user.nickname} envió a soporte "${data.subject}"`,
+      });
+
       return Boolean(
         await this.supportMessages.createMessage({
-          userId,
+          userId: user.id,
           subject: data.subject,
           body: data.body,
         }),
