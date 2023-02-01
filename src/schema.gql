@@ -110,6 +110,7 @@ input FeatureTogglePopulateInput {
 }
 
 type Mutation {
+  adminSignIn(data: AuthSignInInput!): AuthSignInResponse!
   appInfoChangeMinVersion(version: String!): Boolean!
   appInfoInitialize: Boolean!
   changePassword(data: AuthChangePasswordInput!): Boolean!

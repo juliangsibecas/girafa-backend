@@ -18,6 +18,10 @@ export const gqlModuleOptions = {
     debug: false,
     formatError: handleError,
     context: ({ req, res }) => ({ req, res }),
+    cors: {
+      origin: 'http://localhost:3000',
+      credentials: true,
+    },
   }),
 };
 
