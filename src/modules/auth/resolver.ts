@@ -6,6 +6,7 @@ import { CustomContext, Id } from '../../common/types';
 import {
   ErrorCode,
   ErrorDescription,
+  ForbiddenError,
   UnknownError,
   ValidationError,
 } from '../../core/graphql';
@@ -24,6 +25,7 @@ import {
 } from './input';
 import { FeatureToggleName } from '../featureToggle';
 import { Features } from '../featureToggle';
+import { ConfigService } from '@nestjs/config';
 
 @Resolver()
 export class AuthResolver {
@@ -32,6 +34,7 @@ export class AuthResolver {
     private mailer: MailerService,
     private users: UserService,
     private auth: AuthService,
+    private config: ConfigService,
   ) {}
 
   @Mutation(() => AuthSignInResponse)
@@ -123,6 +126,63 @@ export class AuthResolver {
 
       this.logger.error({
         path: 'AuthSignIn',
+        data: { ...data },
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Mutation(() => AuthSignInResponse)
+  @AllowAny()
+  async adminSignIn(
+    @Context() ctx: CustomContext,
+    @Args('data') data: AuthSignInInput,
+  ): Promise<AuthSignInResponse> {
+    try {
+      const throwError = () => {
+        throw new ValidationError({
+          password: ErrorDescription.SIGN_IN_INVALID,
+        });
+      };
+
+      const user = await this.users.getByEmail({
+        email: data.email,
+        select: ['_id', 'email', 'password'],
+      });
+
+      if (!user) throwError();
+
+      try {
+        await this.auth.comparePasswords({
+          raw: data.password,
+          encrypted: user.password,
+        });
+      } catch (e) {
+        throwError();
+      }
+
+      if (user.email !== this.config.get('app.adminEmail')) {
+        throw new ForbiddenError();
+      }
+
+      const accessToken = this.auth.setAccessToken({ ctx, userId: user.id });
+      const refreshToken = await this.auth.setRefreshToken({
+        ctx,
+        userId: user.id,
+      });
+
+      return { userId: user.id, accessToken, refreshToken };
+    } catch (e) {
+      if (
+        [ErrorCode.VALIDATION_ERROR, ErrorCode.FORBIDDEN_ERROR].includes(
+          e.message,
+        )
+      ) {
+        throw e;
+      }
+
+      this.logger.error({
+        path: 'AdminAuthSignIn',
         data: { ...data },
       });
       throw new UnknownError();

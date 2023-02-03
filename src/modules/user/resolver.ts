@@ -1,7 +1,8 @@
+import * as moment from 'moment';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import { Id } from '../../common/types';
+import { GroupedCount, Id } from '../../common/types';
 import {
   ErrorCode,
   ForbiddenError,
@@ -15,6 +16,8 @@ import { LoggerService } from '../logger';
 import { AuthService } from '../auth';
 import { NotificationService, NotificationType } from '../notification';
 import { Party, PartyDocument, PartyPreview, PartyService } from '../party';
+import { PartyAvailability, PartyStatus } from '../party/types';
+import { Role, Roles } from '../auth/role';
 
 import {
   UserBanInput,
@@ -29,9 +32,7 @@ import {
 import { UserGetResponse, UserPreview } from './response';
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
-import { PartyAvailability, PartyStatus } from '../party/types';
 import { userDelete, userPreviewFields } from './utils';
-import { Role, Roles } from '../auth/role';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -535,6 +536,60 @@ export class UserResolver {
         data: {
           userId: user._id,
         },
+      });
+      throw new UnknownError();
+    }
+  }
+
+  //
+  // ADMIN
+  //
+
+  @Query(() => Number)
+  @Roles([Role.ADMIN])
+  async adminUserGetCount(): Promise<Number> {
+    try {
+      return this.users.getCount();
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminUsersGetCount',
+        data: {},
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Query(() => [GroupedCount])
+  @Roles([Role.ADMIN])
+  async adminUserGetCreatedByDayCount(): Promise<Array<GroupedCount>> {
+    try {
+      const groupedCounts = await this.users.getCreatedByDayCount();
+
+      const date = moment(groupedCounts[0]._id, 'DD/MM/YYYY');
+      const lastDate = moment();
+
+      const arr: Array<GroupedCount> = [];
+
+      while (date <= lastDate) {
+        let count = 0;
+
+        if (date.diff(moment(groupedCounts[0]._id, 'DD/MM/YYYY')) === 0) {
+          count = groupedCounts.shift().count;
+        }
+
+        arr.push({
+          _id: date.format('DD/MM/YYYY'),
+          count,
+        });
+
+        date.add(1, 'd');
+      }
+
+      return arr;
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminUsersGetCreatedByDayCount',
+        data: {},
       });
       throw new UnknownError();
     }

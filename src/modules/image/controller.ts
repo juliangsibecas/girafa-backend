@@ -8,7 +8,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { uuid } from 'uuidv4';
+import { v4 } from 'uuid';
 
 import { S3Service } from '../../core/s3';
 import { JwtAuthGuard } from '../auth/jwt/guard';
@@ -27,7 +27,7 @@ export class ImageController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     try {
-      const newId = uuid();
+      const newId = v4();
       const lastId = req.user.pictureId;
 
       req.user.pictureId = newId;

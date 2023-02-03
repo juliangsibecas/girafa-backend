@@ -302,4 +302,15 @@ export class PartyService {
 
     this.logger.log(res);
   }
+
+  //
+  // ADMIN
+  //
+  async getCount(): Promise<number> {
+    return this.model.count();
+  }
+
+  async getCreatedCount(): Promise<number> {
+    return this.model.count({ status: PartyStatus.CREATED });
+  }
 }

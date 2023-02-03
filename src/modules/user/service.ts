@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { ErrorDescription, ValidationError } from '../../core/graphql';
-import { Maybe } from '../../common/types';
+import { GroupedCount, Maybe } from '../../common/types';
 
 import {
   UserChangeAttendingStateDto,
@@ -175,5 +175,26 @@ export class UserService {
 
   async setRefreshToken({ id, token }: UserSetRefreshTokenDto): Promise<void> {
     await this.model.findByIdAndUpdate(id, { refreshToken: token });
+  }
+
+  //
+  // ADMIN
+  //
+
+  async getCount(): Promise<number> {
+    return this.model.count();
+  }
+
+  async getCreatedByDayCount(): Promise<Array<GroupedCount>> {
+    return this.model.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%d-%m-%Y', date: '$createdAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
   }
 }
