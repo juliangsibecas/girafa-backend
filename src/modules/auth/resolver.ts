@@ -160,7 +160,6 @@ export class AuthResolver {
       } catch (e) {
         throwError();
       }
-      console.log(this.config.get('app.adminEmail'));
 
       if (user.email !== this.config.get('app.adminEmail')) {
         throw new ForbiddenError();
