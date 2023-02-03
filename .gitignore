@@ -37,3 +37,4 @@ lerna-debug.log*
 .env.production
 .env.demo
 ec2.cer
+ec2.pem
