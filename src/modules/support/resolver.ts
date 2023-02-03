@@ -1,9 +1,10 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { Id } from '../../common/types';
 import { UnknownError } from '../../core/graphql';
 
 import { CurrentUser } from '../auth/graphql';
+import { Role, Roles } from '../auth/role';
 import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
 import { UserDocument } from '../user/schema';
@@ -41,6 +42,24 @@ export class SupportResolver {
       this.logger.error({
         path: 'supportSendMessage',
         data: { ...data },
+      });
+      throw new UnknownError();
+    }
+  }
+
+  //
+  // ADMIN
+  //
+
+  @Query(() => Number)
+  @Roles([Role.ADMIN])
+  async adminSupportGetCount(): Promise<Number> {
+    try {
+      return this.supportMessages.getCount();
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminSupportGetCount',
+        data: {},
       });
       throw new UnknownError();
     }

@@ -19,4 +19,12 @@ export class SupportService {
   }: SupportCreateMessageDto): Promise<SupportMessageDocument> {
     return this.supportMessages.create({ user: userId, subject, body });
   }
+
+  //
+  // ADMIN
+  //
+
+  async getCount(): Promise<number> {
+    return await this.supportMessages.count();
+  }
 }

@@ -5,3 +5,4 @@ export * from './Context';
 export * from './BaseSchema';
 export * from './Entities';
 export * from './ArrayField';
+export * from './Query';

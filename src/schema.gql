@@ -109,6 +109,11 @@ input FeatureTogglePopulateInput {
   value: Boolean
 }
 
+type GroupedCount {
+  _id: String!
+  count: Float!
+}
+
 type Mutation {
   adminSignIn(data: AuthSignInInput!): AuthSignInResponse!
   appInfoChangeMinVersion(version: String!): Boolean!
@@ -228,6 +233,11 @@ enum PartyStatus {
 }
 
 type Query {
+  adminPartyGetCount: Float!
+  adminPartyGetPendingCount: Float!
+  adminSupportGetCount: Float!
+  adminUserGetCount: Float!
+  adminUserGetCreatedByDayCount: [GroupedCount!]!
   appInfoMeetMinVersion(version: String!): Boolean!
   featureToggleGetEnabledNames: [FeatureToggleName!]!
   featureToggleList: [FeatureToggle!]!

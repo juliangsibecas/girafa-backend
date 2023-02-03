@@ -27,6 +27,7 @@ import {
 import { Party } from './schema';
 import { PartyService } from './service';
 import { userPreviewFields } from '../user/utils';
+import { PartyStatus } from './types';
 
 @Resolver(() => Party)
 export class PartyResolver {
@@ -339,6 +340,38 @@ export class PartyResolver {
           userId: user._id,
           ...data,
         },
+      });
+      throw new UnknownError();
+    }
+  }
+
+  //
+  // ADMIN
+  //
+
+  @Query(() => Number)
+  @Roles([Role.ADMIN])
+  async adminPartyGetCount(): Promise<Number> {
+    try {
+      return this.parties.getCount();
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminPartyGetCount',
+        data: {},
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Query(() => Number)
+  @Roles([Role.ADMIN])
+  async adminPartyGetPendingCount(): Promise<Number> {
+    try {
+      return this.parties.getCreatedCount();
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminPartyGetPendingCount',
+        data: {},
       });
       throw new UnknownError();
     }

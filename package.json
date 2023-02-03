@@ -44,6 +44,7 @@
     "graphql": "^16.3.0",
     "graphql-scalars": "^1.17.0",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.4",
     "mongoose": "^6.3.5",
     "nestjs-telegram": "^1.2.0",
     "nodemailer": "^6.7.3",
