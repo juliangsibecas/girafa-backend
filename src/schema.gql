@@ -168,6 +168,7 @@ type Party {
   name: String!
   openBar: Boolean!
   organizer: User
+  slug: String!
   status: PartyStatus!
   updatedAt: DateTime
 }
@@ -190,7 +191,12 @@ input PartyCreateInput {
   openBar: Boolean!
 }
 
-type PartyGetByIdResponse {
+input PartyGetInput {
+  id: String
+  slug: String
+}
+
+type PartyGetResponse {
   _id: String!
   address: String!
   allowInvites: Boolean!
@@ -243,7 +249,7 @@ type Query {
   featureToggleList: [FeatureToggle!]!
   notificationsGetByUserId: [UserNotification!]!
   partyFind: [PartyMapPreview!]!
-  partyGetById(id: String!): PartyGetByIdResponse!
+  partyGet(data: PartyGetInput!): PartyGetResponse!
   partySearch(q: String): [PartyPreview!]!
   partySearchAttenders(data: PartySearchAttendersInput!): [UserPreview!]!
   typesSync: TypesSyncResponse!

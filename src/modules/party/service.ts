@@ -11,6 +11,7 @@ import {
   PartyChangeAttendingStateDto,
   PartyCreateDto,
   PartyGetByIdDto,
+  PartyGetBySlugDto,
   PartyRemoveOrganizerDto,
   PartySearchDto,
 } from './dto';
@@ -215,6 +216,14 @@ export class PartyService {
     relations = [],
   }: PartyGetByIdDto): Promise<Maybe<PartyDocument>> {
     return this.model.findOne({ _id: id }, select).populate(relations);
+  }
+
+  async getBySlug({
+    slug,
+    select = [],
+    relations = [],
+  }: PartyGetBySlugDto): Promise<Maybe<PartyDocument>> {
+    return this.model.findOne({ slug: slug }, select).populate(relations);
   }
 
   async checkAvailability(name: string): Promise<void> {

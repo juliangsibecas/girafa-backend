@@ -21,6 +21,10 @@ export class Party extends BaseSchema {
   @Field()
   name: string;
 
+  @Prop()
+  @Field()
+  slug: string;
+
   @Prop({ default: PartyStatus.CREATED })
   @Field(() => PartyStatus)
   status: PartyStatus;

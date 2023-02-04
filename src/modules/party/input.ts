@@ -34,6 +34,15 @@ export class PartyCreateInput {
 }
 
 @InputType()
+export class PartyGetInput {
+  @Field(() => String, { nullable: true })
+  id?: Id;
+
+  @Field({ nullable: true })
+  slug?: string;
+}
+
+@InputType()
 export class PartySearchAttendersInput {
   @Field(() => String)
   id: Id;

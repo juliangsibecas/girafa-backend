@@ -34,6 +34,12 @@ export class PartyGetByIdDto {
   relations?: Array<keyof Party | PopulateOptions>;
 }
 
+export class PartyGetBySlugDto {
+  slug: string;
+  select?: Array<keyof Party>;
+  relations?: Array<keyof Party | PopulateOptions>;
+}
+
 export class PartyChangeAttendingStateDto {
   party: PartyDocument;
   user: UserDocument;

@@ -6,7 +6,7 @@ import { Party } from '../schema';
 import { PartyAvailability, PartyStatus } from '../types';
 
 export const mockParty = (
-  data: Pick<Party, 'name' | 'availability'>,
+  data: Pick<Party, 'name' | 'slug' | 'availability'>,
 ): Party => ({
   _id: v4(),
   status: PartyStatus.ENABLED,
@@ -31,18 +31,22 @@ export const mockParty = (
 export const MOCKED_PARTIES = [
   mockParty({
     name: 'Fiesta 1',
+    slug: 'fiesta-1',
     availability: PartyAvailability.PUBLIC,
   }),
   mockParty({
     name: 'Fiesta 2',
+    slug: 'fiesta-2',
     availability: PartyAvailability.FOLLOWERS,
   }),
   mockParty({
     name: 'Fiesta 3',
+    slug: 'fiesta-3',
     availability: PartyAvailability.FOLLOWING,
   }),
   mockParty({
     name: 'Fiesta 4',
+    slug: 'fiesta-4',
     availability: PartyAvailability.PRIVATE,
   }),
 ];
