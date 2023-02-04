@@ -24,6 +24,7 @@ export class PartyGetResponse extends PickType(Party, [
   'status',
   'availability',
   'name',
+  'slug',
   'organizer',
   'address',
   'date',

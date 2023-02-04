@@ -11,6 +11,7 @@ import { Party, PartyDocument } from './schema';
 export class PartyCreateDto {
   organizer: User;
   name: string;
+  slug: string;
   date: Date;
   address: string;
   coordinate: Coordinate;

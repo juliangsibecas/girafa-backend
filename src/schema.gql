@@ -210,6 +210,7 @@ type PartyGetResponse {
   name: String!
   openBar: Boolean!
   organizer: User
+  slug: String!
   status: PartyStatus!
 }
 

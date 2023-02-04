@@ -1,3 +1,5 @@
+import slugify from 'slugify';
+import moment from 'moment';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PopulateOptions } from 'mongoose';
@@ -48,8 +50,15 @@ export class PartyResolver {
     try {
       await this.parties.checkAvailability(data.name);
 
+      const slug = `${slugify(data.name)}-${moment(data.date).format(
+        'DDMMYY',
+      )}`;
+
+      console.log(slug);
+
       const party = await this.parties.create({
         ...data,
+        slug,
         organizer: user._id,
       });
 
@@ -72,7 +81,8 @@ export class PartyResolver {
         path: 'partyCreate',
         data: {
           userId: user._id,
-          ...data,
+          data,
+          e,
         },
       });
       throw new UnknownError();
