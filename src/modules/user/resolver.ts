@@ -189,9 +189,7 @@ export class UserResolver {
           id: data.id,
           select,
         });
-      }
-
-      if (data.nickname) {
+      } else if (data.nickname) {
         user = await this.users.getByNickname({
           nickname: data.nickname,
           select,

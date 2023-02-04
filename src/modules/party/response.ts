@@ -19,11 +19,12 @@ export class PartyMapPreview extends PickType(Party, [
 }
 
 @ObjectType()
-export class PartyGetByIdResponse extends PickType(Party, [
+export class PartyGetResponse extends PickType(Party, [
   '_id',
   'status',
   'availability',
   'name',
+  'slug',
   'organizer',
   'address',
   'date',

@@ -11,6 +11,7 @@ import { Party, PartyDocument } from './schema';
 export class PartyCreateDto {
   organizer: User;
   name: string;
+  slug: string;
   date: Date;
   address: string;
   coordinate: Coordinate;
@@ -30,6 +31,12 @@ export class PartySearchDto {
 
 export class PartyGetByIdDto {
   id: Id;
+  select?: Array<keyof Party>;
+  relations?: Array<keyof Party | PopulateOptions>;
+}
+
+export class PartyGetBySlugDto {
+  slug: string;
   select?: Array<keyof Party>;
   relations?: Array<keyof Party | PopulateOptions>;
 }

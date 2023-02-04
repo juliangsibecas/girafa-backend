@@ -2,7 +2,7 @@ import { mutation, query } from 'gql-query-builder';
 
 import { UserGetResponse } from '../../../modules/user';
 import { AuthSignInInput } from '../../../modules/auth/input';
-import { PartyGetByIdResponse } from '../../../modules/party';
+import { PartyGetResponse } from '../../../modules/party';
 import { Notification } from '../../../modules/notification';
 
 import { Params } from './types';
@@ -64,16 +64,18 @@ export class TestHelpers extends TestBase {
   }
 
   async getPartyById(idx: number, byIdx?: number) {
-    const operationName = 'partyGetById';
+    const operationName = 'partyGet';
 
-    const res = await this.exec<PartyGetByIdResponse>(
+    const res = await this.exec<PartyGetResponse>(
       query({
         operation: operationName,
         variables: {
-          id: {
-            type: `String`,
-            required: true,
-            value: this.parties[idx]._id,
+          data: {
+            id: {
+              type: `String`,
+              required: true,
+              value: this.parties[idx]._id,
+            },
           },
         },
         fields: ['attendersCount', 'isAttender'],
@@ -81,7 +83,7 @@ export class TestHelpers extends TestBase {
       byIdx,
     );
 
-    return this.formatRes<PartyGetByIdResponse>(res, operationName);
+    return this.formatRes<PartyGetResponse>(res, operationName);
   }
 
   getNotificationsByUserId = async (byIdx?: number) => {

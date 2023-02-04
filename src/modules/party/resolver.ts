@@ -1,5 +1,8 @@
+import slugify from 'slugify';
+import moment from 'moment';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PopulateOptions } from 'mongoose';
 
 import { createDeepLink } from '../../common/utils';
 import { Id } from '../../common/types';
@@ -17,17 +20,16 @@ import { LoggerService } from '../logger';
 import { NotificationService } from '../notification';
 import { User, UserPreview, UserService } from '../user';
 import { UserDocument } from '../user/schema';
-
-import { PartyCreateInput, PartySearchAttendersInput } from './input';
-import {
-  PartyGetByIdResponse,
-  PartyMapPreview,
-  PartyPreview,
-} from './response';
-import { Party } from './schema';
-import { PartyService } from './service';
 import { userPreviewFields } from '../user/utils';
-import { PartyStatus } from './types';
+
+import {
+  PartyCreateInput,
+  PartyGetInput,
+  PartySearchAttendersInput,
+} from './input';
+import { PartyGetResponse, PartyMapPreview, PartyPreview } from './response';
+import { Party, PartyDocument } from './schema';
+import { PartyService } from './service';
 
 @Resolver(() => Party)
 export class PartyResolver {
@@ -48,8 +50,15 @@ export class PartyResolver {
     try {
       await this.parties.checkAvailability(data.name);
 
+      const slug = `${slugify(data.name)}-${moment(data.date).format(
+        'DDMMYY',
+      )}`;
+
+      console.log(slug);
+
       const party = await this.parties.create({
         ...data,
+        slug,
         organizer: user._id,
       });
 
@@ -72,7 +81,8 @@ export class PartyResolver {
         path: 'partyCreate',
         data: {
           userId: user._id,
-          ...data,
+          data,
+          e,
         },
       });
       throw new UnknownError();
@@ -251,26 +261,36 @@ export class PartyResolver {
     }
   }
 
-  @Query(() => PartyGetByIdResponse)
+  @Query(() => PartyGetResponse)
   @Features([FeatureToggleName.PARTY_GET])
-  async partyGetById(
+  async partyGet(
     @CurrentUser() user: UserDocument,
-    @Args('id', { type: () => String }) partyId: Id,
-  ): Promise<PartyGetByIdResponse> {
+    @Args('data') data: PartyGetInput,
+  ): Promise<PartyGetResponse> {
     try {
-      const party = await this.parties.getById({
-        id: partyId,
-        relations: [
-          'organizer',
-          {
-            path: 'attenders',
-            options: {
-              limit: 10,
-            },
-            select: ['pictureId'],
+      let party: PartyDocument;
+      const relations: Array<keyof Party | PopulateOptions> = [
+        'organizer',
+        {
+          path: 'attenders',
+          options: {
+            limit: 10,
           },
-        ],
-      });
+          select: ['pictureId'],
+        },
+      ];
+
+      if (data.id) {
+        party = await this.parties.getById({
+          id: data.id,
+          relations,
+        });
+      } else if (data.slug) {
+        party = await this.parties.getBySlug({
+          slug: data.slug,
+          relations,
+        });
+      }
 
       if (!party) throw new NotFoundError();
 
@@ -280,7 +300,7 @@ export class PartyResolver {
       return {
         ...party.toObject(),
         isAttender: Boolean(
-          (user.attendedParties as Array<Id>).find((id) => id === partyId),
+          (user.attendedParties as Array<Id>).find((id) => id === party.id),
         ),
         isOrganizer: user._id === party.organizer?._id,
       };
@@ -295,7 +315,7 @@ export class PartyResolver {
         path: 'partyGetById',
         data: {
           userId: user._id,
-          partyId,
+          data,
         },
       });
       throw new UnknownError();
