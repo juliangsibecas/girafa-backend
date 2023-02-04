@@ -7,7 +7,7 @@ plugins:
   - serverless-offline
 custom:
   s3:
-    host: localhost
+    address: 127.0.0.1
     directory: /tmp
 resources:
   Resources:
