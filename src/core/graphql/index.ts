@@ -19,7 +19,7 @@ export const gqlModuleOptions = {
     formatError: handleError,
     context: ({ req, res }) => ({ req, res }),
     cors: {
-      origin: 'https://admin.girafa.com.ar',
+      origin: 'http://localhost:3000',
       credentials: true,
     },
   }),

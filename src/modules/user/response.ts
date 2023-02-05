@@ -27,3 +27,16 @@ export class UserGetResponse extends PickType(User, [
   @Field()
   isFollower: boolean;
 }
+
+//
+// ADMIN
+//
+
+@ObjectType()
+export class AdminUserListResponse {
+  @Field(() => [UserPreview])
+  users: Array<UserPreview>;
+
+  @Field()
+  total: number;
+}

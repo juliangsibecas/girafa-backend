@@ -2,7 +2,7 @@ import * as moment from 'moment';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import { GroupedCount, Id } from '../../common/types';
+import { GroupedCount, Id, Pagination } from '../../common/types';
 import {
   ErrorCode,
   ForbiddenError,
@@ -29,7 +29,11 @@ import {
   UserSearchFollowersToInviteInput,
   UserSendPartyInviteInput,
 } from './input';
-import { UserGetResponse, UserPreview } from './response';
+import {
+  AdminUserListResponse,
+  UserGetResponse,
+  UserPreview,
+} from './response';
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
 import { userDelete, userPreviewFields } from './utils';
@@ -542,6 +546,30 @@ export class UserResolver {
   //
   // ADMIN
   //
+
+  @Query(() => AdminUserListResponse)
+  @Roles([Role.ADMIN])
+  async adminUserList(
+    @Args('data') data: Pagination,
+  ): Promise<AdminUserListResponse> {
+    try {
+      const [users, total] = await Promise.all([
+        this.users.list(data),
+        this.users.getCount(),
+      ]);
+
+      return {
+        users,
+        total,
+      };
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminUserList',
+        data: {},
+      });
+      throw new UnknownError();
+    }
+  }
 
   @Query(() => Number)
   @Roles([Role.ADMIN])

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { ErrorDescription, ValidationError } from '../../core/graphql';
-import { GroupedCount, Maybe } from '../../common/types';
+import { GroupedCount, Maybe, Pagination } from '../../common/types';
 
 import {
   UserChangeAttendingStateDto,
@@ -22,6 +22,8 @@ import {
   UserRemoveOrganizedPartyDto,
 } from './dto';
 import { User, UserDocument } from './schema';
+import { userPreviewFields } from './utils';
+import { UserPreview } from './response';
 
 @Injectable()
 export class UserService {
@@ -180,6 +182,10 @@ export class UserService {
   //
   // ADMIN
   //
+
+  async list({ offset, limit }: Pagination): Promise<Array<UserPreview>> {
+    return this.model.find({}, userPreviewFields).skip(offset).limit(limit);
+  }
 
   async getCount(): Promise<number> {
     return this.model.count();

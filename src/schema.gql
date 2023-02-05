@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AdminUserListResponse {
+  total: Float!
+  users: [UserPreview!]!
+}
+
 input AuthChangePasswordInput {
   currentPassword: String!
   newPassword: String!
@@ -153,6 +158,11 @@ enum NotificationType {
   INVITE
 }
 
+input Pagination {
+  limit: Float!
+  offset: Float!
+}
+
 type Party {
   _id: String!
   address: String!
@@ -245,6 +255,7 @@ type Query {
   adminSupportGetCount: Float!
   adminUserGetCount: Float!
   adminUserGetCreatedByDayCount: [GroupedCount!]!
+  adminUserList(data: Pagination!): AdminUserListResponse!
   appInfoMeetMinVersion(version: String!): Boolean!
   featureToggleGetEnabledNames: [FeatureToggleName!]!
   featureToggleList: [FeatureToggle!]!
