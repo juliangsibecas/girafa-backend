@@ -579,7 +579,7 @@ export class UserResolver {
         }
 
         arr.push({
-          _id: date.format('DD/MM/YYYY'),
+          _id: date.format('DD/MM/YY'),
           count,
         });
 
