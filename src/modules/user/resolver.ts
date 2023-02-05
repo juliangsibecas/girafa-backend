@@ -571,7 +571,10 @@ export class UserResolver {
       while (date <= lastDate) {
         let count = 0;
 
-        if (date.diff(moment(groupedCounts[0]._id, 'DD/MM/YYYY')) === 0) {
+        if (
+          groupedCounts[0] &&
+          date.diff(moment(groupedCounts[0]._id, 'DD/MM/YYYY')) === 0
+        ) {
           count = groupedCounts.shift().count;
         }
 
@@ -585,9 +588,10 @@ export class UserResolver {
 
       return arr;
     } catch (e) {
+      console.log(e);
       this.logger.error({
         path: 'AdminUsersGetCreatedByDayCount',
-        data: {},
+        data: e,
       });
       throw new UnknownError();
     }
