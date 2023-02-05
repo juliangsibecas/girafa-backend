@@ -58,6 +58,9 @@ export class EnvironmentVariables {
   ONESIGNAL_API_KEY: string;
   @IsNotEmpty()
   ONESIGNAL_APP_ID: string;
+
+  @IsNotEmpty()
+  BACKOFFICE_URL: string;
 }
 
 export type RawEnvironmentVariables = Record<
