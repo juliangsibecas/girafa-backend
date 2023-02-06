@@ -15,18 +15,18 @@ export class S3Service {
   });
 
   async deleteUserPicture(pictureId: string) {
-    return this.s3
+    await this.s3
       .deleteObject({
         Bucket: this.config.get('s3.name'),
-        Key: `${pictureId}.jpeg`,
+        Key: `user-pictures/${pictureId}.jpeg`,
       })
       .promise();
   }
 
-  async uploadUserPicture(userId: string, file: Express.Multer.File) {
+  async uploadUserPicture(pictureId: string, file: Express.Multer.File) {
     const buffer = await sharp(file.buffer).jpeg().toBuffer();
 
-    return this.upload('user-pictures', `${userId}.jpeg`, {
+    return this.upload('user-pictures', `${pictureId}.jpeg`, {
       ...file,
       buffer,
     });
