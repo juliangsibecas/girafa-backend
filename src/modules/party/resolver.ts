@@ -1,5 +1,5 @@
 import slugify from 'slugify';
-import moment from 'moment';
+import * as moment from 'moment';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PopulateOptions } from 'mongoose';
@@ -30,6 +30,7 @@ import {
 import { PartyGetResponse, PartyMapPreview, PartyPreview } from './response';
 import { Party, PartyDocument } from './schema';
 import { PartyService } from './service';
+import { PartyAvailability } from './types';
 
 @Resolver(() => Party)
 export class PartyResolver {
@@ -54,11 +55,15 @@ export class PartyResolver {
         'DDMMYY',
       )}`;
 
-      console.log(slug);
+      const allowInvites =
+        data.availability === PartyAvailability.PUBLIC
+          ? true
+          : data.allowInvites;
 
       const party = await this.parties.create({
         ...data,
         slug,
+        allowInvites,
         organizer: user._id,
       });
 
@@ -312,7 +317,7 @@ export class PartyResolver {
       )
         throw e;
       this.logger.error({
-        path: 'partyGetById',
+        path: 'partyGet',
         data: {
           userId: user._id,
           data,

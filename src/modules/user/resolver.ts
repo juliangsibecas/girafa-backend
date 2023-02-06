@@ -510,7 +510,8 @@ export class UserResolver {
         path: 'UserSendPartyInvite',
         data: {
           userId: user._id,
-          ...data,
+          data,
+          e,
         },
       });
       throw new UnknownError();
@@ -616,7 +617,6 @@ export class UserResolver {
 
       return arr;
     } catch (e) {
-      console.log(e);
       this.logger.error({
         path: 'AdminUsersGetCreatedByDayCount',
         data: e,
