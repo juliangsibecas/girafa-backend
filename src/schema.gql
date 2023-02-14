@@ -40,6 +40,41 @@ input AuthSignUpInput {
   password: String!
 }
 
+type Chat {
+  _id: String!
+  createdAt: DateTime!
+  messages: [ChatMessage!]!
+  updatedAt: DateTime
+  users: [User!]!
+}
+
+input ChatCreateInput {
+  withId: String!
+}
+
+type ChatMessage {
+  _id: String!
+  createdAt: DateTime!
+  fromId: String!
+  text: String!
+  updatedAt: DateTime
+}
+
+input ChatMessageSendInput {
+  chatId: String!
+  text: String!
+}
+
+input ChatMessagesGetInput {
+  chatId: String!
+}
+
+type ChatPreview {
+  _id: String!
+  lastMessage: ChatMessage!
+  user: UserPreview!
+}
+
 type Coordinate {
   latitude: Float!
   longitude: Float!
@@ -90,6 +125,7 @@ input FeatureToggleChangeValueInput {
 }
 
 enum FeatureToggleName {
+  CHAT_GET
   MAILING
   NOTIFICATION_GET
   PARTY_CREATE
@@ -124,6 +160,8 @@ type Mutation {
   appInfoChangeMinVersion(version: String!): Boolean!
   appInfoInitialize: Boolean!
   changePassword(data: AuthChangePasswordInput!): Boolean!
+  chatCreate(data: ChatCreateInput!): Chat!
+  chatMessageSend(data: ChatMessageSendInput!): Boolean!
   featureToggleChangeValue(data: FeatureToggleChangeValueInput!): Boolean!
   featureToggleSync(data: FeatureTogglePopulateInput!): Boolean!
   generateRecoveryCode(data: AuthGenerateRecoveryCodeInput!): Boolean!
@@ -257,6 +295,8 @@ type Query {
   adminUserGetCreatedByDayCount: [GroupedCount!]!
   adminUserList(data: Pagination!): AdminUserListResponse!
   appInfoMeetMinVersion(version: String!): Boolean!
+  chatGet: [ChatPreview!]!
+  chatMessagesGet(data: ChatMessagesGetInput!): [ChatMessage!]!
   featureToggleGetEnabledNames: [FeatureToggleName!]!
   featureToggleList: [FeatureToggle!]!
   notificationsGetByUserId: [UserNotification!]!
@@ -266,6 +306,7 @@ type Query {
   partySearchAttenders(data: PartySearchAttendersInput!): [UserPreview!]!
   typesSync: TypesSyncResponse!
   userCheckPartyValidating: Boolean!
+  userFindUsersToChat(data: UserFindUsersToChat!): [UserPreview!]!
   userGet(data: UserGetInput!): UserGetResponse!
   userGetAttendedPartiesById(id: String!): [PartyPreview!]!
   userGetFollowersById(id: String!): [UserPreview!]!
@@ -289,6 +330,7 @@ type User {
   attendedParties: [Party!]!
   attendedPartiesCount: Float!
   bio: String
+  chats: [Chat!]!
   createdAt: DateTime!
   email: String!
   followers: [User!]!
@@ -329,6 +371,10 @@ input UserEditInput {
   fullName: String!
   instagramUsername: String
   nickname: String!
+}
+
+input UserFindUsersToChat {
+  q: String
 }
 
 input UserGetInput {

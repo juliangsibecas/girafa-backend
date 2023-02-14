@@ -23,6 +23,7 @@ import {
   UserBanInput,
   UserChangeAttendingStateInput,
   UserChangeFollowingStateInput,
+  UserFindUsersToChat,
   UserDeleteInput,
   UserEditInput,
   UserGetInput,
@@ -37,6 +38,7 @@ import {
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
 import { userDelete, userPreviewFields } from './utils';
+import { Chat } from '../chat';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -536,6 +538,24 @@ export class UserResolver {
     } catch (e) {
       this.logger.error({
         path: 'UserCheckPartyValidation',
+        data: {
+          userId: user._id,
+        },
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Query(() => [UserPreview])
+  async userFindUsersToChat(
+    @CurrentUser() user: UserDocument,
+    @Args('data') data: UserFindUsersToChat,
+  ): Promise<Array<UserPreview>> {
+    try {
+      return this.users.search({ id: user._id, search: data.q });
+    } catch (e) {
+      this.logger.error({
+        path: 'UserFindUsersToChat',
         data: {
           userId: user._id,
         },

@@ -22,10 +22,11 @@ import {
   FeatureToggleGuard,
   FeatureToggleModule,
 } from '../modules/featureToggle';
-import { RoleGuard } from '../modules/auth/role';
 import { AppController } from './controller';
 import { TypesSyncModule } from '../modules/typesSync';
-import { AppInfoModule } from '../modules/appInfo/module';
+import { AppInfoModule } from '../modules/appInfo';
+import { ChatModule } from '../modules/chat';
+import { RoleGuard } from '../modules/auth/role';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AppInfoModule } from '../modules/appInfo/module';
     NotificationModule,
     UserModule,
     PartyModule,
+    ChatModule,
     SupportModule,
   ],
   providers: [

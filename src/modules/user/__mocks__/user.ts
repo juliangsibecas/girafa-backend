@@ -14,10 +14,11 @@ export const mockUser = (data: Partial<User>): User => ({
   attendedParties: [],
   attendedPartiesCount: 0,
   organizedParties: [],
-  createdAt: new Date(),
+  chats: [],
   invites: [],
   notifications: [],
   password: bcrypt.hashSync('1234', 1),
+  createdAt: new Date(),
   ...data,
 });
 

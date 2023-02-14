@@ -70,3 +70,9 @@ export class UserBanInput {
   @Field()
   id: string;
 }
+
+@InputType()
+export class UserFindUsersToChat {
+  @Field({ nullable: true })
+  q?: string;
+}

@@ -21,6 +21,8 @@ export enum FeatureToggleName {
   PARTY_SEARCH_ATTENDERS = 'PARTY_SEARCH_ATTENDERS',
   PARTY_CREATE = 'PARTY_CREATE',
   PARTY_DELETE = 'PARTY_DELETE',
+
+  CHAT_GET = 'CHAT_GET',
 }
 
 export type FeatureToggleMetadata = {

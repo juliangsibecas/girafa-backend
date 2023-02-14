@@ -7,6 +7,7 @@ import { ArrayField, BaseSchema, Id } from '../../common/types';
 
 import { Notification } from '../notification/schema';
 import { Party } from '../party/schema';
+import { Chat } from '../chat/schema';
 
 @Schema({ timestamps: true })
 @ObjectType()
@@ -118,6 +119,18 @@ export class User extends BaseSchema {
   })
   @Field(() => [Notification])
   notifications: ArrayField<Notification>;
+
+  @Prop({
+    type: [
+      {
+        ref: 'Chat',
+        type: String,
+      },
+    ],
+    default: [],
+  })
+  @Field(() => [Chat])
+  chats: ArrayField<Chat>;
 
   //
   // meta

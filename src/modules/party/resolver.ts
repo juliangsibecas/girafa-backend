@@ -230,11 +230,18 @@ export class PartyResolver {
 
   @Query(() => [PartyMapPreview])
   @Features([FeatureToggleName.PARTY_GET])
-  partyFind(
+  async partyFind(
     @CurrentUser() user: UserDocument,
   ): Promise<Array<PartyMapPreview>> {
     try {
-      return this.parties.find({ userId: user._id });
+      const parties = await this.parties.find({ userId: user._id });
+      const first = parties[0];
+
+      parties[0] = parties[2];
+      parties[2] = first;
+      console.log(first);
+
+      return parties;
     } catch (e) {
       this.logger.error({
         path: 'partyFind',
