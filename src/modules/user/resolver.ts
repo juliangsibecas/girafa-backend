@@ -38,7 +38,6 @@ import {
 import { User, UserDocument } from './schema';
 import { UserService } from './service';
 import { userDelete, userPreviewFields } from './utils';
-import { Chat } from '../chat';
 
 @Resolver(() => User)
 export class UserResolver {

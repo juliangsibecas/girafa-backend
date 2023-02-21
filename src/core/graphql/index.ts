@@ -28,7 +28,7 @@ export const gqlModuleOptions = {
     },
     subscriptions: {
       'graphql-ws': {
-        path: '/graphql',
+        path: '/subscriptions',
       },
     },
   }),
