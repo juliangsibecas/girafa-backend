@@ -22,11 +22,12 @@ import {
   FeatureToggleGuard,
   FeatureToggleModule,
 } from '../modules/featureToggle';
-import { AppController } from './controller';
 import { TypesSyncModule } from '../modules/typesSync';
 import { AppInfoModule } from '../modules/appInfo';
 import { ChatModule } from '../modules/chat';
 import { RoleGuard } from '../modules/auth/role';
+
+import { AppController } from './controller';
 
 @Module({
   imports: [

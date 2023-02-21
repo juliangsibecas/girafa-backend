@@ -2,9 +2,9 @@ import { Field, InputType } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
 
 @InputType()
-export class ChatCreateInput {
+export class ChatUserGetInput {
   @Field()
-  withId: string;
+  id: string;
 }
 
 @InputType()
@@ -14,10 +14,25 @@ export class ChatMessagesGetInput {
 }
 
 @InputType()
+export class ChatCreateInput {
+  @Field()
+  withId: string;
+
+  @Field()
+  messageText: string;
+}
+
+@InputType()
 export class ChatMessageSendInput {
   @Field()
   chatId: Id;
 
   @Field()
   text: string;
+}
+
+@InputType()
+export class ChatMessageSentInput {
+  @Field()
+  token: string;
 }

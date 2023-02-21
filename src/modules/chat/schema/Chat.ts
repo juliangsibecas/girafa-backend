@@ -1,15 +1,20 @@
 import mongoose from 'mongoose';
+import { v4 } from 'uuid';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import { BaseSchema } from '../../../common/types';
+import { ArrayField, BaseSchema, Id } from '../../../common/types';
 
 import { User } from '../../user';
-import { ChatMessage } from './ChatMessage';
+
+import { ChatMessage, ChatMessageSchema } from './ChatMessage';
 
 @Schema({ timestamps: { createdAt: true } })
 @ObjectType()
 export class Chat extends BaseSchema {
+  @Prop({ type: String, default: v4 })
+  _id: Id;
+
   @Prop({
     type: [
       {
@@ -19,9 +24,9 @@ export class Chat extends BaseSchema {
     ],
   })
   @Field(() => [User])
-  users?: Array<User>;
+  users?: ArrayField<User>;
 
-  @Prop(() => [ChatMessage])
+  @Prop(() => [ChatMessageSchema])
   @Field(() => [ChatMessage])
   messages: Array<ChatMessage>;
 }

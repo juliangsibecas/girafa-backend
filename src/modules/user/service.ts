@@ -20,10 +20,12 @@ import {
   UserSearchDto,
   UserGetByNicknameDto,
   UserRemoveOrganizedPartyDto,
+  UserAddChatDto,
 } from './dto';
 import { User, UserDocument } from './schema';
 import { userPreviewFields } from './utils';
 import { UserPreview } from './response';
+import { Chat } from '../chat';
 
 @Injectable()
 export class UserService {
@@ -177,6 +179,14 @@ export class UserService {
 
   async setRefreshToken({ id, token }: UserSetRefreshTokenDto): Promise<void> {
     await this.model.findByIdAndUpdate(id, { refreshToken: token });
+  }
+
+  async addChat({ user, chatId }: UserAddChatDto) {
+    if (!(user.chats as Array<Chat>).find(({ _id }) => _id === chatId)) {
+      await user.updateOne({
+        $addToSet: { chats: chatId },
+      });
+    }
   }
 
   //

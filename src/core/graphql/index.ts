@@ -17,10 +17,19 @@ export const gqlModuleOptions = {
     playground: config.get('app.env') === Environment.DEVELOPMENT,
     debug: false,
     formatError: handleError,
-    context: ({ req, res }) => ({ req, res }),
+    context: ({ req, res, connectionParams }) => ({
+      req,
+      res,
+      connectionParams,
+    }),
     cors: {
       origin: config.get('app.backofficeUrl'),
       credentials: true,
+    },
+    subscriptions: {
+      'graphql-ws': {
+        path: '/graphql',
+      },
     },
   }),
 };

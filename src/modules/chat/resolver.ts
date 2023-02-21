@@ -1,34 +1,49 @@
 import { forwardRef, Inject } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
 import { Id } from 'src/common/types';
 
 import { CurrentUser } from '../auth/graphql';
-import { UserService } from '../user';
+import { User, UserPreview, UserService } from '../user';
 import { UserDocument } from '../user/schema';
 import {
   ChatCreateInput,
   ChatMessageSendInput,
+  ChatMessageSentInput,
   ChatMessagesGetInput,
+  ChatUserGetInput,
 } from './input';
-import { ChatPreview } from './response';
+import { ChatNewMessageResponse, ChatPreview } from './response';
 
-import { Chat, ChatMessage } from './schema';
+import { CHAT_MESSAGE_SENT } from './constant';
+import { Chat, ChatDocument, ChatMessage } from './schema';
 import { ChatService } from './service';
+import { AuthService } from '../auth';
+import { NotificationService, NotificationType } from '../notification';
+import { createDeepLink } from 'src/common/utils';
+import { NotFoundError, UnknownError } from 'src/core/graphql';
+import { LoggerService } from '../logger';
 
 @Resolver(() => Chat)
 export class ChatResolver {
   constructor(
     private chats: ChatService,
+    private logger: LoggerService,
+    @Inject(forwardRef(() => NotificationService))
+    private notifications: NotificationService,
+    @Inject(forwardRef(() => AuthService)) private auth: AuthService,
     @Inject(forwardRef(() => UserService)) private users: UserService,
+    @Inject('PUB_SUB') private pubSub: PubSub,
   ) {}
 
   @Query(() => [ChatPreview])
-  async chatGet(
+  async chatList(
     @CurrentUser() user: UserDocument,
   ): Promise<Array<ChatPreview>> {
     try {
       user = await user.populate({
         path: 'chats',
+        select: { _id: 1, messages: { $slice: -1 } },
         populate: [
           {
             path: 'users',
@@ -37,13 +52,52 @@ export class ChatResolver {
         ],
       });
 
-      return ((user.chats as Array<Chat>) ?? []).map((chat) => ({
-        _id: chat._id,
-        user: chat.users.find((otherUser) => otherUser._id !== user._id)!,
-        lastMessage: chat.messages.pop(),
-      }));
+      return ((user.chats as Array<Chat>) ?? [])
+        .map((chat) => ({
+          _id: chat._id,
+          user: (chat.users as Array<User>).find(
+            (otherUser) => otherUser._id !== user._id,
+          )!,
+          lastMessage: chat.messages.pop(),
+        }))
+        .sort(
+          (chatA, chatB) =>
+            chatB.lastMessage.createdAt.getTime() -
+            chatA.lastMessage.createdAt.getTime(),
+        );
     } catch (e) {
-      console.log(e);
+      this.logger.error({
+        path: 'chatList',
+        data: e,
+      });
+
+      throw new UnknownError();
+    }
+  }
+
+  @Query(() => UserPreview)
+  async chatUserGet(
+    @CurrentUser() user: UserDocument,
+    @Args('data') data: ChatUserGetInput,
+  ): Promise<UserPreview> {
+    try {
+      const chat = await this.chats.getByid(data.id);
+
+      if (!chat) {
+        throw new NotFoundError();
+      }
+
+      return (chat.users as Array<User>).find(({ _id }) => _id !== user._id)!;
+    } catch (e) {
+      this.logger.error({
+        path: 'chatUserGet',
+        data: {
+          data,
+          e,
+        },
+      });
+
+      throw new UnknownError();
     }
   }
 
@@ -58,14 +112,24 @@ export class ChatResolver {
       }
 
       return this.chats.getMessages(chatId);
-    } catch (e) {}
+    } catch (e) {
+      this.logger.error({
+        path: 'chatMessagesGet',
+        data: {
+          chatId,
+          e,
+        },
+      });
+
+      throw new UnknownError();
+    }
   }
 
-  @Mutation(() => Chat)
+  @Mutation(() => ChatPreview)
   async chatCreate(
     @CurrentUser() user: UserDocument,
     @Args('data') data: ChatCreateInput,
-  ): Promise<Chat> {
+  ): Promise<ChatPreview> {
     try {
       await user.populate({
         path: 'chats',
@@ -75,27 +139,45 @@ export class ChatResolver {
         },
       });
 
-      let chat = (user.chats as Array<Chat>).find(
+      let chat: Chat | ChatDocument = (user.chats as Array<Chat>).find(
         ({ users }) =>
           users.length === 2 &&
-          users.filter(({ _id }) => [user._id, data.withId].includes(_id)),
+          (users as Array<User>).filter(({ _id }) =>
+            [user._id, data.withId].includes(_id),
+          ).length === 2,
       );
 
       if (!chat) {
-        chat = await this.chats.create({
-          usersIds: [user._id, data.withId],
-        });
-
-        const withUser = await this.users.getById({ id: data.withId });
-
-        (user.chats as Array<Id>).push(chat._id);
-        (withUser.chats as Array<Id>).push(chat._id);
-
-        await Promise.all([user.save(), withUser.save()]);
+        chat = (
+          await this.chats.create({
+            usersIds: [user._id, data.withId],
+          })
+        ).toObject();
       }
 
-      return chat;
-    } catch (e) {}
+      const withUser = await this.users.getById({ id: data.withId });
+
+      await Promise.all([
+        this.users.addChat({ user, chatId: chat._id }),
+        this.users.addChat({ user: withUser, chatId: chat._id }),
+      ]);
+
+      const message = await this.sendMessage({
+        data: { chatId: chat._id, from: user, text: data.messageText },
+      });
+
+      return { ...chat, user: withUser, lastMessage: message };
+    } catch (e) {
+      this.logger.error({
+        path: 'chatCreate',
+        data: {
+          data,
+          e,
+        },
+      });
+
+      throw new UnknownError();
+    }
   }
 
   @Mutation(() => Boolean)
@@ -104,9 +186,72 @@ export class ChatResolver {
     @Args('data') data: ChatMessageSendInput,
   ): Promise<Boolean> {
     try {
-      await this.chats.addMessage({ ...data, fromId: user._id });
+      await this.sendMessage({ data: { ...data, from: user } });
 
       return true;
-    } catch (e) {}
+    } catch (e) {
+      this.logger.error({
+        path: 'chatMessageSend',
+        data: {
+          data,
+          e,
+        },
+      });
+
+      throw new UnknownError();
+    }
+  }
+
+  @Subscription(() => ChatNewMessageResponse, {
+    filter: function (payload, variables) {
+      const { userId } = this.auth.decodeToken(variables.data.token);
+
+      return payload.chat.users.includes(userId);
+    },
+    resolve: (value) => {
+      return { chatId: value.chat._id, ...value.message };
+    },
+  })
+  chatMessageSent(@Args('data') _: ChatMessageSentInput) {
+    return this.pubSub.asyncIterator(CHAT_MESSAGE_SENT);
+  }
+
+  //
+  // HELPERS
+  //
+
+  async sendMessage({
+    data: { chatId, from, text },
+  }: {
+    data: { chatId: Id; from: User; text: string };
+  }) {
+    const message = await this.chats.addMessage({
+      chatId,
+      fromId: from._id,
+      text,
+    });
+
+    const users = await this.chats.getUsers(chatId);
+
+    await Promise.all([
+      this.pubSub.publish(CHAT_MESSAGE_SENT, {
+        chat: {
+          _id: chatId,
+          users,
+        },
+        message,
+      }),
+      this.notifications.rawPush({
+        toIds: users.filter((id) => id !== from._id),
+        title: from.nickname,
+        text,
+        data: {
+          type: NotificationType.CHAT,
+          url: createDeepLink(`chat/${chatId}`),
+        },
+      }),
+    ]);
+
+    return message;
   }
 }

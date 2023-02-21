@@ -49,15 +49,14 @@ type Chat {
 }
 
 input ChatCreateInput {
+  messageText: String!
   withId: String!
 }
 
 type ChatMessage {
-  _id: String!
   createdAt: DateTime!
   fromId: String!
   text: String!
-  updatedAt: DateTime
 }
 
 input ChatMessageSendInput {
@@ -65,14 +64,29 @@ input ChatMessageSendInput {
   text: String!
 }
 
+input ChatMessageSentInput {
+  token: String!
+}
+
 input ChatMessagesGetInput {
   chatId: String!
+}
+
+type ChatNewMessageResponse {
+  chatId: String!
+  createdAt: DateTime!
+  fromId: String!
+  text: String!
 }
 
 type ChatPreview {
   _id: String!
   lastMessage: ChatMessage!
   user: UserPreview!
+}
+
+input ChatUserGetInput {
+  id: String!
 }
 
 type Coordinate {
@@ -160,7 +174,7 @@ type Mutation {
   appInfoChangeMinVersion(version: String!): Boolean!
   appInfoInitialize: Boolean!
   changePassword(data: AuthChangePasswordInput!): Boolean!
-  chatCreate(data: ChatCreateInput!): Chat!
+  chatCreate(data: ChatCreateInput!): ChatPreview!
   chatMessageSend(data: ChatMessageSendInput!): Boolean!
   featureToggleChangeValue(data: FeatureToggleChangeValueInput!): Boolean!
   featureToggleSync(data: FeatureTogglePopulateInput!): Boolean!
@@ -192,6 +206,7 @@ type Notification {
 }
 
 enum NotificationType {
+  CHAT
   FOLLOW
   INVITE
 }
@@ -295,8 +310,9 @@ type Query {
   adminUserGetCreatedByDayCount: [GroupedCount!]!
   adminUserList(data: Pagination!): AdminUserListResponse!
   appInfoMeetMinVersion(version: String!): Boolean!
-  chatGet: [ChatPreview!]!
+  chatList: [ChatPreview!]!
   chatMessagesGet(data: ChatMessagesGetInput!): [ChatMessage!]!
+  chatUserGet(data: ChatUserGetInput!): UserPreview!
   featureToggleGetEnabledNames: [FeatureToggleName!]!
   featureToggleList: [FeatureToggle!]!
   notificationsGetByUserId: [UserNotification!]!
@@ -313,6 +329,10 @@ type Query {
   userGetFollowingById(id: String!): [UserPreview!]!
   userSearch(q: String): [UserPreview!]!
   userSearchFollowersToInvite(data: UserSearchFollowersToInviteInput!): [User!]!
+}
+
+type Subscription {
+  chatMessageSent(data: ChatMessageSentInput!): ChatNewMessageResponse!
 }
 
 input SupportSendMessageInput {

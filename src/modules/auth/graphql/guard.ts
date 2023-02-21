@@ -15,8 +15,11 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
 
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
-    // avoid issues when calling from subscription
-    return ctx.getContext().req || { headers: {} };
+    const { req, connectionParams } = ctx.getContext();
+
+    return connectionParams?.Authorization
+      ? { headers: { authorization: connectionParams.Authorization } }
+      : req;
   }
 
   handleRequest(

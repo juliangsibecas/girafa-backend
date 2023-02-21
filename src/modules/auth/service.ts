@@ -78,7 +78,7 @@ export class AuthService {
     return token;
   }
 
-  async decodeToken(token: string): Promise<TokenPayload> {
+  decodeToken(token: string): TokenPayload {
     return this.jwt.decode(token) as TokenPayload;
   }
 }

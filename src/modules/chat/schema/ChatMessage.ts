@@ -2,12 +2,12 @@ import mongoose from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import { BaseSchema, Id } from '../../../common/types';
+import { Id } from '../../../common/types';
 import { DateTimeResolver } from 'graphql-scalars';
 
-@Schema({ timestamps: { createdAt: true } })
+@Schema({ timestamps: true })
 @ObjectType()
-export class ChatMessage extends BaseSchema {
+export class ChatMessage {
   @Prop()
   @Field()
   fromId: Id;

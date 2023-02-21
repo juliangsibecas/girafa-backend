@@ -18,17 +18,42 @@ export class ChatService {
     return this.chats.create({ users: usersIds, messages: [] });
   }
 
+  async getByid(id: Id): Promise<ChatDocument> {
+    return this.chats.findById(
+      id,
+      {},
+      {
+        populate: [
+          {
+            path: 'users',
+            select: ['nickname', 'pictureId'],
+          },
+        ],
+      },
+    );
+  }
+
+  async getUsers(id: Id): Promise<Array<Id>> {
+    const chat = await this.chats.findById(id, 'users');
+
+    return chat.users as Array<Id>;
+  }
+
   async getMessages(chatId: Id) {
     const chat = await this.chats.findOne({ _id: chatId });
 
     return chat.messages;
   }
 
-  addMessage({ chatId, fromId, text }: ChatMessageCreateDto) {
-    return this.chats.findByIdAndUpdate(chatId, {
+  async addMessage({ chatId, fromId, text }: ChatMessageCreateDto) {
+    const message = { fromId, text, createdAt: now() };
+
+    await this.chats.findByIdAndUpdate(chatId, {
       $push: {
-        messages: { fromId, text, createdAt: now() },
+        messages: message,
       },
     });
+
+    return message;
   }
 }

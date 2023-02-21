@@ -80,3 +80,8 @@ export interface UserSetRefreshTokenDto {
   id: Id;
   token: string;
 }
+
+export interface UserAddChatDto {
+  user: UserDocument;
+  chatId: Id;
+}

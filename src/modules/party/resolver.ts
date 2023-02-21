@@ -234,14 +234,7 @@ export class PartyResolver {
     @CurrentUser() user: UserDocument,
   ): Promise<Array<PartyMapPreview>> {
     try {
-      const parties = await this.parties.find({ userId: user._id });
-      const first = parties[0];
-
-      parties[0] = parties[2];
-      parties[2] = first;
-      console.log(first);
-
-      return parties;
+      return this.parties.find({ userId: user._id });
     } catch (e) {
       this.logger.error({
         path: 'partyFind',

@@ -14,6 +14,7 @@ export type NotificationCreateDto = {
 export type RawPushNotification = {
   id?: Id;
   toIds: Array<Id>;
+  title?: string;
   text: string;
   data?: { url: string } & Record<string, any>;
 };

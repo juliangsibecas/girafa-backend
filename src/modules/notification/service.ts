@@ -132,12 +132,13 @@ export class NotificationService {
     });
   }
 
-  rawPush({ id, toIds, text, data }: RawPushNotification) {
+  rawPush({ id, toIds, title, text, data }: RawPushNotification) {
     return this.onesignal.createNotification({
       app_id: this.config.get('onesignal.appId'),
       external_id: id,
       included_segments: [],
       include_external_user_ids: toIds,
+      headings: { en: title },
       contents: { en: text },
       data,
     });
