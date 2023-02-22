@@ -8,6 +8,7 @@ import { User, UserPreview, UserService } from '../user';
 import { UserDocument } from '../user/schema';
 import {
   ChatCreateInput,
+  ChatGetIdByUserIdInput,
   ChatMessageSendInput,
   ChatMessageSentInput,
   ChatMessagesGetInput,
@@ -69,6 +70,39 @@ export class ChatResolver {
       this.logger.error({
         path: 'chatList',
         data: e,
+      });
+
+      throw new UnknownError();
+    }
+  }
+
+  @Query(() => String)
+  async chatGetIdByUserId(
+    @CurrentUser() user: UserDocument,
+    @Args('data') data: ChatGetIdByUserIdInput,
+  ): Promise<Id> {
+    try {
+      const userWith = await this.users.getById({
+        id: data.userId,
+        select: ['chats'],
+      });
+
+      if (!user.chats.length || !userWith.chats.length) {
+        return '';
+      }
+
+      return (
+        (user.chats as Array<Id>).find(
+          (chatId) => (userWith.chats as Array<Id>).indexOf(chatId) !== -1,
+        ) ?? ''
+      );
+    } catch (e) {
+      this.logger.error({
+        path: 'chatGetIdByUserId',
+        data: {
+          data,
+          e,
+        },
       });
 
       throw new UnknownError();

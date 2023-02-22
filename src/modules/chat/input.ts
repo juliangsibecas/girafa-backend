@@ -2,6 +2,12 @@ import { Field, InputType } from '@nestjs/graphql';
 import { Id } from 'src/common/types';
 
 @InputType()
+export class ChatGetIdByUserIdInput {
+  @Field()
+  userId: string;
+}
+
+@InputType()
 export class ChatUserGetInput {
   @Field()
   id: string;

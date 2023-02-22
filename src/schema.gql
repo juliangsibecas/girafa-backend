@@ -53,6 +53,10 @@ input ChatCreateInput {
   withId: String!
 }
 
+input ChatGetIdByUserIdInput {
+  userId: String!
+}
+
 type ChatMessage {
   createdAt: DateTime!
   fromId: String!
@@ -310,6 +314,7 @@ type Query {
   adminUserGetCreatedByDayCount: [GroupedCount!]!
   adminUserList(data: Pagination!): AdminUserListResponse!
   appInfoMeetMinVersion(version: String!): Boolean!
+  chatGetIdByUserId(data: ChatGetIdByUserIdInput!): String!
   chatList: [ChatPreview!]!
   chatMessagesGet(data: ChatMessagesGetInput!): [ChatMessage!]!
   chatUserGet(data: ChatUserGetInput!): UserPreview!
