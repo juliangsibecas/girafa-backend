@@ -39,10 +39,8 @@ export class ChatService {
     return chat.users as Array<Id>;
   }
 
-  async getMessages(chatId: Id) {
-    const chat = await this.chats.findOne({ _id: chatId });
-
-    return chat.messages;
+  async getChatById(chatId: Id): Promise<ChatDocument> {
+    return this.chats.findOne({ _id: chatId });
   }
 
   async addMessage({ chatId, fromId, text }: ChatMessageCreateDto) {

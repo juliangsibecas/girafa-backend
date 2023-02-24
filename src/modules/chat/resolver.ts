@@ -22,7 +22,7 @@ import { ChatService } from './service';
 import { AuthService } from '../auth';
 import { NotificationService, NotificationType } from '../notification';
 import { createDeepLink } from 'src/common/utils';
-import { NotFoundError, UnknownError } from 'src/core/graphql';
+import { ErrorCode, NotFoundError, UnknownError } from 'src/core/graphql';
 import { LoggerService } from '../logger';
 
 @Resolver(() => Chat)
@@ -123,6 +123,10 @@ export class ChatResolver {
 
       return (chat.users as Array<User>).find(({ _id }) => _id !== user._id)!;
     } catch (e) {
+      if (e.message === ErrorCode.NOT_FOUND_ERROR) {
+        throw e;
+      }
+
       this.logger.error({
         path: 'chatUserGet',
         data: {
@@ -145,8 +149,16 @@ export class ChatResolver {
         throw new Error();
       }
 
-      return this.chats.getMessages(chatId);
+      const chat = await this.chats.getChatById(chatId);
+
+      if (!chat) throw new NotFoundError();
+
+      return chat.messages;
     } catch (e) {
+      if (e.message === ErrorCode.NOT_FOUND_ERROR) {
+        throw e;
+      }
+
       this.logger.error({
         path: 'chatMessagesGet',
         data: {
