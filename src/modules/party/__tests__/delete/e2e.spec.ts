@@ -51,10 +51,10 @@ describe('(E2E) Party - Delete', () => {
     );
 
     const [sibeRes, gumpyRes, cosmoRes, guayraRes] = await Promise.all(
-      [0, 1, 2, 3].map((idx) => suite.getUserById(idx)),
+      [0, 1, 2, 3].map((idx) => suite.getUser(idx)),
     );
 
-    const partyRes = await suite.getPartyById(0);
+    const partyRes = await suite.getParty(0);
 
     const [
       sibeNotificationsRes,

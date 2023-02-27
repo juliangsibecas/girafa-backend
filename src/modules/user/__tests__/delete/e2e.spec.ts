@@ -4,7 +4,7 @@ import { mutation } from 'gql-query-builder';
 
 import { TestSuite } from '../../../../common/utils';
 import { AppModule } from '../../../../app';
-import { ErrorCodes } from '../../../../core/graphql';
+import { ErrorCode } from '../../../../core/graphql';
 
 import { UserDeleteSeeder } from './seeder';
 import { userDeleteMocks } from './mocks';
@@ -44,16 +44,15 @@ describe('(E2E) User - Delete', () => {
     );
 
     const [sibeRes, gumpyRes, cosmoRes, guayraRes] = await Promise.all(
-      [0, 1, 2, 3].map((idx) => suite.getUserById(idx)),
+      [0, 1, 2, 3].map((idx) => suite.getUser(idx)),
     );
 
-    const partyRes = await suite.getPartyById(0, 1);
+    const partyRes = await suite.getParty(0, 1);
 
     const signInAfterDeleteRes = await suite.signIn('juliangsibecas@gmail.com');
 
-
     expect(deleteRes.data[deleteOperation]).toEqual(true);
-    expect(sibeRes.errors[0].message).toEqual(ErrorCodes.NOT_FOUND_ERROR);
+    expect(sibeRes.errors[0].message).toEqual(ErrorCode.NOT_FOUND_ERROR);
     expect(gumpyRes.data.followersCount).toEqual(0);
     expect(gumpyRes.data.followingCount).toEqual(0);
     expect(cosmoRes.data.followingCount).toEqual(1);
@@ -62,7 +61,7 @@ describe('(E2E) User - Delete', () => {
     expect(guayraRes.data.followersCount).toEqual(1);
     expect(partyRes.data.attendersCount).toEqual(1);
     expect(signInAfterDeleteRes.errors[0].message).toEqual(
-      ErrorCodes.VALIDATION_ERROR,
+      ErrorCode.VALIDATION_ERROR,
     );
   });
 });

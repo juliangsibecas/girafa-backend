@@ -11,6 +11,7 @@ export const partyDeleteMocks: Entities = {
   users: [
     {
       ...sibe,
+      organizedParties: [MOCKED_PARTIES[0]._id],
       attendedParties: [MOCKED_PARTIES[0], MOCKED_PARTIES[1]],
       attendedPartiesCount: 2,
     },

@@ -57,5 +57,5 @@ export const userDelete = ({
       ),
     ),
     notificationsService.deleteByUser(user._id),
-    user.remove(),
+    user.delete(),
   ]);

@@ -37,17 +37,19 @@ export class TestHelpers extends TestBase {
     return this.formatRes<AuthSignInResponse>(res, operationName);
   }
 
-  async getUserById(idx: number, byIdx?: number) {
-    const operationName = 'userGetById';
+  async getUser(idx: number, byIdx?: number) {
+    const operationName = 'userGet';
 
     const res = await this.exec<UserGetResponse>(
       query({
         operation: operationName,
         variables: {
-          id: {
-            type: `String`,
+          data: {
+            type: `UserGetInput`,
             required: true,
-            value: this.users[idx]._id,
+            value: {
+              id: this.users[idx]._id,
+            },
           },
         },
         fields: [
@@ -63,7 +65,7 @@ export class TestHelpers extends TestBase {
     return this.formatRes<UserGetResponse>(res, operationName);
   }
 
-  async getPartyById(idx: number, byIdx?: number) {
+  async getParty(idx: number, byIdx?: number) {
     const operationName = 'partyGet';
 
     const res = await this.exec<PartyGetResponse>(
@@ -71,11 +73,9 @@ export class TestHelpers extends TestBase {
         operation: operationName,
         variables: {
           data: {
-            id: {
-              type: `String`,
-              required: true,
-              value: this.parties[idx]._id,
-            },
+            type: `PartyGetInput`,
+            required: true,
+            value: { id: this.parties[idx]._id },
           },
         },
         fields: ['attendersCount', 'isAttender'],

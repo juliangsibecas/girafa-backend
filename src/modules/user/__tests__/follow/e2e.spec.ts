@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { mutation } from 'gql-query-builder';
 
 import { AppModule } from '../../../../app';
-import { ErrorCodes } from '../../../../core/graphql';
+import { ErrorCode } from '../../../../core/graphql';
 import { TestSuite } from '../../../../common/utils';
 
 import { UserChangeFollowingStateInput } from '../../input';
@@ -61,11 +61,11 @@ describe('(E2E) User - Follow', () => {
       }),
     );
 
-    const getUserByIdRes = await suite.getUserById(0);
-    const getFollowedByIdRes = await suite.getUserById(1);
+    const getUserRes = await suite.getUser(0);
+    const getFollowedByIdRes = await suite.getUser(1);
 
     expect(followRes.data[followOperation]).toEqual(true);
-    expect(getUserByIdRes.data.followingCount).toEqual(1);
+    expect(getUserRes.data.followingCount).toEqual(1);
     expect(getFollowedByIdRes.data.isFollowing).toEqual(true);
     expect(getFollowedByIdRes.data.followersCount).toEqual(1);
   });
@@ -89,7 +89,7 @@ describe('(E2E) User - Follow', () => {
       }),
     );
 
-    expect(followRes.errors[0].message).toEqual(ErrorCodes.UNKNOWN_ERROR);
+    expect(followRes.errors[0].message).toEqual(ErrorCode.UNKNOWN_ERROR);
   });
 
   it('should unfollow', async () => {
@@ -111,11 +111,11 @@ describe('(E2E) User - Follow', () => {
       }),
     );
 
-    const getUserByIdRes = await suite.getUserById(0);
-    const getFollowedByIdRes = await suite.getUserById(1);
+    const getUserRes = await suite.getUser(0);
+    const getFollowedByIdRes = await suite.getUser(1);
 
     expect(followRes.data[followOperation]).toEqual(true);
-    expect(getUserByIdRes.data.followingCount).toEqual(0);
+    expect(getUserRes.data.followingCount).toEqual(0);
     expect(getFollowedByIdRes.data.isFollowing).toEqual(false);
     expect(getFollowedByIdRes.data.followersCount).toEqual(0);
   });

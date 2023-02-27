@@ -59,13 +59,13 @@ describe('(E2E) User - Attend', () => {
       }),
     );
 
-    const getPartyByIdRes = await suite.getPartyById(0);
-    const getUserByIdRes = await suite.getUserById(0);
+    const getPartyRes = await suite.getParty(0);
+    const getUserRes = await suite.getUser(0);
 
     expect(attendRes.data[attendOperation]).toEqual(true);
-    expect(getPartyByIdRes.data.isAttender).toEqual(true);
-    expect(getPartyByIdRes.data.attendersCount).toEqual(1);
-    expect(getUserByIdRes.data.attendedPartiesCount).toEqual(1);
+    expect(getPartyRes.data.isAttender).toEqual(true);
+    expect(getPartyRes.data.attendersCount).toEqual(1);
+    expect(getUserRes.data.attendedPartiesCount).toEqual(1);
   });
 
   it('should unattend', async () => {
@@ -87,13 +87,13 @@ describe('(E2E) User - Attend', () => {
       }),
     );
 
-    const getPartyByIdRes = await suite.getPartyById(0);
-    const getUserByIdRes = await suite.getUserById(0);
+    const getPartyByIdRes = await suite.getParty(0);
+    const getUserRes = await suite.getUser(0);
 
     expect(attendRes.data[attendOperation]).toEqual(true);
     expect(getPartyByIdRes.data.isAttender).toEqual(false);
     expect(getPartyByIdRes.data.attendersCount).toEqual(0);
-    expect(getUserByIdRes.data.attendedPartiesCount).toEqual(0);
+    expect(getUserRes.data.attendedPartiesCount).toEqual(0);
   });
 
   it('should not unattend an unatteded party', async () => {
@@ -115,12 +115,12 @@ describe('(E2E) User - Attend', () => {
       }),
     );
 
-    const getPartyByIdRes = await suite.getPartyById(0);
-    const getUserByIdRes = await suite.getUserById(0);
+    const getPartyByIdRes = await suite.getParty(0);
+    const getUserRes = await suite.getUser(0);
 
     expect(attendRes.data[attendOperation]).toEqual(true);
     expect(getPartyByIdRes.data.isAttender).toEqual(false);
     expect(getPartyByIdRes.data.attendersCount).toEqual(0);
-    expect(getUserByIdRes.data.attendedPartiesCount).toEqual(0);
+    expect(getUserRes.data.attendedPartiesCount).toEqual(0);
   });
 });

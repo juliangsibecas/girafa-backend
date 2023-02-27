@@ -168,7 +168,7 @@ export class PartyResolver {
       });
 
       await this.users.removeOrganizedParty({ user: organizer, party });
-      await party.remove();
+      await party.delete();
 
       await this.notifications.rawPush({
         toIds: [organizer._id],
@@ -211,7 +211,7 @@ export class PartyResolver {
           ),
         ),
         this.notifications.deleteByParty(partyId),
-        party.remove(),
+        party.delete(),
       ]);
 
       return true;

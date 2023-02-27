@@ -1,11 +1,17 @@
 import { forwardRef, Inject } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
-import { Id } from 'src/common/types';
 
 import { CurrentUser } from '../auth/graphql';
 import { User, UserPreview, UserService } from '../user';
 import { UserDocument } from '../user/schema';
+import { AuthService } from '../auth';
+import { NotificationService, NotificationType } from '../notification';
+import { Id } from '../../common/types';
+import { createDeepLink } from '../../common/utils';
+import { ErrorCode, NotFoundError, UnknownError } from '../../core/graphql';
+import { LoggerService } from '../logger';
+
 import {
   ChatCreateInput,
   ChatGetIdByUserIdInput,
@@ -15,15 +21,9 @@ import {
   ChatUserGetInput,
 } from './input';
 import { ChatNewMessageResponse, ChatPreview } from './response';
-
 import { CHAT_MESSAGE_SENT } from './constant';
 import { Chat, ChatDocument, ChatMessage } from './schema';
 import { ChatService } from './service';
-import { AuthService } from '../auth';
-import { NotificationService, NotificationType } from '../notification';
-import { createDeepLink } from 'src/common/utils';
-import { ErrorCode, NotFoundError, UnknownError } from 'src/core/graphql';
-import { LoggerService } from '../logger';
 
 @Resolver(() => Chat)
 export class ChatResolver {

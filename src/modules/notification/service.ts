@@ -64,7 +64,7 @@ export class NotificationService {
         return;
       }
 
-      oldNotification.remove();
+      oldNotification.delete();
     }
 
     const notification = await this.notifications.create({
@@ -87,13 +87,13 @@ export class NotificationService {
   }
 
   async deleteByUser(userId: string): Promise<void> {
-    return this.notifications.remove({
+    await this.notifications.deleteMany({
       from: userId,
     });
   }
 
   async deleteByParty(partyId: string): Promise<void> {
-    return this.notifications.remove({
+    await this.notifications.deleteMany({
       party: partyId,
     });
   }
