@@ -8,6 +8,7 @@ import { ArrayField, BaseSchema, Id } from '../../common/types';
 import { Notification } from '../notification/schema';
 import { Party } from '../party/schema';
 import { Chat } from '../chat/schema';
+import { UserGender } from './types';
 
 @Schema({ timestamps: true })
 @ObjectType()
@@ -26,6 +27,10 @@ export class User extends BaseSchema {
   @Prop()
   @Field()
   fullName: string;
+
+  @Prop(() => UserGender)
+  @Field(() => UserGender, { nullable: true })
+  gender?: UserGender;
 
   @Prop()
   @Field({ nullable: true })
@@ -54,10 +59,6 @@ export class User extends BaseSchema {
   @Field(() => [User])
   followers: ArrayField<User>;
 
-  @Prop({ default: 0 })
-  @Field()
-  followersCount: number;
-
   @Prop({
     type: [
       {
@@ -68,10 +69,6 @@ export class User extends BaseSchema {
   })
   @Field(() => [User])
   following: ArrayField<User>;
-
-  @Prop({ default: 0 })
-  @Field()
-  followingCount: number;
 
   @Prop({
     type: [
@@ -143,6 +140,10 @@ export class User extends BaseSchema {
   @Prop({ select: false })
   @Field({ nullable: true })
   refreshToken?: string;
+
+  @Prop({ select: false })
+  @Field({ nullable: true })
+  isOpera?: boolean;
 }
 
 export type UserDocument = User & mongoose.Document;

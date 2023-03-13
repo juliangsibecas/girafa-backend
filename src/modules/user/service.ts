@@ -31,15 +31,15 @@ import { Chat } from '../chat';
 export class UserService {
   constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
 
-  async create(dto: UserCreateDto): Promise<User> {
+  async create(dto: UserCreateDto): Promise<UserDocument> {
     return this.model.create(dto);
   }
 
-  async edit(dto: UserEditDto): Promise<User> {
+  async edit(dto: UserEditDto): Promise<UserDocument> {
     return this.model.findByIdAndUpdate(dto.id, dto);
   }
 
-  async search(dto: UserSearchDto): Promise<Array<User>> {
+  async search(dto: UserSearchDto): Promise<Array<UserDocument>> {
     const like = { $regex: dto.search, $options: 'i' };
 
     return this.model.find(
@@ -80,12 +80,10 @@ export class UserService {
     if (!user.following.includes(following._id)) {
       await user.updateOne({
         $addToSet: { following: following._id },
-        $inc: { followingCount: 1 },
       });
 
       await following.updateOne({
         $addToSet: { followers: user._id },
-        $inc: { followersCount: 1 },
       });
     }
   }
@@ -94,12 +92,10 @@ export class UserService {
     if (user.following.includes(following._id)) {
       await user.updateOne({
         $pull: { following: following._id },
-        $inc: { followingCount: -1 },
       });
 
       await following.updateOne({
         $pull: { followers: user._id },
-        $inc: { followersCount: -1 },
       });
     }
   }

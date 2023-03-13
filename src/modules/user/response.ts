@@ -18,12 +18,17 @@ export class UserGetResponse extends PickType(User, [
   'pictureId',
   'fullName',
   'instagramUsername',
-  'followersCount',
-  'followingCount',
   'attendedPartiesCount',
 ]) {
   @Field()
+  followingCount: number;
+
+  @Field()
+  followersCount: number;
+
+  @Field()
   isFollowing: boolean;
+
   @Field()
   isFollower: boolean;
 }

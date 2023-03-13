@@ -10,10 +10,12 @@ import { User, UserSchema } from './schema';
 import { UserService } from './service';
 import { UserResolver } from './resolver';
 import { seeders } from './seeder';
+import { ImageModule } from '../image';
 
 @Module({
   imports: [
     LoggerModule,
+    ImageModule,
     NotificationModule,
     forwardRef(() => AuthModule),
     forwardRef(() => PartyModule),

@@ -10,5 +10,6 @@ import { ImageController } from './controller';
   imports: [ConfigModule, LoggerModule],
   providers: [S3Service],
   controllers: [ImageController],
+  exports: [S3Service],
 })
 export class ImageModule {}
