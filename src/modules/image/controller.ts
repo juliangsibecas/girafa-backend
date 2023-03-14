@@ -45,7 +45,7 @@ export class ImageController {
   @Post('user-picture')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async uploadProfilePicture(
+  async uploadUserPicture(
     @Request() req: Request & { user: UserDocument },
     @UploadedFile() file: Express.Multer.File,
   ) {
@@ -68,6 +68,31 @@ export class ImageController {
     }
   }
 
+  @Post('user-banner')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadUserBanner(
+    @Request() req: Request & { user: UserDocument },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    try {
+      const newId = v4();
+      const lastId = req.user.bannerId;
+
+      req.user.bannerId = newId;
+
+      await Promise.all([
+        req.user.save(),
+        this.s3.deleteUserPicture(lastId),
+        this.s3.uploadUserBanner(newId, file),
+      ]);
+    } catch (e) {
+      this.logger.error({
+        path: 'UploadProfilePicture',
+        data: { user: req.user, ...e },
+      });
+    }
+  }
   @Post('party-picture/:id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))

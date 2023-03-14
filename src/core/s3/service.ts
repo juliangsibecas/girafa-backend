@@ -82,7 +82,6 @@ export class S3Service {
               })
               .promise();
 
-            console.log(file);
             const buffer = await sharp(file.Body as Buffer)
               .jpeg()
               .resize(1080, 1920, { fit: 'cover' })
@@ -106,15 +105,31 @@ export class S3Service {
       .promise();
   }
 
+  async deleteUserBanner(bannerId: string) {
+    await this.s3
+      .deleteObject({
+        Bucket: this.config.get('s3.name'),
+        Key: `user-banners/${bannerId}.jpeg`,
+      })
+      .promise();
+  }
+
   async uploadUserPicture(pictureId: string, file: Express.Multer.File) {
+    const buffer = await sharp(file.buffer)
+      .jpeg()
+      .resize(1000, 1000, { fit: 'cover' })
+      .toBuffer();
+
+    return this.upload('user-pictures', `${pictureId}.jpeg`, buffer);
+  }
+
+  async uploadUserBanner(bannerId: string, file: Express.Multer.File) {
     const buffer = await sharp(file.buffer)
       .jpeg()
       .resize(1080, 1920, { fit: 'cover' })
       .toBuffer();
 
-    console.log(file);
-
-    return this.upload('user-pictures', `${pictureId}.jpeg`, buffer);
+    return this.upload('user-banners', `${bannerId}.jpeg`, buffer);
   }
 
   async uploadPartyPicture(partyId: string, file: Express.Multer.File) {
