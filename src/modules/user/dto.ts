@@ -10,6 +10,7 @@ export interface UserCreateDto {
   nickname: string;
   email: string;
   password: string;
+  isOpera?: true;
 }
 
 export interface UserEditDto {

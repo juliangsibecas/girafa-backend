@@ -4,13 +4,17 @@ import {
   Post,
   Request,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { v4 } from 'uuid';
 
 import { S3Service } from '../../core/s3';
+import { Environment } from '../../common/types';
+
+import { AllowAny } from '../auth/graphql/decorators';
 import { JwtAuthGuard } from '../auth/jwt/guard';
 import { LoggerService } from '../logger';
 import { UserDocument } from '../user/schema';
@@ -18,6 +22,25 @@ import { UserDocument } from '../user/schema';
 @Controller('images')
 export class ImageController {
   constructor(private s3: S3Service, private logger: LoggerService) {}
+
+  @Post('populate-s3')
+  @UseInterceptors(FilesInterceptor('files'))
+  @AllowAny()
+  async populateS3(
+    @Request() req: Request & { user: UserDocument },
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    if (process.env.NODE_ENV === Environment.DEVELOPMENT) {
+      try {
+        await this.s3.populate(files);
+      } catch (e) {
+        this.logger.error({
+          path: 'UploadProfilePicture',
+          data: { user: req.user, ...e },
+        });
+      }
+    }
+  }
 
   @Post('user-picture')
   @UseGuards(JwtAuthGuard)

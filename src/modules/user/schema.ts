@@ -54,10 +54,6 @@ export class User extends BaseSchema {
   @Field(() => [User])
   followers: ArrayField<User>;
 
-  @Prop({ default: 0 })
-  @Field()
-  followersCount: number;
-
   @Prop({
     type: [
       {
@@ -68,10 +64,6 @@ export class User extends BaseSchema {
   })
   @Field(() => [User])
   following: ArrayField<User>;
-
-  @Prop({ default: 0 })
-  @Field()
-  followingCount: number;
 
   @Prop({
     type: [
@@ -143,6 +135,10 @@ export class User extends BaseSchema {
   @Prop({ select: false })
   @Field({ nullable: true })
   refreshToken?: string;
+
+  @Prop({ select: false })
+  @Field({ nullable: true })
+  isOpera?: boolean;
 }
 
 export type UserDocument = User & mongoose.Document;

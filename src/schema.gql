@@ -175,6 +175,7 @@ type GroupedCount {
 
 type Mutation {
   adminSignIn(data: AuthSignInInput!): AuthSignInResponse!
+  adminUserRunOpera: Boolean!
   appInfoChangeMinVersion(version: String!): Boolean!
   appInfoInitialize: Boolean!
   changePassword(data: AuthChangePasswordInput!): Boolean!
@@ -359,12 +360,11 @@ type User {
   createdAt: DateTime!
   email: String!
   followers: [User!]!
-  followersCount: Float!
   following: [User!]!
-  followingCount: Float!
   fullName: String!
   instagramUsername: String
   invites: [Party!]!
+  isOpera: Boolean
   nickname: String!
   notifications: [Notification!]!
   password: String
