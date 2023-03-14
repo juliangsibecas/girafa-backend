@@ -188,6 +188,7 @@ export class UserResolver {
         'nickname',
         'fullName',
         'pictureId',
+        'bannerId',
         'instagramUsername',
         'following',
         'followers',

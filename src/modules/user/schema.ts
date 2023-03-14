@@ -31,6 +31,10 @@ export class User extends BaseSchema {
   @Field({ nullable: true })
   pictureId?: string;
 
+  @Prop()
+  @Field({ nullable: true })
+  bannerId?: string;
+
   @Prop({ select: false })
   @Field({ nullable: true })
   password?: string;

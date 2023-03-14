@@ -355,6 +355,7 @@ type User {
   _id: String!
   attendedParties: [Party!]!
   attendedPartiesCount: Float!
+  bannerId: String
   bio: String
   chats: [Chat!]!
   createdAt: DateTime!
@@ -410,6 +411,7 @@ input UserGetInput {
 type UserGetResponse {
   _id: String!
   attendedPartiesCount: Float!
+  bannerId: String
   followersCount: Float!
   followingCount: Float!
   fullName: String!
