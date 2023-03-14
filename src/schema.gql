@@ -362,7 +362,6 @@ type User {
   followers: [User!]!
   following: [User!]!
   fullName: String!
-  gender: UserGender
   instagramUsername: String
   invites: [Party!]!
   isOpera: Boolean
@@ -401,12 +400,6 @@ input UserEditInput {
 
 input UserFindUsersToChat {
   q: String
-}
-
-enum UserGender {
-  FEMALE
-  MALE
-  OTHER
 }
 
 input UserGetInput {

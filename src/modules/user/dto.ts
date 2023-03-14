@@ -4,14 +4,12 @@ import { Id } from '../../common/types';
 
 import { PartyDocument } from '../party';
 import { User, UserDocument } from './schema';
-import { UserGender } from './types';
 
 export interface UserCreateDto {
   fullName: string;
   nickname: string;
   email: string;
   password: string;
-  gender?: UserGender;
   isOpera?: true;
 }
 

@@ -3,6 +3,8 @@ import * as sharp from 'sharp';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { Environment } from '../../common/types';
+
 @Injectable()
 export class S3Service {
   constructor(private config: ConfigService) {}
@@ -14,19 +16,21 @@ export class S3Service {
     endpoint: new AWS.Endpoint(this.config.get('s3.endpoint')),
   });
 
-  /* populate(files: Array<Express.Multer.File>) {
-    return Promise.all(
-      files.map((file, i) =>
-        this.s3
-          .upload({
-            Bucket: this.config.get('s3.name'),
-            Key: `opera/female/${i}.jpeg`,
-            Body: file.buffer,
-          })
-          .promise(),
-      ),
-    );
-  } */
+  populate(files: Array<Express.Multer.File>) {
+    if (process.env.NODE_ENV === Environment.DEVELOPMENT) {
+      return Promise.all(
+        files.map((file, i) =>
+          this.s3
+            .upload({
+              Bucket: this.config.get('s3.name'),
+              Key: `opera/female/${i}.jpeg`,
+              Body: file.buffer,
+            })
+            .promise(),
+        ),
+      );
+    }
+  }
 
   async assignOperaPictures(
     femalePictureIds: Array<string>,

@@ -9,9 +9,10 @@ import {
   NotFoundError,
   UnknownError,
 } from '../../core/graphql';
+import { S3Service } from '../../core/s3';
 import { randomNumberBetween } from '../../common/utils';
 
-import { AllowAny, CurrentUser } from '../auth/graphql/decorators';
+import { CurrentUser } from '../auth/graphql/decorators';
 import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
 import { AuthService } from '../auth';
@@ -43,8 +44,6 @@ import {
   MOCKED_FEMALE_FULL_NAMES,
   MOCKED_MALE_FULL_NAMES,
 } from './__mocks__/user';
-import { UserGender } from './types';
-import { S3Service } from 'src/core/s3';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -653,8 +652,7 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  // @Roles([Role.ADMIN])
-  @AllowAny()
+  @Roles([Role.ADMIN])
   async adminUserRunOpera(): Promise<boolean> {
     const maleFullNames = MOCKED_MALE_FULL_NAMES;
     const femaleFullNames = MOCKED_FEMALE_FULL_NAMES;
@@ -672,13 +670,11 @@ export class UserResolver {
           fullName,
           email: `${fullName.toLowerCase().replace(' ', '.')}@gmail.com`,
           password: await this.auth.encryptPassword('1111'),
-          gender:
-            i < maleFullNames.length ? UserGender.MALE : UserGender.FEMALE,
           isOpera: true,
         });
 
         user.pictureId = user._id;
-        if (user.gender === UserGender.MALE) {
+        if (i < maleFullNames.length) {
           malePictureIds.push(user.pictureId);
         } else {
           femalePictrueIds.push(user.pictureId);

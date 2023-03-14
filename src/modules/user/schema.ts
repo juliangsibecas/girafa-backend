@@ -8,7 +8,6 @@ import { ArrayField, BaseSchema, Id } from '../../common/types';
 import { Notification } from '../notification/schema';
 import { Party } from '../party/schema';
 import { Chat } from '../chat/schema';
-import { UserGender } from './types';
 
 @Schema({ timestamps: true })
 @ObjectType()
@@ -27,10 +26,6 @@ export class User extends BaseSchema {
   @Prop()
   @Field()
   fullName: string;
-
-  @Prop(() => UserGender)
-  @Field(() => UserGender, { nullable: true })
-  gender?: UserGender;
 
   @Prop()
   @Field({ nullable: true })
