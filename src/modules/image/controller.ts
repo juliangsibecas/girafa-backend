@@ -83,7 +83,7 @@ export class ImageController {
 
       await Promise.all([
         req.user.save(),
-        this.s3.deleteUserBanner(lastId),
+        this.s3.deleteUserPicture(lastId),
         this.s3.uploadUserBanner(newId, file),
       ]);
     } catch (e) {
