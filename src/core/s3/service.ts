@@ -33,8 +33,8 @@ export class S3Service {
   }
 
   async assignOperaPictures(
-    femalePictureIds: Array<string>,
-    malePictureIds: Array<string>,
+    femaleIds: Array<{ pictureId: string; bannerId: string }>,
+    maleIds: Array<{ pictureId: string; bannerId: string }>,
   ) {
     const femalesPictures = await this.s3
       .listObjects({
@@ -50,44 +50,49 @@ export class S3Service {
       })
       .promise();
 
+    const upload = async (
+      gender: 'female' | 'male',
+      pictureId: string,
+      bannerId: string,
+      i: number,
+    ) => {
+      const file = await this.s3
+        .getObject({
+          Bucket: this.config.get('s3.name'),
+          Key: `opera/${gender}/${i}.jpeg`,
+        })
+        .promise();
+
+      const pictureBuffer = await sharp(file.Body as Buffer)
+        .jpeg()
+        .resize(1000, 1000, { fit: sharp.fit.cover, position: 'top' })
+        .toBuffer();
+
+      const bannerBuffer = await sharp(file.Body as Buffer)
+        .jpeg()
+        .resize(1080, 1920, { fit: 'cover' })
+        .toBuffer();
+
+      return Promise.all([
+        this.upload('user-pictures', `${pictureId}.jpeg`, pictureBuffer),
+        this.upload('user-banners', `${bannerId}.jpeg`, bannerBuffer),
+      ]);
+    };
+
     await Promise.all([
       Promise.all(
-        femalePictureIds.map(async (pictureId, i) => {
+        femaleIds.map(async ({ pictureId, bannerId }, i) => {
           if (femalesPictures.Contents[i]) {
-            const file = await this.s3
-              .getObject({
-                Bucket: this.config.get('s3.name'),
-                Key: `opera/female/${i}.jpeg`,
-              })
-              .promise();
-
-            const buffer = await sharp(file.Body as Buffer)
-              .jpeg()
-              .resize(1080, 1920, { fit: 'cover' })
-              .toBuffer();
-
-            return this.upload('user-pictures', `${pictureId}.jpeg`, buffer);
+            upload('female', pictureId, bannerId, i);
           }
 
           return Promise.resolve();
         }),
       ),
       Promise.all(
-        malePictureIds.map(async (pictureId, i) => {
+        maleIds.map(async ({ pictureId, bannerId }, i) => {
           if (malesPictures.Contents[i]) {
-            const file = await this.s3
-              .getObject({
-                Bucket: this.config.get('s3.name'),
-                Key: `opera/male/${i}.jpeg`,
-              })
-              .promise();
-
-            const buffer = await sharp(file.Body as Buffer)
-              .jpeg()
-              .resize(1080, 1920, { fit: 'cover' })
-              .toBuffer();
-
-            return this.upload('user-pictures', `${pictureId}.jpeg`, buffer);
+            upload('male', pictureId, bannerId, i);
           }
 
           return Promise.resolve();
