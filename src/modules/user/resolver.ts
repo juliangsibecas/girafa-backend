@@ -657,70 +657,78 @@ export class UserResolver {
   // @Roles([Role.ADMIN])
   @AllowAny()
   async adminUserRunOpera(): Promise<boolean> {
-    const maleFullNames = MOCKED_MALE_FULL_NAMES;
-    const femaleFullNames = MOCKED_FEMALE_FULL_NAMES;
-    const totalCount = [...maleFullNames, ...femaleFullNames].length - 1;
-    const maleIds = [];
-    const femaleIds = [];
+    try {
+      const maleFullNames = MOCKED_MALE_FULL_NAMES;
+      const femaleFullNames = MOCKED_FEMALE_FULL_NAMES;
+      const totalCount = [...maleFullNames, ...femaleFullNames].length - 1;
+      const maleIds = [];
+      const femaleIds = [];
 
-    // CREATES
-    const users = await Promise.all(
-      [...maleFullNames, ...femaleFullNames].map(async (fullName, i) => {
-        const user = await this.users.create({
-          nickname: fullName
-            .toLowerCase()
-            .replace(' ', Math.random() < 0.5 ? '' : '.'),
-          fullName,
-          email: `${fullName.toLowerCase().replace(' ', '.')}@gmail.com`,
-          password: await this.auth.encryptPassword('1111'),
-          isOpera: true,
-        });
-
-        user.pictureId = v4();
-        user.bannerId = v4();
-
-        if (i < maleFullNames.length) {
-          maleIds.push({
-            pictureId: user.pictureId,
-            bannerId: user.bannerId,
+      // CREATES
+      const users = await Promise.all(
+        [...maleFullNames, ...femaleFullNames].map(async (fullName, i) => {
+          const user = await this.users.create({
+            nickname: fullName
+              .toLowerCase()
+              .replace(' ', Math.random() < 0.5 ? '' : '.'),
+            fullName,
+            email: `${fullName.toLowerCase().replace(' ', '.')}@gmail.com`,
+            password: await this.auth.encryptPassword('1111'),
+            isOpera: true,
           });
-        } else {
-          femaleIds.push({
-            pictureId: user.pictureId,
-            bannerId: user.bannerId,
-          });
-        }
 
-        await user.save();
+          user.pictureId = v4();
+          user.bannerId = v4();
 
-        return user;
-      }),
-    );
-
-    // FOLOWS
-    await Promise.all(
-      users.map((user, i) =>
-        Promise.all(
-          [...Array(randomNumberBetween({ from: 25, to: 65 }))].map(() => {
-            const randomUserIdx = randomNumberBetween({
-              from: 0,
-              to: totalCount,
+          if (i < maleFullNames.length) {
+            maleIds.push({
+              pictureId: user.pictureId,
+              bannerId: user.bannerId,
             });
+          } else {
+            femaleIds.push({
+              pictureId: user.pictureId,
+              bannerId: user.bannerId,
+            });
+          }
 
-            if (randomUserIdx !== i) {
-              return this.users.follow({
-                user,
-                following: users[randomUserIdx],
+          await user.save();
+
+          return user;
+        }),
+      );
+
+      // FOLOWS
+      await Promise.all(
+        users.map((user, i) =>
+          Promise.all(
+            [...Array(randomNumberBetween({ from: 25, to: 65 }))].map(() => {
+              const randomUserIdx = randomNumberBetween({
+                from: 0,
+                to: totalCount,
               });
-            }
-          }),
+
+              if (randomUserIdx !== i) {
+                return this.users.follow({
+                  user,
+                  following: users[randomUserIdx],
+                });
+              }
+            }),
+          ),
         ),
-      ),
-    );
+      );
 
-    // PICTURES
-    await this.s3.assignOperaPictures(femaleIds, maleIds);
+      // PICTURES
+      await this.s3.assignOperaPictures(femaleIds, maleIds);
 
-    return true;
+      return true;
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminUsersRunOpera',
+        data: e,
+      });
+      throw new UnknownError();
+    }
   }
 }

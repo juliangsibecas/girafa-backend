@@ -50,16 +50,11 @@ export class S3Service {
       })
       .promise();
 
-    const upload = async (
-      gender: 'female' | 'male',
-      pictureId: string,
-      bannerId: string,
-      i: number,
-    ) => {
+    const upload = async (key: string, pictureId: string, bannerId: string) => {
       const file = await this.s3
         .getObject({
           Bucket: this.config.get('s3.name'),
-          Key: `opera/${gender}/${i}.jpeg`,
+          Key: key,
         })
         .promise();
 
@@ -83,7 +78,7 @@ export class S3Service {
       Promise.all(
         femaleIds.map(async ({ pictureId, bannerId }, i) => {
           if (femalesPictures.Contents[i]) {
-            upload('female', pictureId, bannerId, i);
+            return upload(femalesPictures.Contents[i].Key, pictureId, bannerId);
           }
 
           return Promise.resolve();
@@ -92,7 +87,7 @@ export class S3Service {
       Promise.all(
         maleIds.map(async ({ pictureId, bannerId }, i) => {
           if (malesPictures.Contents[i]) {
-            upload('male', pictureId, bannerId, i);
+            return upload(malesPictures.Contents[i].Key, pictureId, bannerId);
           }
 
           return Promise.resolve();
