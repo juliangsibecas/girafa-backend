@@ -1,6 +1,7 @@
 import * as moment from 'moment';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { v4 } from 'uuid';
 
 import { GroupedCount, Id, Pagination } from '../../common/types';
 import {
@@ -12,7 +13,7 @@ import {
 import { S3Service } from '../../core/s3';
 import { randomNumberBetween } from '../../common/utils';
 
-import { CurrentUser } from '../auth/graphql/decorators';
+import { AllowAny, CurrentUser } from '../auth/graphql/decorators';
 import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
 import { AuthService } from '../auth';
@@ -653,13 +654,14 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  @Roles([Role.ADMIN])
+  // @Roles([Role.ADMIN])
+  @AllowAny()
   async adminUserRunOpera(): Promise<boolean> {
     const maleFullNames = MOCKED_MALE_FULL_NAMES;
     const femaleFullNames = MOCKED_FEMALE_FULL_NAMES;
     const totalCount = [...maleFullNames, ...femaleFullNames].length - 1;
-    const malePictureIds = [];
-    const femalePictrueIds = [];
+    const maleIds = [];
+    const femaleIds = [];
 
     // CREATES
     const users = await Promise.all(
@@ -674,11 +676,19 @@ export class UserResolver {
           isOpera: true,
         });
 
-        user.pictureId = user._id;
+        user.pictureId = v4();
+        user.bannerId = v4();
+
         if (i < maleFullNames.length) {
-          malePictureIds.push(user.pictureId);
+          maleIds.push({
+            pictureId: user.pictureId,
+            bannerId: user.bannerId,
+          });
         } else {
-          femalePictrueIds.push(user.pictureId);
+          femaleIds.push({
+            pictureId: user.pictureId,
+            bannerId: user.bannerId,
+          });
         }
 
         await user.save();
@@ -709,7 +719,7 @@ export class UserResolver {
     );
 
     // PICTURES
-    await this.s3.assignOperaPictures(femalePictrueIds, malePictureIds);
+    await this.s3.assignOperaPictures(femaleIds, maleIds);
 
     return true;
   }
