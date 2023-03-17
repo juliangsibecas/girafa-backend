@@ -1,5 +1,5 @@
-import slugify from 'slugify';
 import * as moment from 'moment';
+import slugify from 'slugify';
 import { forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PopulateOptions } from 'mongoose';
@@ -51,9 +51,9 @@ export class PartyResolver {
     try {
       await this.parties.checkAvailability(data.name);
 
-      const slug = `${slugify(data.name)}-${moment(data.date).format(
-        'DDMMYY',
-      )}`;
+      const slug = `${slugify(data.name.toLowerCase())}-${moment(
+        data.date,
+      ).format('DDMMYY')}`;
 
       const allowInvites =
         data.availability === PartyAvailability.PUBLIC
