@@ -80,10 +80,6 @@ export class User extends BaseSchema {
   @Field(() => [Party])
   attendedParties: ArrayField<Party>;
 
-  @Prop({ default: 0 })
-  @Field()
-  attendedPartiesCount: number;
-
   @Prop({
     type: [
       {

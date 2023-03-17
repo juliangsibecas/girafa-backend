@@ -359,7 +359,6 @@ type TypesSyncResponse {
 type User {
   _id: String!
   attendedParties: [Party!]!
-  attendedPartiesCount: Float!
   bannerId: String
   bio: String
   chats: [Chat!]!

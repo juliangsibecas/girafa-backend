@@ -126,7 +126,6 @@ export class UserService {
     if (!user.attendedParties.includes(party._id)) {
       await user.updateOne({
         $addToSet: { attendedParties: party._id },
-        $inc: { attendedPartiesCount: 1 },
       });
     }
   }
@@ -135,7 +134,6 @@ export class UserService {
     if (user.attendedParties.includes(party._id)) {
       await user.updateOne({
         $pull: { attendedParties: party._id },
-        $inc: { attendedPartiesCount: -1 },
       });
     }
   }

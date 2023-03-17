@@ -194,7 +194,7 @@ export class UserResolver {
         'instagramUsername',
         'following',
         'followers',
-        'attendedPartiesCount',
+        'attendedParties',
       ];
 
       if (data.id) {
@@ -215,6 +215,7 @@ export class UserResolver {
         ...user.toObject(),
         followingCount: user.following.length,
         followersCount: user.followers.length,
+        attendedPartiesCount: user.attendedParties.length,
         isFollowing: Boolean(
           (user.followers as Array<Id>).find((id) => id === myId),
         ),

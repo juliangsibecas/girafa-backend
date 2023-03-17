@@ -12,7 +12,6 @@ export const userDeleteMocks: Entities = {
       following: [gumpy],
       followers: [gumpy, cosmo, guayra],
       attendedParties: [MOCKED_PARTIES[0]],
-      attendedPartiesCount: 1,
     },
     {
       ...gumpy,

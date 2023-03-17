@@ -13,7 +13,6 @@ export const partyDeleteMocks: Entities = {
       ...sibe,
       organizedParties: [MOCKED_PARTIES[0]._id],
       attendedParties: [MOCKED_PARTIES[0], MOCKED_PARTIES[1]],
-      attendedPartiesCount: 2,
     },
     {
       ...gumpy,
@@ -22,17 +21,14 @@ export const partyDeleteMocks: Entities = {
         MOCKED_PARTIES[2],
         MOCKED_PARTIES[3],
       ],
-      attendedPartiesCount: 3,
     },
     {
       ...cosmo,
       attendedParties: [MOCKED_PARTIES[1]],
-      attendedPartiesCount: 1,
     },
     {
       ...guayra,
       attendedParties: [MOCKED_PARTIES[0]],
-      attendedPartiesCount: 1,
     },
   ],
   parties: [
