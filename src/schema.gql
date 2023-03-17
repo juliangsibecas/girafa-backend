@@ -7,6 +7,10 @@ type AdminUserListResponse {
   users: [UserPreview!]!
 }
 
+input AdminUserOperaAttendPartyInput {
+  partyId: String!
+}
+
 input AuthChangePasswordInput {
   currentPassword: String!
   newPassword: String!
@@ -175,6 +179,7 @@ type GroupedCount {
 
 type Mutation {
   adminSignIn(data: AuthSignInInput!): AuthSignInResponse!
+  adminUserOperaAttendParty(data: AdminUserOperaAttendPartyInput!): Boolean!
   adminUserRunOpera: Boolean!
   appInfoChangeMinVersion(version: String!): Boolean!
   appInfoInitialize: Boolean!
@@ -328,7 +333,7 @@ type Query {
   partySearchAttenders(data: PartySearchAttendersInput!): [UserPreview!]!
   typesSync: TypesSyncResponse!
   userCheckPartyValidating: Boolean!
-  userFindUsersToChat(data: UserFindUsersToChat!): [UserPreview!]!
+  userFindUsersToChat(data: UserFindUsersToChatInput!): [UserPreview!]!
   userGet(data: UserGetInput!): UserGetResponse!
   userGetAttendedPartiesById(id: String!): [PartyPreview!]!
   userGetFollowersById(id: String!): [UserPreview!]!
@@ -399,7 +404,7 @@ input UserEditInput {
   nickname: String!
 }
 
-input UserFindUsersToChat {
+input UserFindUsersToChatInput {
   q: String
 }
 

@@ -72,7 +72,13 @@ export class UserBanInput {
 }
 
 @InputType()
-export class UserFindUsersToChat {
+export class UserFindUsersToChatInput {
   @Field({ nullable: true })
   q?: string;
+}
+
+@InputType()
+export class AdminUserOperaAttendPartyInput {
+  @Field()
+  partyId: string;
 }

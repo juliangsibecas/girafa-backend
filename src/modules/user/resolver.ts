@@ -13,7 +13,7 @@ import {
 import { S3Service } from '../../core/s3';
 import { randomNumberBetween } from '../../common/utils';
 
-import { AllowAny, CurrentUser } from '../auth/graphql/decorators';
+import { CurrentUser } from '../auth/graphql/decorators';
 import { Features, FeatureToggleName } from '../featureToggle';
 import { LoggerService } from '../logger';
 import { AuthService } from '../auth';
@@ -26,12 +26,13 @@ import {
   UserBanInput,
   UserChangeAttendingStateInput,
   UserChangeFollowingStateInput,
-  UserFindUsersToChat,
+  UserFindUsersToChatInput,
   UserDeleteInput,
   UserEditInput,
   UserGetInput,
   UserSearchFollowersToInviteInput,
   UserSendPartyInviteInput,
+  AdminUserOperaAttendPartyInput,
 } from './input';
 import {
   AdminUserListResponse,
@@ -557,7 +558,7 @@ export class UserResolver {
   @Query(() => [UserPreview])
   async userFindUsersToChat(
     @CurrentUser() user: UserDocument,
-    @Args('data') data: UserFindUsersToChat,
+    @Args('data') data: UserFindUsersToChatInput,
   ): Promise<Array<UserPreview>> {
     try {
       return this.users.search({ id: user._id, search: data.q });
@@ -654,8 +655,7 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  // @Roles([Role.ADMIN])
-  @AllowAny()
+  @Roles([Role.ADMIN])
   async adminUserRunOpera(): Promise<boolean> {
     try {
       const maleFullNames = MOCKED_MALE_FULL_NAMES;
@@ -726,6 +726,37 @@ export class UserResolver {
     } catch (e) {
       this.logger.error({
         path: 'AdminUsersRunOpera',
+        data: e,
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Mutation(() => Boolean)
+  @Roles([Role.ADMIN])
+  async adminUserOperaAttendParty(
+    @Args('data') data: AdminUserOperaAttendPartyInput,
+  ): Promise<boolean> {
+    try {
+      const users = await this.users.getOpera();
+      const party = await this.parties.getById({ id: data.partyId });
+
+      await Promise.all(
+        users
+          .sort(() => 0.5 - Math.random())
+          .slice(0, randomNumberBetween({ from: 32, to: 49 }))
+          .map((user) =>
+            Promise.all([
+              this.users.attend({ user, party }),
+              this.parties.addAttender({ user, party }),
+            ]),
+          ),
+      );
+
+      return true;
+    } catch (e) {
+      this.logger.error({
+        path: 'AdminUserOperaAttendParty',
         data: e,
       });
       throw new UnknownError();

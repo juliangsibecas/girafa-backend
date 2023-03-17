@@ -76,6 +76,12 @@ export class UserService {
     return this.model.findOne({ nickname }, select).populate(relations);
   }
 
+  async getOpera(): Promise<Array<UserDocument>> {
+    return this.model.find({ isOpera: true }, ['attendedParties'] as Array<
+      keyof User
+    >);
+  }
+
   async follow({ user, following }: UserChangeFollowingStateDto) {
     if (!user.following.includes(following._id)) {
       await user.updateOne({
