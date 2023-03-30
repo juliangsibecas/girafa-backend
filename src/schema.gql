@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AdminPartyCreateFromInput {
+  date: Date!
+  id: String!
+}
+
 type AdminUserListResponse {
   total: Float!
   users: [UserPreview!]!
@@ -178,6 +183,7 @@ type GroupedCount {
 }
 
 type Mutation {
+  adminPartyCreateFrom(data: AdminPartyCreateFromInput!): String!
   adminSignIn(data: AuthSignInInput!): AuthSignInResponse!
   adminUserOperaAttendParty(data: AdminUserOperaAttendPartyInput!): Boolean!
   adminUserRunOpera: Boolean!

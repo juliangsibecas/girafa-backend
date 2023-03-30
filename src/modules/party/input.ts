@@ -50,3 +50,12 @@ export class PartySearchAttendersInput {
   @Field({ nullable: true })
   q?: string;
 }
+
+@InputType()
+export class AdminPartyCreateFromInput {
+  @Field(() => String)
+  id: Id;
+
+  @Field(() => DateResolver)
+  date: Date;
+}
