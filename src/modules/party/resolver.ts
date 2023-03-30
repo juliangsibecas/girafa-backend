@@ -23,6 +23,7 @@ import { UserDocument } from '../user/schema';
 import { userPreviewFields } from '../user/utils';
 
 import {
+  AdminPartyCreateFromInput,
   PartyCreateInput,
   PartyGetInput,
   PartySearchAttendersInput,
@@ -382,7 +383,7 @@ export class PartyResolver {
     } catch (e) {
       this.logger.error({
         path: 'AdminPartyGetCount',
-        data: {},
+        data: e,
       });
       throw new UnknownError();
     }
@@ -396,7 +397,56 @@ export class PartyResolver {
     } catch (e) {
       this.logger.error({
         path: 'AdminPartyGetPendingCount',
-        data: {},
+        data: e,
+      });
+      throw new UnknownError();
+    }
+  }
+
+  @Mutation(() => String)
+  @Roles([Role.ADMIN])
+  async adminPartyCreateFrom(
+    @Args('data') data: AdminPartyCreateFromInput,
+  ): Promise<string> {
+    try {
+      const party = await this.parties.getById({ id: data.id });
+
+      if (party) {
+        const {
+          organizer,
+          name,
+          slug,
+          address,
+          coordinate,
+          openBar,
+          description,
+          allowInvites,
+        } = party.toJSON();
+
+        const newParty = await this.parties.create({
+          organizer,
+          name,
+          slug,
+          address,
+          coordinate,
+          openBar,
+          description,
+          allowInvites,
+          date: data.date,
+        });
+
+        return newParty._id;
+      }
+
+      throw new NotFoundError();
+    } catch (e) {
+      if (e.message === ErrorCode.NOT_FOUND_ERROR) {
+        throw e;
+      }
+
+      this.logger.error({
+        path: 'AdminPartyCreateFrom',
+        data: e,
       });
       throw new UnknownError();
     }
