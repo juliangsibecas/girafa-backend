@@ -12,7 +12,7 @@ Everything was done by me: product design, app, backend, and infrastructure.
 
 ## Stack
 ### Product Design
-Figma
+Figma, Photoshop, Illustrator
 ### App
 Typescript, Expo, React Native, Apollo Client, GraphQL, Jest, Yup, Formik, I18n, OneSignal.
 ### Backend
